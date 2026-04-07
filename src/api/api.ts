@@ -82,7 +82,7 @@ http.interceptors.response.use(
       logout(false)
       // redirect to login page
       router.push({
-        path: APP_ROUTES.LOGIN.path,
+        name: APP_ROUTES.LOGIN.name,
         query: { redirect: currentRoute.fullPath },
       })
     }
