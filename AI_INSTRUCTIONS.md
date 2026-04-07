@@ -28,7 +28,7 @@ View → Component → Store → API Layer
    - All network calls must be exported as simple vanilla async functions mapped to Axios inside `src/api/<domain>.ts`.
 2. **Schema Validation (`src/validations/`)**:
    - Manual form validation is **BANNED**.
-   - All data payloads MUST be validated using `zod` schemas prior to triggering API calls or Store actions.
+   - All data payloads MUST be validated using `zod` schemas before triggering API calls or Store actions.
 3. **The Magic String Ban (I18N)**:
    - Hardcoded English GUI text inside `.vue` files is **BANNED**.
    - You MUST utilize `vue-i18n` using `const { t } = useI18n()` and map strings to keys defined in both `src/i18n/locales/en.json` and `kh.json`.
@@ -37,7 +37,7 @@ View → Component → Store → API Layer
    - You MUST structure routes dynamically leveraging constants declared in `src/constants/app-routes.ts` (e.g. `APP_ROUTES.LOGIN.name`).
 5. **UI & Styling Constraints**:
    - **BANNED**: Writing vanilla CSS. Use `tailwindcss` exclusively.
-   - **BANNED**: Writing custom HTML generic buttons. Use `shadcn-vue` generated primitives in `src/components/ui/` universally.
+   - **BANNED**: Writing custom HTML generic buttons. Use `shadcn-vue`-generated primitives in `src/components/ui/` universally.
 6. **ESLint & Prettier Strict Adherence**:
    - **Single Quotes & No Semicolons** naturally enforced by `.prettierrc`.
    - **BANNED**: The `any` TypeScript type is strictly prohibited (`Unexpected any` will fail CI/CD).
