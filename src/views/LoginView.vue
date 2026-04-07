@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { APP_ROUTES } from '@/constants/appRoutes'
 import { useAuthStore } from '@/store/useAuthStore'
 import { loginSchema } from '@/validations/authValidation'
 import type { LoginInput } from '@/validations/authValidation'
@@ -48,7 +49,7 @@ const handleLogin = async () => {
     await authStore.loginAction(payload)
 
     toast.success(t('auth.loginSuccess'))
-    router.push({ name: 'Home' })
+    router.push({ name: APP_ROUTES.HOME.name })
   } catch (err) {
     const error = err as Error & { response?: { data?: { message?: string } } }
     // Graceful error mapping automatically pushed from interceptors
