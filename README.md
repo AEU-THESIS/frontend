@@ -113,4 +113,4 @@ To add a new domain feature (e.g., `Orders`), strictly map this execution order:
 3. Build the Memory Cache explicitly inside the Setup Store format in `src/store/useOrderStore.ts`.
 4. Run `npx shadcn-vue@latest add` to pull needed generic primitives into `src/components/ui/`.
 5. Assemble the page logic globally in `src/views/OrderView.vue`.
-6. Inject the immutable route path in `src/constants/app-routes.ts` before binding it to Vue-Router at `src/router/index.ts`.
+6. Inject the immutable route path in `src/constants/appRoutes.ts` before binding it to Vue-Router at `src/router/index.ts`.

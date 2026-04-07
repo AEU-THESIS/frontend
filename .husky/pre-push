@@ -1,7 +1,5 @@
 #!/bin/sh
 
-#!/bin/sh
-
 while read -r local_ref local_sha remote_ref remote_sha
 do
   if [ "$remote_ref" = "refs/heads/main" ] || [ "$remote_ref" = "refs/heads/dev" ]; then

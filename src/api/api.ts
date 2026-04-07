@@ -3,8 +3,8 @@ import router from '@/router'
 import { storeToRefs } from 'pinia'
 
 import { useAuthStore } from '@/store/useAuthStore'
-import { APP_ROUTES } from '@/constants/app-routes'
-import { ERROR_CODE } from '@/constants/error-code'
+import { APP_ROUTES } from '@/constants/appRoutes'
+import { ERROR_CODE } from '@/constants/errorCode'
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL,

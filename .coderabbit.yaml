@@ -43,7 +43,7 @@ reviews:
 
     - path: 'src/views/**/*.vue'
       instructions: |
-        - **BANNED**: Hardcoded route URLs (e.g. `router.push('/dashboard')`). Enforce dynamic routing mapping via `APP_ROUTES` imported from `src/constants/app-routes.ts`.
+        - **BANNED**: Hardcoded route URLs (e.g. `router.push('/dashboard')`). Enforce dynamic routing mapping via `APP_ROUTES` imported from `src/constants/appRoutes.ts`.
 
     - path: 'src/**'
       instructions: |

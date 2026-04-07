@@ -34,7 +34,7 @@ View → Component → Store → API Layer
    - You MUST utilize `vue-i18n` using `const { t } = useI18n()` and map strings to keys defined in both `src/i18n/locales/en.json` and `kh.json`.
 4. **The Route Configuration Ban**:
    - Magic strings like `router.push('/login')` are **BANNED**.
-   - You MUST structure routes dynamically leveraging constants declared in `src/constants/app-routes.ts` (e.g. `APP_ROUTES.LOGIN.name`).
+   - You MUST structure routes dynamically leveraging constants declared in `src/constants/appRoutes.ts` (e.g. `APP_ROUTES.LOGIN.name`).
 5. **UI & Styling Constraints**:
    - **BANNED**: Writing vanilla CSS. Use `tailwindcss` exclusively.
    - **BANNED**: Writing custom HTML generic buttons. Use `shadcn-vue`-generated primitives in `src/components/ui/` universally.
