@@ -1,0 +1,12 @@
+#!/bin/sh
+
+while read -r local_ref local_sha remote_ref remote_sha
+do
+  if [ "$remote_ref" = "refs/heads/main" ] || [ "$remote_ref" = "refs/heads/dev" ]; then
+    echo ""
+    echo "🚫 Direct push to '${remote_ref#refs/heads/}' is BLOCKED."
+    echo "   Please create a feature branch and open a Pull Request instead."
+    echo ""
+    exit 1
+  fi
+done

@@ -1,0 +1,29 @@
+{
+  "app": {
+    "title": "RoutinCafe POS"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "title": "RoutinCafe",
+    "subtitle": "Enter your credentials to access the point of sale.",
+    "adminEmailPlaceholder": "admin@routincafe.com",
+    "forgotPassword": "Forgot password?",
+    "authenticating": "Authenticating...",
+    "signIn": "Sign In",
+    "loginSuccess": "Login Successful!",
+    "loginError": "An error occurred during login."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading...",
+    "noData": "No data available"
+  }
+}
