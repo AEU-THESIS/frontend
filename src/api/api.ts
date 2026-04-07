@@ -1,17 +1,48 @@
-import axios from 'axios'
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import router from '@/router'
 import { storeToRefs } from 'pinia'
+import type { ApiResponse } from '@/types/auth.types'
 
 import { useAuthStore } from '@/store/useAuthStore'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { ERROR_CODE } from '@/constants/errorCode'
 
+export interface HttpInstance extends Omit<
+  AxiosInstance,
+  'get' | 'post' | 'put' | 'delete' | 'patch'
+> {
+  get<T = unknown, R = ApiResponse<T>, D = unknown>(
+    url: string,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>
+  post<T = unknown, R = ApiResponse<T>, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>
+  put<T = unknown, R = ApiResponse<T>, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>
+  delete<T = unknown, R = ApiResponse<T>, D = unknown>(
+    url: string,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>
+  patch<T = unknown, R = ApiResponse<T>, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>
+}
+
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
-})
+}) as HttpInstance
 
 http.interceptors.request.use(config => {
   const authStore = useAuthStore()
@@ -26,7 +57,7 @@ http.interceptors.request.use(config => {
 
 http.interceptors.response.use(
   response => {
-    return Promise.resolve(response.data)
+    return response.data
   },
   async error => {
     const authStore = useAuthStore()
