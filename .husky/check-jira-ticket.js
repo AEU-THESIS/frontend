@@ -14,10 +14,12 @@ try {
   process.exit(1)
 }
 
-// Regex for Jira ticket ID (e.g., ABC-123 or [ABC-123])
-const jiraTicketRegex = /[A-Z]+-[0-9]+/
+// Regex for scanning Jira ticket ID in commit message (e.g., ABC-123)
+const jiraTicketScanRegex = /[A-Z][A-Z0-9]*-\d+/
+// Strict, anchored regex for validating the entire user-entered ticket string
+const strictJiraRegex = /^[A-Z][A-Z0-9]*-\d+$/
 
-if (!jiraTicketRegex.test(commitMsg)) {
+if (!jiraTicketScanRegex.test(commitMsg)) {
   let ticketId = ''
   let fdIn, fdOut
 
@@ -73,10 +75,11 @@ if (!jiraTicketRegex.test(commitMsg)) {
     process.exit(1)
   }
 
-  if (jiraTicketRegex.test(ticketId)) {
+  if (strictJiraRegex.test(ticketId)) {
     const cleanId = ticketId.replace(/[\[\]]/g, '')
     let newMsg
-    const conventionalMatch = commitMsg.match(/^(\w+(?:\([\w-]+\))?:\s*)(.*)/s)
+    // Updated regex to support breaking change marker '!'
+    const conventionalMatch = commitMsg.match(/^(\w+(?:\([\w-]+\))?!?:\s*)(.*)/s)
 
     if (conventionalMatch) {
       newMsg = `${conventionalMatch[1]}[${cleanId}] ${conventionalMatch[2]}`
