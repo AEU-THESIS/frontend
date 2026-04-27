@@ -16,6 +16,70 @@
     "loginSuccess": "Login Successful!",
     "loginError": "An error occurred during login."
   },
+  "sidebar": {
+    "title": "Routine Cafe",
+    "station": "Station 01",
+    "help": "Help",
+    "logout": "Logout",
+    "sections": {
+      "home": "Home",
+      "pos": "POS Sale Products",
+      "inventory": "Inventory",
+      "reports": "Reports",
+      "settings": "Settings"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "pos": "POS",
+      "orders": "Orders",
+      "products": "Products",
+      "categories": "Categories",
+      "saleReports": "Sale",
+      "analytics": "Analytics",
+      "staff": "Staff"
+    }
+  },
+  "navbar": {
+    "menuManagement": "Menu Management"
+  },
+  "home": {
+    "title": "Routine's POS",
+    "searchPlaceholder": "Search menu items...",
+    "categories": {
+      "all": "All",
+      "coffee": "Coffee",
+      "tea": "Tea",
+      "bakery": "Bakery",
+      "breakfast": "Breakfast",
+      "pastry": "Pastry"
+    },
+    "products": {
+      "icedLatte": "Iced Latte",
+      "croissant": "Butter Croissant",
+      "avocadoToast": "Avocado Toast",
+      "matchaLatte": "Matcha Latte"
+    }
+  },
+  "cart": {
+    "order": "Order",
+    "dineIn": "Dine-in",
+    "takeaway": "Takeaway",
+    "subtotal": "Subtotal",
+    "addDiscount": "Add Discount",
+    "totalAmount": "Total Amount",
+    "khr": "KHR",
+    "payWithCash": "Pay with Cash",
+    "payWithQR": "Pay with KHQR",
+    "options": {
+      "oatMilk": "Oat Milk, 50% Sugar",
+      "warmed": "Warmed"
+    }
+  },
+  "maintenance": {
+    "title": "Under Maintenance",
+    "message": "Our system is currently under maintenance. We will be back online shortly.",
+    "contactSupport": "Contact Support"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
