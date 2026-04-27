@@ -16,6 +16,70 @@
     "loginSuccess": "ចូលប្រើប្រាស់បានជោគជ័យ!",
     "loginError": "មានបញ្ហាក្នុងការចូលប្រើប្រាស់។"
   },
+  "sidebar": {
+    "title": "រ៉ូទីនកាហ្វេ",
+    "station": "សាខា ០១",
+    "help": "ជំនួយ",
+    "logout": "ចាកចេញ",
+    "sections": {
+      "home": "ទំព័រដើម",
+      "pos": "ផលិតផលលក់ POS",
+      "inventory": "ឃ្លាំង",
+      "reports": "របាយការណ៍",
+      "settings": "ការកំណត់"
+    },
+    "items": {
+      "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+      "pos": "POS",
+      "orders": "ការបញ្ជាទិញ",
+      "products": "ផលិតផល",
+      "categories": "ប្រភេទ",
+      "saleReports": "របាយការណ៍លក់",
+      "analytics": "វិភាគ",
+      "staff": "បុគ្គលិក"
+    }
+  },
+  "navbar": {
+    "menuManagement": "ការគ្រប់គ្រងម៉ឺនុយ"
+  },
+  "home": {
+    "title": "Routine's POS",
+    "searchPlaceholder": "ស្វែងរកមុខទំនិញ...",
+    "categories": {
+      "all": "ទាំងអស់",
+      "coffee": "កាហ្វេ",
+      "tea": "តែ",
+      "bakery": "នំ",
+      "breakfast": "អាហារព្រឹក",
+      "pastry": "នំបុ័ង"
+    },
+    "products": {
+      "icedLatte": "Iced Latte",
+      "croissant": "Butter Croissant",
+      "avocadoToast": "Avocado Toast",
+      "matchaLatte": "Matcha Latte"
+    }
+  },
+  "cart": {
+    "order": "ការបញ្ជាទិញ",
+    "dineIn": "ហូបក្នុងហាង",
+    "takeaway": "ខ្ចប់",
+    "subtotal": "សរុបរង",
+    "addDiscount": "បញ្ចុះតម្លៃ",
+    "totalAmount": "សរុប",
+    "khr": "រៀល",
+    "payWithCash": "ទូទាត់សាច់ប្រាក់",
+    "payWithQR": "ទូទាត់តាម KHQR",
+    "options": {
+      "oatMilk": "ទឹកដោះគោ Oat, ស្ករ 50%",
+      "warmed": "កំដៅ"
+    }
+  },
+  "maintenance": {
+    "title": "កំពុងជួសជុល",
+    "message": "ប្រព័ន្ធរបស់យើងកំពុងស្ថិតក្នុងការថែទាំ។ យើងនឹងត្រលប់មកដំណើរការធម្មតាក្នុងពេលឆាប់ៗនេះ។",
+    "contactSupport": "ទាក់ទងជំនួយការ"
+  },
   "common": {
     "save": "រក្សាទុក",
     "cancel": "បោះបង់",
