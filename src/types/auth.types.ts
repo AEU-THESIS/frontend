@@ -1,9 +1,9 @@
 export interface User {
-  id: number
+  user_id: number
   name: string
   email: string
-  shopId: number
-  roles: string[]
+  shop_id: number
+  role: string | null
 }
 
 export interface AuthResponse {
