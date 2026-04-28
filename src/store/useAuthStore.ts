@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { login } from '@/api/auth'
+import { login, logout as logoutApi } from '@/api/auth'
 import type { LoginInput } from '@/validations/authValidation'
 import type { User } from '@/types/auth.types'
 
@@ -27,13 +27,27 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', response.token)
   }
 
-  const logout = (isTokenExpired: boolean = false) => {
+  const logout = async (isTokenExpired: boolean = false) => {
+    // Best-effort: notify backend to blacklist the token
+    // Still clear client state even if the API call fails
+    try {
+      if (token.value) {
+        await logoutApi()
+      }
+    } catch {
+      // Silently ignore — client-side cleanup still happens below
+    }
+
     token.value = null
     user.value = null
     localStorage.removeItem('token')
     if (isTokenExpired) {
       isSessionTerminated.value = true
     }
+  }
+
+  const clearSessionTerminated = () => {
+    isSessionTerminated.value = false
   }
 
   return {
@@ -44,5 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
     getAccessToken,
     loginAction,
     logout,
+    clearSessionTerminated,
   }
 })

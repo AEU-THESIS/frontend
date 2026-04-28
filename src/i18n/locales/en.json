@@ -22,7 +22,8 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "authorizedOnly": "Authorized personnel only",
-    "copyright": "(c) 2024 Routine Hospitality Group"
+    "copyright": "(c) 2024 Routine Hospitality Group",
+    "logoutSuccess": "You have been logged out."
   },
   "sidebar": {
     "title": "Routine Cafe",

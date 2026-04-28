@@ -6,3 +6,7 @@ export const login = async (payload: LoginInput): Promise<AuthResponse> => {
   const res = await http.post<AuthResponse>('/api/auth/login', payload)
   return res.data
 }
+
+export const logout = async (): Promise<void> => {
+  await http.post('/api/auth/logout')
+}
