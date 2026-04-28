@@ -1,20 +1,28 @@
 {
   "app": {
-    "title": "រ៉ូទីនកាហ្វេ POS"
+    "title": "RoutinCafe POS"
   },
   "auth": {
-    "login": "ចូល",
+    "login": "ចូលប្រើ",
     "logout": "ចេញ",
-    "email": "អ៊ីមែល",
+    "email": "អាសយដ្ឋានអ៊ីមែល",
     "password": "ពាក្យសម្ងាត់",
-    "title": "រ៉ូទីនកាហ្វេ",
-    "subtitle": "បញ្ចូលព័ត៌មានលម្អិតរបស់អ្នកដើម្បីចូលប្រព័ន្ធ។",
-    "adminEmailPlaceholder": "admin@routincafe.com",
+    "title": "Routine Cafe & Bakery",
+    "subtitle": "ចូលទៅកាន់គណនីរបស់អ្នក",
+    "emailPlaceholder": "staff{'@'}routine.com",
+    "passwordPlaceholder": "********",
     "forgotPassword": "ភ្លេចពាក្យសម្ងាត់?",
     "authenticating": "កំពុងផ្ទៀងផ្ទាត់...",
-    "signIn": "ចូលប្រើប្រាស់",
-    "loginSuccess": "ចូលប្រើប្រាស់បានជោគជ័យ!",
-    "loginError": "មានបញ្ហាក្នុងការចូលប្រើប្រាស់។"
+    "signIn": "ចូលគណនី",
+    "loginSuccess": "ចូលប្រើបានជោគជ័យ!",
+    "loginError": "មានបញ្ហាកើតឡើងក្នុងពេលចូលប្រើ។",
+    "sessionExpired": "សម័យចូលប្រើរបស់អ្នកបានផុតកំណត់។ សូមចូលប្រើម្តងទៀត។",
+    "sessionActive": "សម័យចូលប្រើនៅតែដំណើរការ។",
+    "checkSession": "ពិនិត្យសម័យចូលប្រើ",
+    "showPassword": "បង្ហាញពាក្យសម្ងាត់",
+    "hidePassword": "លាក់ពាក្យសម្ងាត់",
+    "authorizedOnly": "សម្រាប់បុគ្គលិកដែលមានសិទ្ធិប៉ុណ្ណោះ",
+    "copyright": "(c) 2024 Routine Hospitality Group"
   },
   "sidebar": {
     "title": "រ៉ូទីនកាហ្វេ",
@@ -88,6 +96,6 @@
     "create": "បង្កើត",
     "search": "ស្វែងរក",
     "loading": "កំពុងផ្ទុក...",
-    "noData": "គ្មានទិន្នន័យ"
+    "noData": "មិនមានទិន្នន័យ"
   }
 }
