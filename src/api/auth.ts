@@ -3,6 +3,10 @@ import type { LoginInput } from '@/validations/authValidation'
 import type { AuthResponse } from '@/types/auth.types'
 
 export const login = async (payload: LoginInput): Promise<AuthResponse> => {
-  const res = await http.post<AuthResponse>('/api/auth/login', payload)
+  const res = await http.post<AuthResponse>('/api/auth/sessions', payload)
   return res.data
+}
+
+export const logout = async (): Promise<void> => {
+  await http.delete('/api/auth/sessions')
 }

@@ -22,7 +22,8 @@
     "showPassword": "បង្ហាញពាក្យសម្ងាត់",
     "hidePassword": "លាក់ពាក្យសម្ងាត់",
     "authorizedOnly": "សម្រាប់បុគ្គលិកដែលមានសិទ្ធិប៉ុណ្ណោះ",
-    "copyright": "(c) 2024 Routine Hospitality Group"
+    "copyright": "(c) 2024 Routine Hospitality Group",
+    "logoutSuccess": "អ្នកបានចាកចេញដោយជោគជ័យ។"
   },
   "sidebar": {
     "title": "រ៉ូទីនកាហ្វេ",

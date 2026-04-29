@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
 import { APP_ROUTES } from '@/constants/appRoutes'
+import { useAuthStore } from '@/store/useAuthStore'
 import logoImg from '@/assets/shop-logo.svg'
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
+const authStore = useAuthStore()
+
+const handleLogout = async () => {
+  await authStore.logout()
+  toast.success(t('auth.logoutSuccess'))
+  router.push({ name: APP_ROUTES.LOGIN.name })
+}
 
 // Default to expanded on desktop, collapsed on mobile
 const isCollapsed = ref(false)
@@ -178,6 +188,7 @@ const navSections = [
             ? 'flex-col items-center justify-center py-3 rounded-xl'
             : 'items-center gap-3 py-3 px-6 rounded-r-xl'
         "
+        @click.prevent="handleLogout"
       >
         <span
           class="material-symbols-outlined transition-transform group-hover:scale-110"
