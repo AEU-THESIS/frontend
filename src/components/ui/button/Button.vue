@@ -8,7 +8,7 @@ interface Props extends PrimitiveProps {
   variant?: ButtonVariants['variant']
   size?: ButtonVariants['size']
   class?: HTMLAttributes['class']
-  icon?: Component //
+  icon?: Component 
   iconPlacement?: 'left' | 'right'
 }
 

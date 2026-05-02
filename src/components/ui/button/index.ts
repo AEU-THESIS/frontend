@@ -8,20 +8,17 @@ export const buttonVariants = cva(
         primary: 'bg-[#2D241E] text-white hover:bg-[#5B5048] disabled:bg-[#9D9691]',
         secondary:
           'bg-[#FFDDC7] text-[#2D241E] hover:bg-[#FFDFC9] disabled:bg-[#F9EFE9] disabled:text-[#B6A295]',
-        // Tertiary (Ghost) from image_5847e2.png
         tertiary: [
           'bg-transparent text-[#2D241E] shadow-none', // Default
           'hover:underline hover:bg-transparent', // Hover
           'disabled:text-[#B6A295] disabled:no-underline', // Disabled
         ],
-        // Icon Button style from image_5847e2.png
         icon: 'bg-[#EDEDED] text-[#2D241E] hover:bg-[#E2E2E2] rounded-xl',
       },
       size: {
         default: 'h-11 px-6 py-2',
         sm: 'h-9 px-4 text-xs',
         lg: 'h-12 px-10 text-base',
-        // Specific square size for Icon buttons in image_5847e2.png
         icon: 'h-11 w-11 p-0',
       },
     },
