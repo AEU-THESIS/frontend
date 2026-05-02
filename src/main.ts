@@ -4,11 +4,14 @@ import router from './router'
 import pinia from './store'
 import i18n from './i18n'
 import './assets/css/style.css'
+import UiInput from './components/ui/input/Input.vue'
+import UiButton from './components/ui/button/Button.vue'
 
 const app = createApp(App)
 
 app.use(pinia)
 app.use(router)
 app.use(i18n)
-
+app.component('UiInput', UiInput)
+app.component('UiButton', UiButton)
 app.mount('#app')
