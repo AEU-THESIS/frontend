@@ -6,12 +6,14 @@ import { toast } from 'vue-sonner'
 import { useAuthStore } from '@/store/useAuthStore'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { ROLES, type RoleType } from '@/constants/roles'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import logoImg from '@/assets/shop-logo.svg'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const authStore = useAuthStore()
+const shopSettingsStore = useShopSettingsStore()
 
 const handleLogout = async () => {
   await authStore.logout()
@@ -83,6 +85,16 @@ const navSections = computed(() => {
         { nameKey: 'sidebar.items.staff', route: APP_ROUTES.STAFF, icon: 'groups' },
       ],
     },
+    {
+      titleKey: 'sidebar.sections.settings',
+      items: [
+        {
+          nameKey: 'sidebar.items.config',
+          route: APP_ROUTES.SETTINGS,
+          icon: 'settings',
+        },
+      ],
+    },
   ]
 
   // Filter sections based on role
@@ -112,7 +124,7 @@ const navSections = computed(() => {
         <h2
           class="font-bold text-stone-800 dark:text-stone-50 font-headline tracking-tight text-lg leading-tight"
         >
-          {{ t('sidebar.title') }}
+          {{ shopSettingsStore.shop_name }}
         </h2>
         <p class="text-[13px] text-stone-500 dark:text-stone-400 font-medium leading-tight mt-0.5">
           {{ t('sidebar.station') }}

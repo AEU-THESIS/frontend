@@ -43,9 +43,10 @@
       "orders": "ការបញ្ជាទិញ",
       "products": "ផលិតផល",
       "categories": "ប្រភេទ",
-      "saleReports": "ការលក់",
-      "analytics": "ការវិភាគ",
-      "staff": "បុគ្គលិក"
+      "saleReports": "របាយការណ៍លក់",
+      "analytics": "វិភាគ",
+      "staff": "បុគ្គលិក",
+      "config": "ការកំណត់"
     }
   },
   "navbar": {
@@ -88,6 +89,61 @@
     "title": "កំពុងថែទាំប្រព័ន្ធ",
     "message": "ប្រព័ន្ធរបស់យើងកំពុងស្ថិតក្នុងការថែទាំ។ យើងនឹងត្រឡប់មកវិញក្នុងពេលឆាប់ៗនេះ។",
     "contactSupport": "ទាក់ទងផ្នែកគាំទ្រ"
+  },
+  "settings": {
+    "title": "ការកំណត់ហាង",
+    "subtitle": "កំណត់ព័ត៌មានកាហ្វេ ធនាគារ KHQR និងការកំណត់លំនាំដើមសម្រាប់វិក្កយបត្រ។",
+    "actions": {
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "saving": "កំពុងរក្សាទុក...",
+      "previewReceipt": "មើលគំរូវិក្កយបត្រ"
+    },
+    "messages": {
+      "loading": "កំពុងផ្ទុកការកំណត់ហាង...",
+      "loadError": "មិនអាចផ្ទុកការកំណត់ហាងបានទេ។",
+      "saveError": "មិនអាចរក្សាទុកការកំណត់ហាងបានទេ។",
+      "saveSuccess": "បានរក្សាទុកការកំណត់ហាងដោយជោគជ័យ។",
+      "invalidExchangeRate": "អត្រាប្តូរប្រាក់ត្រូវតែជាលេខត្រឹមត្រូវ និងធំជាង 0។"
+    },
+    "branch": {
+      "title": "ព័ត៌មានសាខា",
+      "description": "ធ្វើបច្ចុប្បន្នភាពព័ត៌មានកាហ្វេរបស់អ្នក ដែលបង្ហាញនៅក្នុងប្រព័ន្ធ POS។"
+    },
+    "financials": {
+      "title": "ហិរញ្ញវត្ថុ និងការទូទាត់",
+      "description": "គ្រប់គ្រងរូបិយប័ណ្ណ អត្រាប្តូរប្រាក់ និងការទូទាត់ឌីជីថល។",
+      "bakongHelper": "ប្រើសម្រាប់បង្កើត QR ដោយស្វ័យប្រវត្តិ"
+    },
+    "receipt": {
+      "title": "ការកំណត់វិក្កយបត្រ",
+      "description": "កែសម្រួលអ្វីដែលអតិថិជននឹងឃើញលើវិក្កយបត្រដែលបានបោះពុម្ព។"
+    },
+    "fields": {
+      "shopName": "ឈ្មោះហាង",
+      "branchSlug": "Slug សាខា",
+      "ownerName": "ឈ្មោះម្ចាស់",
+      "phoneNumber": "លេខទូរស័ព្ទ",
+      "fullAddress": "អាសយដ្ឋានពេញ",
+      "bakongAccountId": "លេខសម្គាល់គណនី Bakong (KHQR)",
+      "defaultCurrency": "រូបិយប័ណ្ណលំនាំដើម",
+      "exchangeRate": "អត្រាប្តូរប្រាក់",
+      "receiptFooterText": "អត្ថបទខាងក្រោមវិក្កយបត្រ"
+    },
+    "currency": {
+      "usd": "USD ($)",
+      "khr": "KHR (៛)",
+      "khrCode": "KHR"
+    },
+    "receiptPreview": {
+      "fallbackShopName": "ROUTINE CAFE & BAKERY",
+      "total": "សរុប",
+      "inRiel": "ជារៀល ({rate})",
+      "mockupLabel": "គំរូមើលវិក្កយបត្រ",
+      "items": {
+        "icedLatte": "កាហ្វេឡាតេទឹកកក (L)",
+        "croissant": "នំប៊ឺ Croissant"
+      }
+    }
   },
   "common": {
     "save": "រក្សាទុក",

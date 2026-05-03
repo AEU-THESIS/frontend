@@ -45,7 +45,8 @@
       "categories": "Categories",
       "saleReports": "Sale",
       "analytics": "Analytics",
-      "staff": "Staff"
+      "staff": "Staff",
+      "config": "Config"
     }
   },
   "navbar": {
@@ -88,6 +89,61 @@
     "title": "Under Maintenance",
     "message": "Our system is currently under maintenance. We will be back online shortly.",
     "contactSupport": "Contact Support"
+  },
+  "settings": {
+    "title": "Shop Settings",
+    "subtitle": "Configure cafe details, KHQR banking, and receipt defaults.",
+    "actions": {
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "previewReceipt": "Preview Receipt"
+    },
+    "messages": {
+      "loading": "Loading shop settings...",
+      "loadError": "Unable to load shop settings.",
+      "saveError": "Unable to save shop settings.",
+      "saveSuccess": "Shop settings saved successfully.",
+      "invalidExchangeRate": "Exchange rate must be a valid number greater than 0."
+    },
+    "branch": {
+      "title": "Branch Information",
+      "description": "Update your cafe profile displayed across the POS."
+    },
+    "financials": {
+      "title": "Financials & Payments",
+      "description": "Manage currency, exchange rates, and digital payments.",
+      "bakongHelper": "Used for automatic QR generation"
+    },
+    "receipt": {
+      "title": "Receipt Configuration",
+      "description": "Customize what customers see on their printed receipts."
+    },
+    "fields": {
+      "shopName": "Shop Name",
+      "branchSlug": "Branch Slug",
+      "ownerName": "Owner Name",
+      "phoneNumber": "Phone Number",
+      "fullAddress": "Full Address",
+      "bakongAccountId": "Bakong Account ID (KHQR)",
+      "defaultCurrency": "Default Currency",
+      "exchangeRate": "Exchange Rate",
+      "receiptFooterText": "Receipt Footer Text"
+    },
+    "currency": {
+      "usd": "USD ($)",
+      "khr": "KHR (៛)",
+      "khrCode": "KHR"
+    },
+    "receiptPreview": {
+      "fallbackShopName": "ROUTINE CAFE & BAKERY",
+      "total": "TOTAL",
+      "inRiel": "In Riel ({rate})",
+      "mockupLabel": "Receipt Preview Mockup",
+      "items": {
+        "icedLatte": "Iced Cafe Latte (L)",
+        "croissant": "Butter Croissant"
+      }
+    }
   },
   "common": {
     "save": "Save",
