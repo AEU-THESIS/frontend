@@ -13,9 +13,9 @@ export const logout = async (): Promise<void> => {
 }
 
 export const forgotPassword = async (payload: ForgotPasswordInput): Promise<void> => {
-  await http.post('/api/auth/forgot-password', { email: payload.email })
+  await http.post('/api/auth/password-resets', { email: payload.email })
 }
 
 export const resetPassword = async (token: string, payload: ResetPasswordInput): Promise<void> => {
-  await http.post('/api/auth/reset-password', { token, newPassword: payload.newPassword })
+  await http.put(`/api/auth/password-resets/${token}`, { newPassword: payload.newPassword })
 }

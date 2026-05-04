@@ -6,7 +6,7 @@ export const uploadApi = {
     formData.append('image', file)
 
     // We use multipart/form-data here
-    const response = await api.post('/api/upload', formData, {
+    const response = await api.post('/api/uploads', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -16,7 +16,7 @@ export const uploadApi = {
     return response.data.url
   },
   deleteImage: async (imageUrl: string): Promise<void> => {
-    await api.delete('/api/upload', {
+    await api.delete('/api/uploads', {
       data: { imageUrl },
     })
   },
