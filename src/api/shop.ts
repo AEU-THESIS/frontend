@@ -27,13 +27,13 @@ export interface UpdateShopSettingsPayload {
 }
 
 export const getShopSettings = async (): Promise<ShopSettings> => {
-  const res = await http.get<ShopSettings>('/api/shop/settings')
+  const res = await http.get<ShopSettings>('/api/shops/settings')
   return res.data
 }
 
 export const updateShopSettings = async (
   payload: UpdateShopSettingsPayload
 ): Promise<ShopSettings> => {
-  const res = await http.put<ShopSettings>('/api/shop/settings', payload)
+  const res = await http.put<ShopSettings>('/api/shops/settings', payload)
   return res.data
 }
