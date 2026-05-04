@@ -8,4 +8,6 @@ export const APP_ROUTES = {
   ANALYTICS: { path: '/analytics', name: 'Analytics' },
   STAFF: { path: '/staff', name: 'Staff' },
   LOGIN: { path: '/login', name: 'Login' },
+  FORGOT_PASSWORD: { path: '/forgot-password', name: 'ForgotPassword' },
+  RESET_PASSWORD: { path: '/reset-password', name: 'ResetPassword' },
 } as const

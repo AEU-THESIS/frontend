@@ -1,7 +1,33 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { APP_ROUTES } from '@/constants/appRoutes'
 
 const { t } = useI18n()
+const route = useRoute()
+
+const pageTitle = computed(() => {
+  switch (route.name) {
+    case APP_ROUTES.STAFF.name:
+      return t('staff.title')
+    case APP_ROUTES.CATEGORIES.name:
+    case APP_ROUTES.HOME.name:
+      return t('navbar.menuManagement')
+    case APP_ROUTES.ORDERS.name:
+      return t('sidebar.items.orders')
+    case APP_ROUTES.DASHBOARD.name:
+      return t('sidebar.items.dashboard')
+    case APP_ROUTES.INVENTORY.name:
+      return t('sidebar.items.inventory')
+    case APP_ROUTES.SALE_REPORTS.name:
+      return t('sidebar.items.saleReports')
+    case APP_ROUTES.ANALYTICS.name:
+      return t('sidebar.items.analytics')
+    default:
+      return t('app.title')
+  }
+})
 </script>
 
 <template>
@@ -9,7 +35,7 @@ const { t } = useI18n()
     class="h-16 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between px-8 shrink-0"
   >
     <h2 class="font-bold text-stone-800 dark:text-stone-50 text-lg">
-      {{ t('navbar.menuManagement') }}
+      {{ pageTitle }}
     </h2>
     <div class="flex items-center gap-3">
       <button

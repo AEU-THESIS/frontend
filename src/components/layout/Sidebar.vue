@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
-import { APP_ROUTES } from '@/constants/appRoutes'
 import { useAuthStore } from '@/store/useAuthStore'
+import { APP_ROUTES } from '@/constants/appRoutes'
+import { ROLES, type RoleType } from '@/constants/roles'
 import logoImg from '@/assets/shop-logo.svg'
 
 const route = useRoute()
@@ -42,38 +43,51 @@ const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
 }
 
-const navSections = [
-  {
-    titleKey: 'sidebar.sections.home',
-    items: [{ nameKey: 'sidebar.items.dashboard', route: APP_ROUTES.DASHBOARD, icon: 'grid_view' }],
-  },
-  {
-    titleKey: 'sidebar.sections.pos',
-    items: [
-      { nameKey: 'sidebar.items.pos', route: APP_ROUTES.HOME, icon: 'point_of_sale' },
-      { nameKey: 'sidebar.items.orders', route: APP_ROUTES.ORDERS, icon: 'receipt_long' },
-    ],
-  },
-  {
-    titleKey: 'sidebar.sections.inventory',
-    items: [
-      { nameKey: 'sidebar.items.products', route: APP_ROUTES.INVENTORY, icon: 'inventory_2' },
-      { nameKey: 'sidebar.items.categories', route: APP_ROUTES.CATEGORIES, icon: 'category' },
-    ],
-  },
-  {
-    titleKey: 'sidebar.sections.reports',
-    items: [
-      {
-        nameKey: 'sidebar.items.saleReports',
-        route: APP_ROUTES.SALE_REPORTS,
-        icon: 'receipt_long',
-      },
-      { nameKey: 'sidebar.items.analytics', route: APP_ROUTES.ANALYTICS, icon: 'bar_chart' },
-      { nameKey: 'sidebar.items.staff', route: APP_ROUTES.STAFF, icon: 'groups' },
-    ],
-  },
-]
+const navSections = computed(() => {
+  const userRole = authStore.user?.role || ''
+
+  const sections = [
+    {
+      titleKey: 'sidebar.sections.home',
+      roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER],
+      items: [
+        { nameKey: 'sidebar.items.dashboard', route: APP_ROUTES.DASHBOARD, icon: 'grid_view' },
+      ],
+    },
+    {
+      titleKey: 'sidebar.sections.pos',
+      roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER],
+      items: [
+        { nameKey: 'sidebar.items.pos', route: APP_ROUTES.HOME, icon: 'point_of_sale' },
+        { nameKey: 'sidebar.items.orders', route: APP_ROUTES.ORDERS, icon: 'receipt_long' },
+      ],
+    },
+    {
+      titleKey: 'sidebar.sections.inventory',
+      roles: [ROLES.ADMIN, ROLES.MANAGER],
+      items: [
+        { nameKey: 'sidebar.items.products', route: APP_ROUTES.INVENTORY, icon: 'inventory_2' },
+        { nameKey: 'sidebar.items.categories', route: APP_ROUTES.CATEGORIES, icon: 'category' },
+      ],
+    },
+    {
+      titleKey: 'sidebar.sections.reports',
+      roles: [ROLES.ADMIN],
+      items: [
+        {
+          nameKey: 'sidebar.items.saleReports',
+          route: APP_ROUTES.SALE_REPORTS,
+          icon: 'receipt_long',
+        },
+        { nameKey: 'sidebar.items.analytics', route: APP_ROUTES.ANALYTICS, icon: 'bar_chart' },
+        { nameKey: 'sidebar.items.staff', route: APP_ROUTES.STAFF, icon: 'groups' },
+      ],
+    },
+  ]
+
+  // Filter sections based on role
+  return sections.filter(section => (section.roles as RoleType[]).includes(userRole as RoleType))
+})
 </script>
 
 <template>
