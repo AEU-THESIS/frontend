@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { ZodError } from 'zod'
+import { toast } from 'vue-sonner'
+import { Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-vue-next'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { useAuthStore } from '@/store/useAuthStore'
 import { loginSchema } from '@/validations/authValidation'
 import type { LoginInput } from '@/validations/authValidation'
-import { ZodError } from 'zod'
-import { toast } from 'vue-sonner'
-
-// shadcn-vue elements
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { useI18n } from 'vue-i18n'
+import { Card, CardContent } from '@/components/ui/card'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const payload = reactive<LoginInput>({
   email: '',
@@ -26,12 +26,32 @@ const payload = reactive<LoginInput>({
 
 const errors = ref<Record<string, string>>({})
 const isLoading = ref(false)
+const isPasswordVisible = ref(false)
+
+const getPostLoginRoute = () => {
+  const redirect = route.query.redirect
+
+  if (
+    typeof redirect === 'string' &&
+    redirect.startsWith('/') &&
+    redirect !== APP_ROUTES.LOGIN.path
+  ) {
+    return redirect
+  }
+
+  return APP_ROUTES.HOME.path
+}
+
+onMounted(() => {
+  if (authStore.isSessionTerminated) {
+    toast.warning(t('auth.sessionExpired'))
+    authStore.clearSessionTerminated()
+  }
+})
 
 const handleLogin = async () => {
-  // Clear previous state
   errors.value = {}
 
-  // Zod Frontend Validation
   try {
     loginSchema.parse(payload)
   } catch (err) {
@@ -39,20 +59,18 @@ const handleLogin = async () => {
       err.issues.forEach(e => {
         if (e.path[0]) errors.value[e.path[0].toString()] = e.message
       })
-      return // Early return stringently protecting backend
+      return
     }
   }
 
-  // API Call Execution
   try {
     isLoading.value = true
     await authStore.loginAction(payload)
 
     toast.success(t('auth.loginSuccess'))
-    router.push({ name: APP_ROUTES.HOME.name })
+    router.push(getPostLoginRoute())
   } catch (err) {
     const error = err as Error & { response?: { data?: { message?: string } } }
-    // Graceful error mapping automatically pushed from interceptors
     const message = error.response?.data?.message || error.message || t('auth.loginError')
     toast.error(message)
     errors.value.root = message
@@ -63,95 +81,143 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center p-4">
-    <Card class="w-full max-w-md shadow-lg rounded-2xl">
-      <CardHeader class="space-y-1 text-center">
-        <CardTitle class="text-3xl font-bold tracking-tight">{{ t('auth.title') }}</CardTitle>
-        <CardDescription class="text-neutral-500">
-          {{ t('auth.subtitle') }}
-        </CardDescription>
-      </CardHeader>
+  <main
+    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F8FAFC] px-6 py-10 text-foreground"
+  >
+    <!-- Premium Background Orbs -->
+    <div class="pointer-events-none fixed inset-0 overflow-hidden">
+      <div
+        class="absolute -left-[10%] -top-[10%] size-[500px] rounded-full bg-primary/5 blur-[120px] animate-pulse"
+      />
+      <div
+        class="absolute -bottom-[10%] -right-[10%] size-[500px] rounded-full bg-amber-500/5 blur-[120px] animate-pulse"
+        style="animation-delay: 2s"
+      />
+    </div>
 
-      <CardContent>
-        <form class="space-y-4" @submit.prevent="handleLogin">
-          <!-- Email Field -->
+    <Card
+      class="relative z-10 w-full max-w-[440px] border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[32px] bg-white/80 backdrop-blur-xl p-2"
+    >
+      <CardContent class="p-10 md:p-12">
+        <div class="flex flex-col items-center text-center">
+          <div
+            class="mb-8 flex size-20 items-center justify-center rounded-[28px] bg-primary shadow-2xl shadow-primary/30 group hover:rotate-6 transition-transform duration-500"
+          >
+            <span class="material-symbols-outlined text-[40px] text-white" aria-hidden="true">
+              coffee
+            </span>
+          </div>
+          <h1 class="text-3xl font-black tracking-tight text-slate-900 mb-2">
+            {{ t('auth.title') }}
+          </h1>
+          <p class="text-[15px] font-semibold text-slate-400">
+            {{ t('auth.subtitle') }}
+          </p>
+        </div>
+
+        <form class="mt-12 space-y-6" @submit.prevent="handleLogin">
           <div class="space-y-2">
-            <Label for="email">{{ t('auth.email') }}</Label>
-            <Input
-              id="email"
-              v-model="payload.email"
-              type="email"
-              :placeholder="t('auth.adminEmailPlaceholder')"
-              :class="{
-                'border-red-500 focus-visible:ring-red-500': errors.email,
-              }"
-              :disabled="isLoading"
-            />
-            <p v-if="errors.email" class="text-sm text-red-500 font-medium">
+            <Label
+              class="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1"
+              for="email"
+            >
+              {{ t('auth.email') }}
+            </Label>
+            <div class="group relative">
+              <div
+                class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors"
+              >
+                <Mail class="size-5" aria-hidden="true" />
+              </div>
+              <Input
+                id="email"
+                v-model="payload.email"
+                class="h-14 rounded-2xl border-none bg-slate-100/50 pl-14 pr-6 text-[15px] font-bold shadow-none focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all"
+                type="email"
+                :class="{ 'ring-2 ring-destructive/20 bg-destructive/5': errors.email }"
+                :disabled="isLoading"
+                :placeholder="t('auth.emailPlaceholder')"
+              />
+            </div>
+            <p v-if="errors.email" class="text-xs font-bold text-destructive ml-1">
               {{ errors.email }}
             </p>
           </div>
 
-          <!-- Password Field -->
           <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <Label for="password">{{ t('auth.password') }}</Label>
-              <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+            <div class="flex items-center justify-between ml-1">
+              <Label
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                for="password"
+              >
+                {{ t('auth.password') }}
+              </Label>
+              <router-link
+                :to="{ name: APP_ROUTES.FORGOT_PASSWORD.name }"
+                class="text-xs font-bold text-primary hover:underline"
+              >
                 {{ t('auth.forgotPassword') }}
-              </a>
+              </router-link>
             </div>
-            <Input
-              id="password"
-              v-model="payload.password"
-              type="password"
-              :class="{
-                'border-red-500 focus-visible:ring-red-500': errors.password,
-              }"
-              :disabled="isLoading"
-            />
-            <p v-if="errors.password" class="text-sm text-red-500 font-medium">
+            <div class="group relative">
+              <div
+                class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors"
+              >
+                <LockKeyhole class="size-5" aria-hidden="true" />
+              </div>
+              <Input
+                id="password"
+                v-model="payload.password"
+                class="h-14 rounded-2xl border-none bg-slate-100/50 pl-14 pr-14 text-[15px] font-bold shadow-none focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all"
+                :type="isPasswordVisible ? 'text' : 'password'"
+                :class="{ 'ring-2 ring-destructive/20 bg-destructive/5': errors.password }"
+                :disabled="isLoading"
+                :placeholder="t('auth.passwordPlaceholder')"
+              />
+              <Button
+                class="absolute right-4 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center text-slate-300 hover:text-slate-600 transition-colors"
+                type="button"
+                variant="ghost"
+                size="icon"
+                :aria-label="isPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')"
+                :disabled="isLoading"
+                @click="isPasswordVisible = !isPasswordVisible"
+              >
+                <EyeOff v-if="isPasswordVisible" class="size-5" aria-hidden="true" />
+                <Eye v-else class="size-5" aria-hidden="true" />
+              </Button>
+            </div>
+            <p v-if="errors.password" class="text-xs font-bold text-destructive ml-1">
               {{ errors.password }}
             </p>
           </div>
 
-          <!-- Root Error (Incorrect Password) -->
-          <div v-if="errors.root" class="p-3 rounded bg-red-50 border border-red-200">
-            <p class="text-sm text-red-600 text-center font-medium">
+          <div
+            v-if="errors.root"
+            class="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 animate-in fade-in slide-in-from-top-1"
+          >
+            <p class="text-center text-xs font-bold text-destructive">
               {{ errors.root }}
             </p>
           </div>
 
-          <!-- Submit Button -->
           <Button
+            class="mt-4 h-14 w-full rounded-2xl bg-slate-900 font-bold text-white shadow-xl shadow-slate-900/10 hover:bg-slate-800 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
             type="submit"
-            class="w-full py-6 mt-4 text-base font-semibold"
             :disabled="isLoading"
           >
-            <svg
-              v-if="isLoading"
-              class="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
+            <LoaderCircle v-if="isLoading" class="size-5 animate-spin mr-3" aria-hidden="true" />
             {{ isLoading ? t('auth.authenticating') : t('auth.signIn') }}
           </Button>
         </form>
+
+        <footer class="mt-12 text-center">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 opacity-60">
+            {{ t('auth.authorizedOnly') }}
+          </p>
+          <p class="text-xs font-semibold text-slate-300">{{ t('auth.copyright') }}</p>
+        </footer>
       </CardContent>
     </Card>
-  </div>
+  </main>
 </template>

@@ -5,16 +5,90 @@
   "auth": {
     "login": "Login",
     "logout": "Logout",
-    "email": "Email",
+    "email": "Email Address",
     "password": "Password",
-    "title": "RoutinCafe",
-    "subtitle": "Enter your credentials to access the point of sale.",
-    "adminEmailPlaceholder": "admin@routincafe.com",
+    "title": "Routine Cafe & Bakery",
+    "subtitle": "Sign in to your account",
+    "emailPlaceholder": "staff{'@'}routine.com",
+    "passwordPlaceholder": "********",
     "forgotPassword": "Forgot password?",
     "authenticating": "Authenticating...",
     "signIn": "Sign In",
     "loginSuccess": "Login Successful!",
-    "loginError": "An error occurred during login."
+    "loginError": "An error occurred during login.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "sessionActive": "Session is still active.",
+    "checkSession": "Check session",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "authorizedOnly": "Authorized personnel only",
+    "copyright": "(c) 2024 Routine Hospitality Group",
+    "logoutSuccess": "You have been logged out."
+  },
+  "sidebar": {
+    "title": "Routine Cafe",
+    "station": "Station 01",
+    "help": "Help",
+    "logout": "Logout",
+    "sections": {
+      "home": "Home",
+      "pos": "POS Sale Products",
+      "inventory": "Inventory",
+      "reports": "Reports",
+      "settings": "Settings"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "pos": "POS",
+      "orders": "Orders",
+      "products": "Products",
+      "categories": "Categories",
+      "saleReports": "Sale",
+      "analytics": "Analytics",
+      "staff": "Staff"
+    }
+  },
+  "navbar": {
+    "menuManagement": "Menu Management"
+  },
+  "home": {
+    "title": "Routine's POS",
+    "searchPlaceholder": "Search menu items...",
+    "categories": {
+      "all": "All",
+      "coffee": "Coffee",
+      "tea": "Tea",
+      "bakery": "Bakery",
+      "breakfast": "Breakfast",
+      "pastry": "Pastry"
+    },
+    "products": {
+      "icedLatte": "Iced Latte",
+      "croissant": "Butter Croissant",
+      "avocadoToast": "Avocado Toast",
+      "matchaLatte": "Matcha Latte"
+    }
+  },
+  "cart": {
+    "order": "Order",
+    "dineIn": "Dine-in",
+    "takeaway": "Takeaway",
+    "subtotal": "Subtotal",
+    "addDiscount": "Add Discount",
+    "totalAmount": "Total Amount",
+    "khr": "KHR",
+    "payWithCash": "Pay with Cash",
+    "payWithQR": "Pay with KHQR",
+    "options": {
+      "oatMilk": "Oat Milk, 50% Sugar",
+      "warmed": "Warmed"
+    }
+  },
+  "maintenance": {
+    "title": "Under Maintenance",
+    "message": "Our system is currently under maintenance. We will be back online shortly.",
+    "text": "We're currently polishing up the espresso machines. ArtisanPOS is undergoing scheduled maintenance and will be back online shortly. Expected uptime: 2:00 AM EST",
+    "contactSupport": "Contact Support"
   },
   "common": {
     "save": "Save",
@@ -38,14 +112,127 @@
     "logout": "Logout",
     "swithchUser": "Switch User"
   },
-  "maintenance": {
-    "title": "Under Maintenance",
-    "text": "We're currently polishing up the espresso machines. ArtisanPOS is undergoing scheduled maintenance and will be back online shortly. Expected uptime: 2:00 AM EST",
-    "contactSupport": "Contact Support"
-  },
   "notFound": {
     "empty": "Whoops! This cup is empty.",
     "text": "Looks like this order got lost in the rush. The page you're looking for isn't on our menu anymore.",
-    "backHome": "Back To Home"
+    "backHome": "Back To Home",
+    "noData": "No data available",
+    "na": "N/A"
+  },
+  "staff": {
+    "title": "Staff Management",
+    "subtitle": "Manage your team members, assign roles, and control access levels.",
+    "addStaff": "Add Staff",
+    "addStaffTitle": "Add New Staff Member",
+    "editStaffTitle": "Edit Staff Profile",
+    "updateDetails": "Update the details for this staff member.",
+    "totalLabel": "TOTAL",
+    "totalDescription": "Registered staff members",
+    "activeMembers": "Active Members",
+    "totalWorkforce": "Total Workforce",
+    "inactiveMembers": "Inactive",
+    "teamDirectory": "Team Directory",
+    "showingCount": "Showing {count} members",
+    "searchPlaceholder": "Search by name or email...",
+    "allRoles": "All Roles",
+    "loadingEmployees": "Loading Employees...",
+    "noStaffFound": "No staff members found.",
+    "pagination": "Showing {start} to {end} of {total} employees",
+    "employeeId": "Employee ID",
+    "joinedDate": "Joined Date",
+    "location": "Location",
+    "locationPlaceholder": "City, Country",
+    "phone": "Phone Number",
+    "phonePlaceholder": "+1 (555) 000-0000",
+    "accountActive": "Account Active",
+    "roleAssignment": "Role Assignment",
+    "discard": "Discard",
+    "updateProfile": "Update Profile",
+    "confirmRegistration": "Confirm Registration",
+    "terminate": "Terminate",
+    "editProfile": "Edit Profile",
+    "closeView": "Close View",
+    "createSuccess": "Staff member created! A setup email has been sent.",
+    "createSuccessNoEmail": "Staff member created successfully.",
+    "createError": "Failed to create staff member.",
+    "updateSuccess": "Staff member updated successfully.",
+    "updateError": "Failed to update staff member.",
+    "deleteSuccess": "Staff member deleted successfully.",
+    "deleteError": "Failed to delete staff member.",
+    "deleteFailed": "Failed to remove staff member.",
+    "deleteSelfError": "You cannot delete your own account.",
+    "deleteConfirm": "Are you sure you want to remove this staff member?",
+    "error": "An error occurred while processing your request.",
+    "table": {
+      "staffMember": "Staff Member",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "contact": "Contact",
+      "status": "Status",
+      "actions": "Actions",
+      "joinedAt": "Joined",
+      "active": "Active",
+      "notActive": "Not Active"
+    },
+    "form": {
+      "name": "Full Name",
+      "namePlaceholder": "e.g. Jonathan Smith",
+      "email": "Email Address",
+      "emailPlaceholder": "jonathan{'@'}cinnamonpos.com",
+      "emailNotice": "A setup link valid for 8 hours will be sent to this email.",
+      "password": "Password",
+      "passwordPlaceholder": "********",
+      "phoneOptional": "Phone Number (Optional)",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "addressOptional": "Residential Address (Optional)",
+      "addressPlaceholder": "123 Bakery St, NY",
+      "role": "Role",
+      "selectRole": "Select Role",
+      "active": "Active",
+      "profileImageOptional": "Profile Image (Optional)",
+      "upload": "Upload",
+      "uploadRecommendation": "Recommended size: 400x400px JPG, PNG or WEBP formats are supported. Max file size 2MB.",
+      "emailNotice": "A setup email will be sent to this address with a link to set their password. The link expires in 8 hours.",
+      "submit": "Add Member",
+      "cancel": "Cancel",
+      "subtitle": "Create a new profile and assign permissions."
+    },
+    "detail": {
+      "generalInfo": "General Information",
+      "information": "Information",
+      "contact": "Contact",
+      "security": "Security",
+      "system": "System"
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot Password?",
+    "subtitle": "Enter your email and we'll send you a link to reset your password.",
+    "submit": "Send Reset Link",
+    "successMessage": "Password reset link has been sent to your email.",
+    "errorMessage": "An error occurred. Please try again.",
+    "sentConfirmation": "We've sent a password reset link to your email. Please check your inbox and follow the instructions.",
+    "backToLogin": "Back to Login"
+  },
+  "resetPassword": {
+    "title": "Set Your Password",
+    "subtitle": "Choose a secure password for your account.",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Min. 6 characters",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "submit": "Set Password",
+    "successMessage": "Password has been set successfully! You can now log in.",
+    "errorMessage": "Failed to reset password. The link may have expired.",
+    "invalidToken": "Invalid or expired reset link.",
+    "successConfirmation": "Your password has been successfully updated. You can now use your new password to sign in.",
+    "backToLogin": "Return to Login"
+  },
+  "imageUpload": {
+    "label": "Upload Image",
+    "recommendation": "JPG, PNG or WEBP. Max 2MB.",
+    "errorTooLarge": "File size must be less than {max}MB",
+    "upload": "Upload"
   }
 }
