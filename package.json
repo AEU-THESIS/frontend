@@ -10,6 +10,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.2.0",
     "@vueuse/core": "^14.2.1",
     "axios": "^1.14.0",
     "class-variance-authority": "^0.7.1",

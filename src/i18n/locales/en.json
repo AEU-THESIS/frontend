@@ -87,6 +87,7 @@
   "maintenance": {
     "title": "Under Maintenance",
     "message": "Our system is currently under maintenance. We will be back online shortly.",
+    "text": "We're currently polishing up the espresso machines. ArtisanPOS is undergoing scheduled maintenance and will be back online shortly. Expected uptime: 2:00 AM EST",
     "contactSupport": "Contact Support"
   },
   "common": {
@@ -97,6 +98,24 @@
     "create": "Create",
     "search": "Search",
     "loading": "Loading...",
+    "noData": "No data available"
+  },
+  "offline": {
+    "noConnection": "No Connection",
+    "wifi": "Checking your Wi-Fi",
+    "text": "It looks like you've lost your connection. Please check your internet settings or try refreshing the page once you're back online.",
+    "tryAgain": "Try Again"
+  },
+  "accessDenied": {
+    "title": "Access Denied",
+    "text": "You don't have the necessary permissions to view this area. Please log in with authorized credentials.",
+    "logout": "Logout",
+    "swithchUser": "Switch User"
+  },
+  "notFound": {
+    "empty": "Whoops! This cup is empty.",
+    "text": "Looks like this order got lost in the rush. The page you're looking for isn't on our menu anymore.",
+    "backHome": "Back To Home",
     "noData": "No data available",
     "na": "N/A"
   },

@@ -63,6 +63,11 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: false },
   },
   {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('@/views/NotFound.vue'),
+  },
+  {
     path: APP_ROUTES.FORGOT_PASSWORD.path,
     name: APP_ROUTES.FORGOT_PASSWORD.name,
     component: () => import('@/views/ForgotPasswordView.vue'),
