@@ -3,7 +3,6 @@ import { X, Mail, Info, ShieldCheck, Database } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import type { StaffMember } from '@/types/user.types'
 import { getImageUrl } from '@/utils/image'
-import { Button } from '@/components/ui/button'
 
 const { t } = useI18n()
 

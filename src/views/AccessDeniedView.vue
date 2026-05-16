@@ -28,21 +28,21 @@ const handleLogOut = () => {
       </p>
 
       <div class="w-full flex flex-col gap-3">
-        <ui-button 
+        <Button 
           variant="primary" 
           class="w-full" 
           @click="handleSwitchUser"
         >
         {{ t('accessDenied.swithchUser') }}
-        </ui-button>
+        </Button>
 
-        <ui-button 
+        <Button 
           variant="tertiary" 
           class="w-full" 
           @click="handleLogOut"
         >
           {{ t('accessDenied.logout') }}
-        </ui-button>
+        </Button>
       </div>
     </div>
   </div>

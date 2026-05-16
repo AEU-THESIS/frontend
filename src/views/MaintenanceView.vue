@@ -27,9 +27,9 @@ const { t } = useI18n()
       </div>
 
       <div class="mt-10">
-        <ui-button variant="secondary" :icon="Headset">
+        <Button variant="secondary" :icon="Headset">
           {{ t('maintenance.contactSupport') }}
-        </ui-button>
+        </Button>
       </div>
     </div>
   </div>

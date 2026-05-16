@@ -9,8 +9,6 @@ import { APP_ROUTES } from '@/constants/appRoutes'
 import { forgotPassword } from '@/api/auth'
 import { forgotPasswordSchema } from '@/validations/resetPasswordValidation'
 import type { ApiError } from '@/types/api.types'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 

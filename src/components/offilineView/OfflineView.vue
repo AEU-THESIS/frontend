@@ -26,7 +26,7 @@ const reloadPage = () => {
       </p>
 
       <div class="flex flex-col w-full gap-3 max-w-xs">
-        <ui-button variant="primary" @click="reloadPage" :icon="RefreshCwIcon">{{ t('offlineview.tryAgain') }}</ui-button>
+        <Button variant="primary" @click="reloadPage" :icon="RefreshCwIcon">{{ t('offlineview.tryAgain') }}</Button>
       </div>
     </div>
   </div>

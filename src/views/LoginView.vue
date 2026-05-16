@@ -9,8 +9,6 @@ import { APP_ROUTES } from '@/constants/appRoutes'
 import { useAuthStore } from '@/store/useAuthStore'
 import { loginSchema } from '@/validations/authValidation'
 import type { LoginInput } from '@/validations/authValidation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 

@@ -2,8 +2,6 @@
 import { useI18n } from 'vue-i18n'
 import { X, ChevronDown, Mail, Phone, Home, LoaderCircle } from 'lucide-vue-next'
 import type { CreateStaffInput } from '@/types/staff.types'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import ImageUpload from '@/components/common/ImageUpload.vue'
 

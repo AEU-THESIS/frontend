@@ -3,7 +3,6 @@ import { ref, watch } from 'vue'
 import { Camera, X, LoaderCircle } from 'lucide-vue-next'
 import { getImageUrl } from '@/utils/image'
 import { useI18n } from 'vue-i18n'
-import { Button } from '@/components/ui/button'
 
 const { t } = useI18n()
 
