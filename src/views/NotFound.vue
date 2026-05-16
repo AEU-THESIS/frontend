@@ -37,14 +37,14 @@ const goHome = () => {
       </p>
 
       <div class="w-full max-w-xs">
-        <ui-button 
+        <Button 
           variant="primary" 
           size="lg" 
           class="w-full h-14 text-lg rounded-2xl"
           @click="goHome"
         >
           {{ t('notFound.backHome') }}
-        </ui-button>
+        </Button>
       </div>
     </div>
   </div>

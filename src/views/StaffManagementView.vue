@@ -14,7 +14,6 @@ import {
 import { useI18n } from 'vue-i18n'
 import { ROLES } from '@/constants/roles'
 import { useStaffManagement } from '@/composables/useStaffManagement'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -22,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import StaffDetailModal from '@/components/staff/StaffDetailModal.vue'
 import StaffFormModal from '@/components/staff/StaffFormModal.vue'

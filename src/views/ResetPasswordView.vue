@@ -9,8 +9,6 @@ import { APP_ROUTES } from '@/constants/appRoutes'
 import { resetPassword } from '@/api/auth'
 import { resetPasswordSchema } from '@/validations/resetPasswordValidation'
 import type { ResetPasswordInput } from '@/validations/resetPasswordValidation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 
