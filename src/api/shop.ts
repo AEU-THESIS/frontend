@@ -1,30 +1,6 @@
 import http from './api'
-
-export interface ShopSettings {
-  id: number
-  name: string
-  slug: string
-  ownerName: string | null
-  phone: string | null
-  address: string | null
-  bakongAccountId: string | null
-  currencySymbol: string
-  exchangeRate: string | number
-  receiptFooter: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface UpdateShopSettingsPayload {
-  name?: string
-  owner_name?: string | null
-  phone?: string | null
-  address?: string | null
-  bakong_account_id?: string | null
-  currency_symbol?: string
-  exchange_rate?: number
-  receipt_footer?: string | null
-}
+import type { ShopSettings, UpdateShopSettingsPayload } from '@/types/shop.types'
+import { shopSettingsSchema } from '@/validations/shopSettings'
 
 export const getShopSettings = async (): Promise<ShopSettings> => {
   const res = await http.get<ShopSettings>('/api/shops/settings')
@@ -34,6 +10,7 @@ export const getShopSettings = async (): Promise<ShopSettings> => {
 export const updateShopSettings = async (
   payload: UpdateShopSettingsPayload
 ): Promise<ShopSettings> => {
-  const res = await http.put<ShopSettings>('/api/shops/settings', payload)
+  const parsedPayload = shopSettingsSchema.parse(payload)
+  const res = await http.put<ShopSettings>('/api/shops/settings', parsedPayload)
   return res.data
 }

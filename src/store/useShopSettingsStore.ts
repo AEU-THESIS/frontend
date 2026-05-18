@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { ShopSettings } from '@/api/shop'
+import type { ShopSettings } from '@/types/shop.types'
 
 const DEFAULT_CURRENCY_SYMBOL = '$'
 const DEFAULT_EXCHANGE_RATE = 4100
@@ -12,6 +12,11 @@ const storedExchangeRate = Number(localStorage.getItem('exchange_rate') || DEFAU
 const normalizeCurrencySymbol = (symbol?: string | null) => {
   if (symbol === LEGACY_KHR_CODE) return KHR_SYMBOL
   return symbol || DEFAULT_CURRENCY_SYMBOL
+}
+
+const normalizeExchangeRate = (exchangeRate: ShopSettings['exchangeRate']) => {
+  const nextExchangeRate = Number(exchangeRate)
+  return Number.isFinite(nextExchangeRate) ? nextExchangeRate : DEFAULT_EXCHANGE_RATE
 }
 
 export const useShopSettingsStore = defineStore('shopSettings', () => {
@@ -29,13 +34,9 @@ export const useShopSettingsStore = defineStore('shopSettings', () => {
   const setShopSettings = (
     settings: Pick<ShopSettings, 'name' | 'currencySymbol' | 'exchangeRate'>
   ) => {
-    const nextExchangeRate = Number(settings.exchangeRate)
-
     shop_name.value = settings.name || DEFAULT_SHOP_NAME
     currency_symbol.value = normalizeCurrencySymbol(settings.currencySymbol)
-    exchange_rate.value = Number.isFinite(nextExchangeRate)
-      ? nextExchangeRate
-      : DEFAULT_EXCHANGE_RATE
+    exchange_rate.value = normalizeExchangeRate(settings.exchangeRate)
 
     localStorage.setItem('shop_name', shop_name.value)
     localStorage.setItem('currency_symbol', currency_symbol.value)

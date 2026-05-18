@@ -87,6 +87,7 @@ const navSections = computed(() => {
     },
     {
       titleKey: 'sidebar.sections.settings',
+      roles: [ROLES.ADMIN],
       items: [
         {
           nameKey: 'sidebar.items.config',
@@ -97,8 +98,11 @@ const navSections = computed(() => {
     },
   ]
 
-  // Filter sections based on role
-  return sections.filter(section => (section.roles as RoleType[]).includes(userRole as RoleType))
+  // Filter sections based on role. Sections without roles are visible to all authenticated users.
+  return sections.filter(section => {
+    const allowedRoles = section.roles as RoleType[] | undefined
+    return !allowedRoles || allowedRoles.includes(userRole as RoleType)
+  })
 })
 </script>
 
@@ -124,7 +128,7 @@ const navSections = computed(() => {
         <h2
           class="font-bold text-stone-800 dark:text-stone-50 font-headline tracking-tight text-lg leading-tight"
         >
-          {{ shopSettingsStore.shop_name }}
+          {{ shopSettingsStore.shop_name || 'Your Shop' }}
         </h2>
         <p class="text-[13px] text-stone-500 dark:text-stone-400 font-medium leading-tight mt-0.5">
           {{ t('sidebar.station') }}

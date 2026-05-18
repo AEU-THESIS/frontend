@@ -68,7 +68,7 @@ const total = computed(() => subtotal.value - discount.value)
         class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-4 rounded-xl flex items-center gap-4 group"
       >
         <div class="w-12 h-12 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-900 shrink-0">
-          <img class="w-full h-full object-cover" :data-alt="item.imageAlt" :src="item.imageUrl" />
+          <img class="w-full h-full object-cover" :alt="item.imageAlt" :src="item.imageUrl" />
         </div>
         <div class="flex-1">
           <h4 class="font-bold text-stone-800 dark:text-stone-50 text-sm">

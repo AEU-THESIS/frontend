@@ -2,8 +2,17 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
-import { getShopSettings, updateShopSettings, type ShopSettings } from '@/api/shop'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { getShopSettings, updateShopSettings } from '@/api/shop'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import type { ShopSettings } from '@/types/shop.types'
 
 const shopSettingsStore = useShopSettingsStore()
 const { t } = useI18n()
@@ -53,20 +62,22 @@ const receiptTotal = computed(() => {
   return `${form.currencySymbol || USD_SYMBOL}${receiptSubtotal.value.toFixed(2)}`
 })
 
+const getFormExchangeRate = () => Number(form.exchangeRate)
+
 const exchangeRateLabel = computed(() => {
-  const value = Number(form.exchangeRate)
+  const value = getFormExchangeRate()
   return Number.isFinite(value) && value > 0 ? value.toLocaleString('en-US') : '0'
 })
 
 const rielTotal = computed(() => {
-  const value = Number(form.exchangeRate)
+  const value = getFormExchangeRate()
   if (!Number.isFinite(value) || value <= 0) return '0'
 
   return Math.round(receiptSubtotal.value * value).toLocaleString('en-US')
 })
 
 const formatPreviewAmount = (amount: number) => {
-  const value = Number(form.exchangeRate)
+  const value = getFormExchangeRate()
 
   if (form.currencySymbol === KHR_SYMBOL) {
     const convertedAmount = Number.isFinite(value) && value > 0 ? Math.round(amount * value) : 0
@@ -113,13 +124,6 @@ const loadSettings = async () => {
 }
 
 const saveSettings = async () => {
-  const exchangeRate = Number(form.exchangeRate)
-
-  if (!Number.isFinite(exchangeRate) || exchangeRate <= 0) {
-    toast.error(t('settings.messages.invalidExchangeRate'))
-    return
-  }
-
   isSaving.value = true
 
   try {
@@ -130,7 +134,7 @@ const saveSettings = async () => {
       address: form.address.trim() || null,
       bakong_account_id: form.bakongAccountId.trim() || null,
       currency_symbol: form.currencySymbol.trim() || USD_SYMBOL,
-      exchange_rate: exchangeRate,
+      exchange_rate: getFormExchangeRate(),
       receipt_footer: form.receiptFooter.trim() || null,
     })
 
@@ -142,6 +146,14 @@ const saveSettings = async () => {
   } finally {
     isSaving.value = false
   }
+}
+
+const previewReceipt = () => {
+  toast.info(t('settings.actions.previewReceipt'))
+}
+
+const printReceipt = () => {
+  window.print()
 }
 
 onMounted(loadSettings)
@@ -286,28 +298,25 @@ onMounted(loadSettings)
                 class="flex flex-col gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
               >
                 {{ t('settings.fields.defaultCurrency') }}
-                <div class="relative">
-                  <select
-                    v-model="form.currencySymbol"
-                    class="h-12 w-full appearance-none rounded-lg border border-stone-200 bg-stone-100 px-4 pr-10 text-base font-bold text-stone-800 outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
+                <Select v-model="form.currencySymbol">
+                  <SelectTrigger
+                    class="h-12 rounded-lg border-stone-200 bg-stone-100 px-4 text-base font-bold text-stone-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
                   >
-                    <option v-if="hasCustomCurrency" :value="form.currencySymbol">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-if="hasCustomCurrency" :value="form.currencySymbol">
                       {{ form.currencySymbol }}
-                    </option>
-                    <option
+                    </SelectItem>
+                    <SelectItem
                       v-for="option in currencyOptions"
                       :key="option.value"
                       :value="option.value"
                     >
                       {{ option.label }}
-                    </option>
-                  </select>
-                  <span
-                    class="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[20px] text-stone-500"
-                  >
-                    expand_more
-                  </span>
-                </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </label>
 
               <label
@@ -318,7 +327,7 @@ onMounted(loadSettings)
                   <Input
                     v-model="form.exchangeRate"
                     type="number"
-                    min="0"
+                    min="0.01"
                     step="0.01"
                     class="h-12 rounded-lg border-stone-200 bg-stone-100 pr-14 text-right text-base font-bold text-stone-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
                   />
@@ -358,7 +367,7 @@ onMounted(loadSettings)
                 class="flex flex-col gap-3 text-sm font-bold text-stone-700 dark:text-stone-200"
               >
                 {{ t('settings.fields.receiptFooterText') }}
-                <textarea
+                <Textarea
                   v-model="form.receiptFooter"
                   class="min-h-32 resize-y rounded-lg border border-stone-200 bg-stone-100 px-4 py-3 text-base font-bold leading-6 text-stone-800 outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
                 />
@@ -370,6 +379,7 @@ onMounted(loadSettings)
                     type="button"
                     variant="secondary"
                     class="h-14 rounded-lg bg-stone-100 text-base font-extrabold text-stone-700 hover:bg-stone-200 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800"
+                    @click="previewReceipt"
                   >
                     <span class="material-symbols-outlined text-[22px]">visibility</span>
                     {{ t('settings.actions.previewReceipt') }}
@@ -377,6 +387,7 @@ onMounted(loadSettings)
                   <Button
                     type="button"
                     class="h-14 w-14 rounded-lg bg-orange-100 text-stone-800 hover:bg-orange-200 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/50"
+                    @click="printReceipt"
                   >
                     <span class="material-symbols-outlined text-[23px]">print</span>
                   </Button>
