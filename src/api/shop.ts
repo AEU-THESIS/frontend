@@ -1,5 +1,5 @@
 import http from './api'
-import type { ShopSettings, UpdateShopSettingsPayload } from '@/types/shop.types'
+import type { ShopSettings, UpdateShopSettingsPayload } from '@/types/shop'
 import { shopSettingsSchema } from '@/validations/shopSettings'
 
 export const getShopSettings = async (): Promise<ShopSettings> => {

@@ -1,17 +1,24 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { ShopSettings } from '@/types/shop.types'
+import { USD_SYMBOL, KHR_SYMBOL, LEGACY_KHR_CODE } from '@/constants/currency'
+import type { ShopSettings } from '@/types/shop'
 
-const DEFAULT_CURRENCY_SYMBOL = '$'
 const DEFAULT_EXCHANGE_RATE = 4100
 const DEFAULT_SHOP_NAME = 'Routine Cafe'
-const KHR_SYMBOL = '\u17DB'
-const LEGACY_KHR_CODE = 'KHR'
-const storedExchangeRate = Number(localStorage.getItem('exchange_rate') || DEFAULT_EXCHANGE_RATE)
+
+const getStoredValue = (key: string) => {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem(key)
+}
+
+const setStoredValue = (key: string, value: string) => {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(key, value)
+}
 
 const normalizeCurrencySymbol = (symbol?: string | null) => {
   if (symbol === LEGACY_KHR_CODE) return KHR_SYMBOL
-  return symbol || DEFAULT_CURRENCY_SYMBOL
+  return symbol || USD_SYMBOL
 }
 
 const normalizeExchangeRate = (exchangeRate: ShopSettings['exchangeRate']) => {
@@ -20,12 +27,11 @@ const normalizeExchangeRate = (exchangeRate: ShopSettings['exchangeRate']) => {
 }
 
 export const useShopSettingsStore = defineStore('shopSettings', () => {
-  const shop_name = ref(localStorage.getItem('shop_name') || DEFAULT_SHOP_NAME)
-  const currency_symbol = ref(
-    normalizeCurrencySymbol(localStorage.getItem('currency_symbol') || DEFAULT_CURRENCY_SYMBOL)
-  )
+  const initialExchangeRate = Number(getStoredValue('exchange_rate') || DEFAULT_EXCHANGE_RATE)
+  const shop_name = ref(getStoredValue('shop_name') || DEFAULT_SHOP_NAME)
+  const currency_symbol = ref(normalizeCurrencySymbol(getStoredValue('currency_symbol')))
   const exchange_rate = ref(
-    Number.isFinite(storedExchangeRate) ? storedExchangeRate : DEFAULT_EXCHANGE_RATE
+    Number.isFinite(initialExchangeRate) ? initialExchangeRate : DEFAULT_EXCHANGE_RATE
   )
 
   const currency_code = computed(() => (currency_symbol.value === KHR_SYMBOL ? 'KHR' : 'USD'))
@@ -38,9 +44,9 @@ export const useShopSettingsStore = defineStore('shopSettings', () => {
     currency_symbol.value = normalizeCurrencySymbol(settings.currencySymbol)
     exchange_rate.value = normalizeExchangeRate(settings.exchangeRate)
 
-    localStorage.setItem('shop_name', shop_name.value)
-    localStorage.setItem('currency_symbol', currency_symbol.value)
-    localStorage.setItem('exchange_rate', String(exchange_rate.value))
+    setStoredValue('shop_name', shop_name.value)
+    setStoredValue('currency_symbol', currency_symbol.value)
+    setStoredValue('exchange_rate', String(exchange_rate.value))
   }
 
   const convertUsdToKhr = (amount: number) => Math.round(amount * exchange_rate.value)

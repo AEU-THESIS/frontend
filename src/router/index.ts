@@ -57,7 +57,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: APP_ROUTES.SETTINGS.path,
         name: APP_ROUTES.SETTINGS.name,
-        component: () => import('@/views/Settings.vue'),
+        component: () => import('@/views/SettingsView.vue'),
         meta: { roles: [ROLES.ADMIN] },
       },
     ],

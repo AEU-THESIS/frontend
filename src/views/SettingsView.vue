@@ -12,14 +12,11 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { getShopSettings, updateShopSettings } from '@/api/shop'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
-import type { ShopSettings } from '@/types/shop.types'
+import { USD_SYMBOL, KHR_SYMBOL, LEGACY_KHR_CODE } from '@/constants/currency'
+import type { ShopSettings } from '@/types/shop'
 
 const shopSettingsStore = useShopSettingsStore()
 const { t } = useI18n()
-
-const USD_SYMBOL = '$'
-const KHR_SYMBOL = '\u17DB'
-const LEGACY_KHR_CODE = 'KHR'
 
 const isLoading = ref(true)
 const isSaving = ref(false)
@@ -64,6 +61,9 @@ const receiptTotal = computed(() => {
 
 const getFormExchangeRate = () => Number(form.exchangeRate)
 
+const getExchangeRateInputValue = (exchangeRate: ShopSettings['exchangeRate']) =>
+  exchangeRate ? String(exchangeRate) : ''
+
 const exchangeRateLabel = computed(() => {
   const value = getFormExchangeRate()
   return Number.isFinite(value) && value > 0 ? value.toLocaleString('en-US') : '0'
@@ -96,7 +96,7 @@ const fillForm = (settings: ShopSettings) => {
   form.bakongAccountId = settings.bakongAccountId || ''
   form.currencySymbol =
     settings.currencySymbol === LEGACY_KHR_CODE ? KHR_SYMBOL : settings.currencySymbol || ''
-  form.exchangeRate = settings.exchangeRate ? String(settings.exchangeRate) : ''
+  form.exchangeRate = getExchangeRateInputValue(settings.exchangeRate)
   form.receiptFooter = settings.receiptFooter || ''
 }
 
