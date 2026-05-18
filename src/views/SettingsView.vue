@@ -9,6 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { getShopSettings, updateShopSettings } from '@/api/shop'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
@@ -195,7 +199,7 @@ onMounted(loadSettings)
       </div>
 
       <template v-else>
-        <section
+        <Card
           class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-950"
         >
           <div class="mb-5 flex items-start gap-3">
@@ -215,50 +219,58 @@ onMounted(loadSettings)
           </div>
 
           <div class="grid gap-4 md:grid-cols-2">
-            <label class="flex flex-col gap-2 text-xs font-bold text-stone-700 dark:text-stone-200">
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200"
+            >
               {{ t('settings.fields.shopName') }}
               <Input
                 v-model="form.name"
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
-            </label>
+            </Label>
 
-            <label class="flex flex-col gap-2 text-xs font-bold text-stone-700 dark:text-stone-200">
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200"
+            >
               {{ t('settings.fields.branchSlug') }}
               <Input
                 v-model="form.slug"
                 disabled
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-400"
               />
-            </label>
+            </Label>
 
-            <label class="flex flex-col gap-2 text-xs font-bold text-stone-700 dark:text-stone-200">
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200"
+            >
               {{ t('settings.fields.ownerName') }}
               <Input
                 v-model="form.ownerName"
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
-            </label>
+            </Label>
 
-            <label class="flex flex-col gap-2 text-xs font-bold text-stone-700 dark:text-stone-200">
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200"
+            >
               {{ t('settings.fields.phoneNumber') }}
               <Input
                 v-model="form.phone"
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
-            </label>
+            </Label>
 
-            <label
-              class="flex flex-col gap-2 text-xs font-bold text-stone-700 dark:text-stone-200 md:col-span-2"
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200 md:col-span-2"
             >
               {{ t('settings.fields.fullAddress') }}
               <Input
                 v-model="form.address"
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
-            </label>
+            </Label>
           </div>
-        </section>
+        </Card>
 
         <section class="flex flex-col gap-4">
           <div class="flex items-start gap-3">
@@ -277,12 +289,12 @@ onMounted(loadSettings)
             </div>
           </div>
 
-          <div
+          <Card
             class="rounded-lg border border-stone-100 bg-white p-7 shadow-sm dark:border-stone-800 dark:bg-stone-950"
           >
             <div class="grid gap-5 lg:grid-cols-[1.7fr_0.8fr_0.9fr]">
-              <label
-                class="flex flex-col gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
+              <Label
+                class="flex flex-col items-start gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
               >
                 {{ t('settings.fields.bakongAccountId') }}
                 <Input
@@ -292,10 +304,10 @@ onMounted(loadSettings)
                 <span class="text-[11px] font-extrabold uppercase tracking-wide text-stone-400">
                   {{ t('settings.financials.bakongHelper') }}
                 </span>
-              </label>
+              </Label>
 
-              <label
-                class="flex flex-col gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
+              <Label
+                class="flex flex-col items-start gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
               >
                 {{ t('settings.fields.defaultCurrency') }}
                 <Select v-model="form.currencySymbol">
@@ -317,10 +329,10 @@ onMounted(loadSettings)
                     </SelectItem>
                   </SelectContent>
                 </Select>
-              </label>
+              </Label>
 
-              <label
-                class="flex flex-col gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
+              <Label
+                class="flex flex-col items-start gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
               >
                 {{ t('settings.fields.exchangeRate') }}
                 <div class="relative">
@@ -337,9 +349,9 @@ onMounted(loadSettings)
                     {{ t('settings.currency.khrCode') }}
                   </span>
                 </div>
-              </label>
+              </Label>
             </div>
-          </div>
+          </Card>
         </section>
 
         <section class="flex flex-col gap-4">
@@ -360,18 +372,18 @@ onMounted(loadSettings)
           </div>
 
           <div class="grid gap-7 lg:grid-cols-[1.15fr_0.85fr]">
-            <div
+            <Card
               class="rounded-lg border border-stone-100 bg-white p-7 shadow-sm dark:border-stone-800 dark:bg-stone-950"
             >
-              <label
-                class="flex flex-col gap-3 text-sm font-bold text-stone-700 dark:text-stone-200"
+              <Label
+                class="flex flex-col items-start gap-3 text-sm font-bold text-stone-700 dark:text-stone-200"
               >
                 {{ t('settings.fields.receiptFooterText') }}
                 <Textarea
                   v-model="form.receiptFooter"
                   class="min-h-32 resize-y rounded-lg border border-stone-200 bg-stone-100 px-4 py-3 text-base font-bold leading-6 text-stone-800 outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
                 />
-              </label>
+              </Label>
 
               <div class="mt-7 border-t border-stone-100 pt-5 dark:border-stone-800">
                 <div class="grid grid-cols-[1fr_auto] gap-4">
@@ -393,9 +405,9 @@ onMounted(loadSettings)
                   </Button>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <aside
+            <Card
               class="rounded-lg border border-dashed border-stone-200 bg-white p-7 shadow-sm dark:border-stone-800 dark:bg-stone-950"
             >
               <div
@@ -456,7 +468,7 @@ onMounted(loadSettings)
                   {{ t('settings.receiptPreview.mockupLabel') }}
                 </p>
               </div>
-            </aside>
+            </Card>
           </div>
         </section>
       </template>
