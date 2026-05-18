@@ -1,0 +1,896 @@
+<script setup lang="ts">
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { toast } from 'vue-sonner'
+import { useI18n } from 'vue-i18n'
+import {
+  AlertTriangle,
+  Archive,
+  Box,
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  Eye,
+  ImagePlus,
+  Pencil,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Trash2,
+  X,
+} from 'lucide-vue-next'
+import { Card } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import ImageUpload from '@/components/common/ImageUpload.vue'
+import { useInventoryStore } from '@/store/useInventoryStore'
+import type { AdjustmentType, InventoryItem, InventoryStatus } from '@/types/inventory.types'
+import { getImageUrl } from '@/utils/image'
+
+type SupplyModalMode = 'add' | 'edit' | 'view'
+type InventoryFilterStatus = 'all' | InventoryStatus
+
+const { t } = useI18n()
+const inventoryStore = useInventoryStore()
+const {
+  items,
+  isLoading,
+  isSaving,
+  totalSupplies,
+  lowStockItems,
+  outOfStockItems,
+  stockHealthPercentage,
+} = storeToRefs(inventoryStore)
+
+const unitOptions = [
+  { value: 'Packs', labelKey: 'inventory.units.packs' },
+  { value: 'kg', labelKey: 'inventory.units.kg' },
+  { value: 'Liters', labelKey: 'inventory.units.liters' },
+  { value: 'Units', labelKey: 'inventory.units.units' },
+]
+const searchQuery = ref('')
+const selectedStatus = ref<InventoryFilterStatus>('all')
+const selectedUnit = ref('all')
+const isFilterPanelOpen = ref(false)
+const currentPage = ref(1)
+const pageSize = 10
+const showAllLowStockWarnings = ref(false)
+const isSupplyModalOpen = ref(false)
+const isAdjustmentModalOpen = ref(false)
+const supplyModalMode = ref<SupplyModalMode>('add')
+const selectedItem = ref<InventoryItem | null>(null)
+const selectedImageFile = ref<File | null>(null)
+
+const supplyForm = reactive({
+  name: '',
+  quantity: 0,
+  unitOfMeasure: 'Packs',
+  minAlertThreshold: 5,
+  imageUrl: '',
+})
+
+const adjustmentForm = reactive({
+  adjustmentType: 'add' as AdjustmentType,
+  amount: 0,
+  notes: '',
+})
+
+const filteredItems = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+
+  return items.value.filter(item => {
+    const matchesQuery =
+      !query ||
+      [item.name, item.sku, item.unitOfMeasure].some(value => value?.toLowerCase().includes(query))
+    const matchesStatus = selectedStatus.value === 'all' || item.status === selectedStatus.value
+    const matchesUnit = selectedUnit.value === 'all' || item.unitOfMeasure === selectedUnit.value
+
+    return matchesQuery && matchesStatus && matchesUnit
+  })
+})
+
+const unitFilterOptions = computed(() => {
+  const availableUnits = new Set(items.value.map(item => item.unitOfMeasure).filter(Boolean))
+  unitOptions.forEach(unit => availableUnits.add(unit.value))
+  return Array.from(availableUnits)
+})
+const activeFilterCount = computed(
+  () => Number(selectedStatus.value !== 'all') + Number(selectedUnit.value !== 'all')
+)
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / pageSize)))
+const paginationStart = computed(() => {
+  if (filteredItems.value.length === 0) return 0
+  return (currentPage.value - 1) * pageSize + 1
+})
+const paginationEnd = computed(() =>
+  Math.min(currentPage.value * pageSize, filteredItems.value.length)
+)
+const paginatedItems = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredItems.value.slice(start, start + pageSize)
+})
+const visiblePaginationPages = computed(() => {
+  const pages = totalPages.value
+  const maxVisible = 3
+  if (pages <= maxVisible) return Array.from({ length: pages }, (_, index) => index + 1)
+
+  const start = Math.min(Math.max(currentPage.value - 1, 1), pages - maxVisible + 1)
+  return Array.from({ length: maxVisible }, (_, index) => start + index)
+})
+const displayedLowStockItems = computed(() =>
+  showAllLowStockWarnings.value ? lowStockItems.value : lowStockItems.value.slice(0, 4)
+)
+
+const statusMeta = {
+  in_stock: {
+    labelKey: 'inventory.status.inStock',
+    class: 'bg-emerald-50 text-emerald-700',
+    dotClass: 'bg-emerald-500',
+  },
+  low_stock: {
+    labelKey: 'inventory.status.lowStock',
+    class: 'bg-amber-50 text-amber-700',
+    dotClass: 'bg-amber-500',
+  },
+  out_of_stock: {
+    labelKey: 'inventory.status.outOfStock',
+    class: 'bg-rose-50 text-rose-700',
+    dotClass: 'bg-rose-500',
+  },
+}
+
+const summaryCards = computed(() => [
+  {
+    label: t('inventory.summary.totalSupplies'),
+    value: totalSupplies.value.toLocaleString('en-US'),
+    detail: t('inventory.summary.stockHealth', { percentage: stockHealthPercentage.value }),
+    icon: Archive,
+    class: 'text-[#974400] bg-[#FFF7ED]',
+  },
+  {
+    label: t('inventory.summary.lowStock'),
+    value: lowStockItems.value.length.toLocaleString('en-US'),
+    detail: t('inventory.summary.newCount', { count: lowStockItems.value.length }),
+    icon: AlertTriangle,
+    class: 'text-amber-600 bg-amber-50',
+  },
+  {
+    label: t('inventory.summary.outOfStock'),
+    value: outOfStockItems.value.length.toLocaleString('en-US'),
+    detail: t('inventory.summary.alertCount', { count: outOfStockItems.value.length }),
+    icon: Box,
+    class: 'text-rose-600 bg-rose-50',
+  },
+])
+
+const resetSupplyForm = () => {
+  supplyForm.name = ''
+  supplyForm.quantity = 0
+  supplyForm.unitOfMeasure = 'Packs'
+  supplyForm.minAlertThreshold = 5
+  supplyForm.imageUrl = ''
+  selectedImageFile.value = null
+}
+
+const openSupplyModal = (mode: SupplyModalMode, item?: InventoryItem) => {
+  supplyModalMode.value = mode
+  selectedItem.value = item || null
+  selectedImageFile.value = null
+
+  if (item) {
+    supplyForm.name = item.name
+    supplyForm.quantity = item.quantity
+    supplyForm.unitOfMeasure = item.unitOfMeasure
+    supplyForm.minAlertThreshold = item.minAlertThreshold
+    supplyForm.imageUrl = item.imageUrl || ''
+  } else {
+    resetSupplyForm()
+  }
+
+  isSupplyModalOpen.value = true
+}
+
+const closeSupplyModal = () => {
+  isSupplyModalOpen.value = false
+  selectedItem.value = null
+  resetSupplyForm()
+}
+
+const openAdjustmentModal = (item: InventoryItem) => {
+  selectedItem.value = item
+  adjustmentForm.adjustmentType = 'add'
+  adjustmentForm.amount = 0
+  adjustmentForm.notes = ''
+  isAdjustmentModalOpen.value = true
+}
+
+const closeAdjustmentModal = () => {
+  isAdjustmentModalOpen.value = false
+  selectedItem.value = null
+}
+
+const handleImageChange = (file: File) => {
+  selectedImageFile.value = file
+}
+
+const saveSupply = async () => {
+  if (supplyModalMode.value === 'view') {
+    closeSupplyModal()
+    return
+  }
+
+  try {
+    const payload = {
+      name: supplyForm.name,
+      unit_of_measure: supplyForm.unitOfMeasure,
+      quantity: Number(supplyForm.quantity),
+      min_alert_threshold: Number(supplyForm.minAlertThreshold),
+      image: selectedImageFile.value,
+    }
+
+    if (supplyModalMode.value === 'edit' && selectedItem.value) {
+      await inventoryStore.editItem(selectedItem.value.id, payload)
+      toast.success(t('inventory.messages.updateSuccess'))
+    } else {
+      await inventoryStore.addItem(payload)
+      toast.success(t('inventory.messages.createSuccess'))
+    }
+
+    closeSupplyModal()
+  } catch {
+    toast.error(t('inventory.messages.saveError'))
+  }
+}
+
+const deleteSupply = async (item: InventoryItem) => {
+  try {
+    await inventoryStore.removeItem(item.id)
+    toast.success(t('inventory.messages.deleteSuccess'))
+  } catch {
+    toast.error(t('inventory.messages.deleteError'))
+  }
+}
+
+const saveAdjustment = async () => {
+  if (!selectedItem.value) return
+
+  try {
+    await inventoryStore.adjustItem(selectedItem.value.id, {
+      adjustment_type: adjustmentForm.adjustmentType,
+      change_amount: Number(adjustmentForm.amount),
+      notes: adjustmentForm.notes.trim() || null,
+    })
+    toast.success(t('inventory.messages.adjustSuccess'))
+    closeAdjustmentModal()
+  } catch {
+    toast.error(t('inventory.messages.adjustError'))
+  }
+}
+
+const getModalTitle = () => {
+  if (supplyModalMode.value === 'edit') return t('inventory.modal.editTitle')
+  if (supplyModalMode.value === 'view') return t('inventory.modal.viewTitle')
+  return t('inventory.modal.addTitle')
+}
+
+const clearFilters = () => {
+  selectedStatus.value = 'all'
+  selectedUnit.value = 'all'
+}
+
+watch([searchQuery, selectedStatus, selectedUnit], () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, pages => {
+  if (currentPage.value > pages) currentPage.value = pages
+})
+
+onMounted(() => {
+  inventoryStore.fetchItems().catch(() => {
+    toast.error(t('inventory.messages.loadError'))
+  })
+})
+</script>
+
+<template>
+  <div class="h-full overflow-y-auto bg-[#F9FAFB] p-8 text-[#1A1C1C]">
+    <div class="flex w-full flex-col gap-5">
+      <div class="grid gap-5 md:grid-cols-3">
+        <Card
+          v-for="card in summaryCards"
+          :key="card.label"
+          class="flex-row items-center justify-between rounded-xl border-none bg-white p-6 shadow-sm"
+        >
+          <div>
+            <div
+              class="mb-5 flex size-10 items-center justify-center rounded-xl"
+              :class="card.class"
+            >
+              <component :is="card.icon" class="size-5" />
+            </div>
+            <p class="text-[11px] font-black uppercase tracking-wide text-[#A3A3A3]">
+              {{ card.label }}
+            </p>
+            <p class="mt-1 text-2xl font-black">{{ card.value }}</p>
+          </div>
+          <span class="self-start text-xs font-black" :class="card.class.split(' ')[0]">
+            {{ card.detail }}
+          </span>
+        </Card>
+      </div>
+
+      <div class="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+          <div class="relative w-full max-w-[500px]">
+            <Search class="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
+            <Input
+              v-model="searchQuery"
+              :placeholder="t('inventory.searchPlaceholder')"
+              class="h-11 rounded-xl border border-slate-200 bg-white pl-11 text-sm font-semibold shadow-sm"
+            />
+          </div>
+          <Button
+            variant="secondary"
+            class="h-11 rounded-xl border bg-white px-5 font-bold hover:bg-slate-50"
+            :class="
+              isFilterPanelOpen || activeFilterCount > 0
+                ? 'border-[#974400] text-[#974400]'
+                : 'border-slate-200'
+            "
+            @click="isFilterPanelOpen = !isFilterPanelOpen"
+          >
+            <SlidersHorizontal class="size-4" />
+            {{ t('inventory.actions.filters') }}
+            <span
+              v-if="activeFilterCount > 0"
+              class="flex size-5 items-center justify-center rounded-full bg-[#974400] text-[11px] text-white"
+            >
+              {{ activeFilterCount }}
+            </span>
+          </Button>
+        </div>
+        <Button
+          class="h-11 rounded-xl bg-[#974400] px-6 font-bold text-white shadow-lg shadow-[#974400]/20 hover:bg-[#7d3900]"
+          @click="openSupplyModal('add')"
+        >
+          <Plus class="size-4" />
+          {{ t('inventory.actions.addItem') }}
+        </Button>
+
+        <Card
+          v-if="isFilterPanelOpen"
+          class="absolute left-0 top-[calc(100%+0.5rem)] z-20 w-full max-w-[640px] gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-lg sm:left-[calc(500px+0.75rem)] sm:w-[420px]"
+        >
+          <div class="grid gap-3 sm:grid-cols-2">
+            <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+              {{ t('inventory.filters.status') }}
+              <Select v-model="selectedStatus">
+                <SelectTrigger class="h-10 rounded-xl bg-[#FAFAFA] font-bold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{{ t('inventory.filters.allStatuses') }}</SelectItem>
+                  <SelectItem value="in_stock">{{ t('inventory.status.inStock') }}</SelectItem>
+                  <SelectItem value="low_stock">{{ t('inventory.status.lowStock') }}</SelectItem>
+                  <SelectItem value="out_of_stock">
+                    {{ t('inventory.status.outOfStock') }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </Label>
+
+            <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+              {{ t('inventory.filters.unit') }}
+              <Select v-model="selectedUnit">
+                <SelectTrigger class="h-10 rounded-xl bg-[#FAFAFA] font-bold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{{ t('inventory.filters.allUnits') }}</SelectItem>
+                  <SelectItem v-for="unit in unitFilterOptions" :key="unit" :value="unit">
+                    {{ unit }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </Label>
+          </div>
+
+          <div class="flex justify-end">
+            <Button
+              variant="tertiary"
+              class="h-8 text-xs font-black text-[#974400]"
+              :disabled="activeFilterCount === 0"
+              @click="clearFilters"
+            >
+              {{ t('inventory.filters.clear') }}
+            </Button>
+          </div>
+        </Card>
+      </div>
+
+      <Card class="overflow-hidden rounded-xl border-none bg-white p-0 shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[820px] text-left">
+            <thead>
+              <tr class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3]">
+                <th class="px-6 py-4">{{ t('inventory.table.name') }}</th>
+                <th class="px-6 py-4">{{ t('inventory.table.stockLevel') }}</th>
+                <th class="px-6 py-4">{{ t('inventory.table.unit') }}</th>
+                <th class="px-6 py-4 text-center">{{ t('inventory.table.status') }}</th>
+                <th class="px-6 py-4 text-center">{{ t('inventory.table.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="isLoading">
+                <td colspan="5" class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3]">
+                  {{ t('inventory.messages.loading') }}
+                </td>
+              </tr>
+              <tr v-else-if="filteredItems.length === 0">
+                <td colspan="5" class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3]">
+                  {{ t('inventory.messages.empty') }}
+                </td>
+              </tr>
+              <tr
+                v-for="item in paginatedItems"
+                v-else
+                :key="item.id"
+                class="border-b border-slate-100 text-sm font-bold last:border-0"
+              >
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100"
+                    >
+                      <img
+                        v-if="item.imageUrl"
+                        :src="getImageUrl(item.imageUrl)"
+                        :alt="item.name"
+                        class="h-full w-full object-cover"
+                      />
+                      <ImagePlus v-else class="size-5 text-stone-400" />
+                    </div>
+                    <div>
+                      <p>{{ item.name }}</p>
+                      <p v-if="item.sku" class="text-xs font-semibold text-[#A3A3A3]">
+                        {{ item.sku }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4" :class="{ 'text-rose-600': item.status === 'out_of_stock' }">
+                  {{ item.quantity.toLocaleString('en-US') }}
+                </td>
+                <td class="px-6 py-4 text-[#737373]">{{ item.unitOfMeasure }}</td>
+                <td class="px-6 py-4 text-center">
+                  <span
+                    class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black"
+                    :class="statusMeta[item.status].class"
+                  >
+                    <span class="size-1.5 rounded-full" :class="statusMeta[item.status].dotClass" />
+                    {{ t(statusMeta[item.status].labelKey) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center justify-center gap-5">
+                    <Button
+                      variant="tertiary"
+                      size="icon"
+                      class="size-5 rounded-none hover:bg-transparent hover:no-underline"
+                      :title="t('inventory.actions.adjust')"
+                      @click="openAdjustmentModal(item)"
+                    >
+                      <i class="fa fa-window-maximize text-[#D66A1F]" aria-hidden="true">
+                        <svg viewBox="0 0 16 16" class="size-4 fill-current">
+                          <path
+                            d="M2.25 1.5h11.5c.41 0 .75.34.75.75v11.5c0 .41-.34.75-.75.75H2.25a.75.75 0 0 1-.75-.75V2.25c0-.41.34-.75.75-.75Zm1 2.25v8.5h9.5v-8.5h-9.5Zm1.25 1.5h4.25v1.5H4.5v-1.5Zm6.75 1.25-5.5 5.5h5.5v-5.5Z"
+                          />
+                        </svg>
+                      </i>
+                    </Button>
+                    <Button
+                      variant="tertiary"
+                      size="icon"
+                      class="size-5 rounded-none text-[#16A34A] hover:bg-transparent hover:no-underline"
+                      :title="t('inventory.actions.view')"
+                      @click="openSupplyModal('view', item)"
+                    >
+                      <Eye class="size-4 stroke-[2.4]" />
+                    </Button>
+                    <Button
+                      variant="tertiary"
+                      size="icon"
+                      class="size-5 rounded-none text-[#2563EB] hover:bg-transparent hover:no-underline"
+                      :title="t('inventory.actions.edit')"
+                      @click="openSupplyModal('edit', item)"
+                    >
+                      <Pencil class="size-4 stroke-[2.4]" />
+                    </Button>
+                    <Button
+                      variant="tertiary"
+                      size="icon"
+                      class="size-5 rounded-none text-[#EF4444] hover:bg-transparent hover:no-underline"
+                      :title="t('inventory.actions.delete')"
+                      @click="deleteSupply(item)"
+                    >
+                      <Trash2 class="size-4 stroke-[2.4]" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <footer
+          class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p class="text-xs font-semibold text-[#737373]">
+            {{
+              t('inventory.table.showingRange', {
+                start: paginationStart,
+                end: paginationEnd,
+                total: filteredItems.length,
+              })
+            }}
+          </p>
+          <div class="flex items-center gap-2">
+            <Button
+              variant="tertiary"
+              size="icon"
+              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3]"
+              :disabled="currentPage === 1"
+              @click="currentPage -= 1"
+            >
+              <ChevronLeft class="size-4" />
+            </Button>
+            <Button
+              v-for="page in visiblePaginationPages"
+              :key="page"
+              variant="tertiary"
+              size="icon"
+              class="size-8 rounded-lg border text-xs font-black"
+              :class="
+                page === currentPage
+                  ? 'border-[#974400] bg-[#974400] text-white'
+                  : 'border-slate-200 text-[#737373]'
+              "
+              @click="currentPage = page"
+            >
+              {{ page }}
+            </Button>
+            <Button
+              variant="tertiary"
+              size="icon"
+              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3]"
+              :disabled="currentPage === totalPages"
+              @click="currentPage += 1"
+            >
+              <ChevronRight class="size-4" />
+            </Button>
+          </div>
+        </footer>
+      </Card>
+
+      <div class="grid gap-5 lg:grid-cols-2">
+        <Card
+          class="overflow-hidden rounded-xl border-none bg-white p-0 shadow-md shadow-slate-200/70"
+        >
+          <div
+            class="flex items-center gap-2 border-b border-rose-100 bg-rose-50 px-6 py-4 text-sm font-black uppercase tracking-wide text-rose-700"
+          >
+            <CircleAlert class="size-4 fill-rose-700 text-white" />
+            {{ t('inventory.panels.criticalStock', { count: outOfStockItems.length }) }}
+          </div>
+          <div class="min-h-[110px] space-y-4 p-5">
+            <div v-if="outOfStockItems.length === 0" class="text-sm font-bold text-[#A3A3A3]">
+              {{ t('inventory.panels.noCriticalStock') }}
+            </div>
+            <div
+              v-for="item in outOfStockItems.slice(0, 4)"
+              :key="item.id"
+              class="flex items-center justify-between gap-3"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-rose-50"
+                >
+                  <img
+                    v-if="item.imageUrl"
+                    :src="getImageUrl(item.imageUrl)"
+                    :alt="item.name"
+                    class="h-full w-full object-cover"
+                  />
+                  <ImagePlus v-else class="size-5 text-rose-400" />
+                </div>
+                <div>
+                  <p class="text-sm font-black">{{ item.name }}</p>
+                  <p class="text-xs font-semibold text-[#A3A3A3]">
+                    {{ t('inventory.status.outOfStock') }}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="tertiary"
+                class="h-8 text-xs font-black uppercase text-[#974400]"
+                @click="openAdjustmentModal(item)"
+              >
+                {{ t('inventory.actions.restock') }}
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <Card
+          class="overflow-hidden rounded-xl border-none bg-white p-0 shadow-md shadow-slate-200/70"
+        >
+          <div
+            class="flex items-center gap-2 border-b border-amber-100 bg-amber-50 px-6 py-4 text-sm font-black uppercase tracking-wide text-amber-700"
+          >
+            <AlertTriangle class="size-4 fill-amber-600 text-white" />
+            {{ t('inventory.panels.lowStockWarnings', { count: lowStockItems.length }) }}
+          </div>
+          <div class="min-h-[110px] space-y-4 p-5">
+            <div v-if="lowStockItems.length === 0" class="text-sm font-bold text-[#A3A3A3]">
+              {{ t('inventory.panels.noLowStock') }}
+            </div>
+            <div
+              v-for="item in displayedLowStockItems"
+              :key="item.id"
+              class="flex items-center justify-between gap-3"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-amber-50"
+                >
+                  <img
+                    v-if="item.imageUrl"
+                    :src="getImageUrl(item.imageUrl)"
+                    :alt="item.name"
+                    class="h-full w-full object-cover"
+                  />
+                  <ImagePlus v-else class="size-5 text-amber-400" />
+                </div>
+                <div>
+                  <p class="text-sm font-black">{{ item.name }}</p>
+                  <p class="text-xs font-black uppercase text-amber-600">
+                    {{
+                      t('inventory.panels.lowStockRatio', {
+                        quantity: item.quantity,
+                        threshold: item.minAlertThreshold,
+                        unit: item.unitOfMeasure,
+                      })
+                    }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <Button
+              v-if="lowStockItems.length > 0"
+              variant="tertiary"
+              class="h-9 w-full rounded-lg bg-[#FAFAFA] text-xs font-black uppercase text-[#525252] hover:bg-[#F4F4F5] hover:no-underline"
+              @click="showAllLowStockWarnings = !showAllLowStockWarnings"
+            >
+              {{ t('inventory.actions.viewAllWarnings') }}
+            </Button>
+          </div>
+        </Card>
+      </div>
+    </div>
+
+    <div
+      v-if="isSupplyModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+    >
+      <Card class="w-full max-w-[520px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0">
+        <header class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+          <h2 class="text-lg font-black">{{ getModalTitle() }}</h2>
+          <Button variant="tertiary" size="icon" class="size-8" @click="closeSupplyModal">
+            <X class="size-4" />
+          </Button>
+        </header>
+
+        <div class="space-y-4 p-6">
+          <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+            {{ t('inventory.form.itemName') }}
+            <Input
+              v-model="supplyForm.name"
+              :disabled="supplyModalMode === 'view'"
+              :placeholder="t('inventory.form.itemNamePlaceholder')"
+              class="h-11 rounded-xl bg-[#FAFAFA] font-bold"
+            />
+          </Label>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+              {{ t('inventory.form.numberOfItems') }}
+              <Input
+                v-model="supplyForm.quantity"
+                :disabled="supplyModalMode === 'view'"
+                type="number"
+                min="0"
+                step="0.01"
+                class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold"
+              />
+            </Label>
+            <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+              {{ t('inventory.form.unitOfMeasure') }}
+              <Select v-model="supplyForm.unitOfMeasure" :disabled="supplyModalMode === 'view'">
+                <SelectTrigger class="h-11 rounded-xl bg-[#FAFAFA] font-bold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="unit in unitOptions" :key="unit.value" :value="unit.value">
+                    {{ t(unit.labelKey) }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </Label>
+          </div>
+
+          <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+            {{ t('inventory.form.minAlert') }}
+            <Input
+              v-model="supplyForm.minAlertThreshold"
+              :disabled="supplyModalMode === 'view'"
+              type="number"
+              min="0"
+              step="0.01"
+              :placeholder="t('inventory.form.minAlertPlaceholder')"
+              class="h-11 rounded-xl bg-[#FAFAFA] font-bold"
+            />
+          </Label>
+
+          <ImageUpload
+            v-model="supplyForm.imageUrl"
+            :disabled="supplyModalMode === 'view'"
+            :label="t('inventory.form.itemImage')"
+            :recommendation="t('inventory.form.imageRecommendation')"
+            :max-size-mb="10"
+            @change="handleImageChange"
+            @error="toast.error"
+          />
+        </div>
+
+        <footer class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4">
+          <Button
+            variant="tertiary"
+            class="h-11 rounded-xl px-6 font-bold"
+            @click="closeSupplyModal"
+          >
+            {{ supplyModalMode === 'view' ? t('inventory.actions.close') : t('common.cancel') }}
+          </Button>
+          <Button
+            v-if="supplyModalMode !== 'view'"
+            class="h-11 rounded-xl bg-[#B65A00] px-6 font-bold text-white hover:bg-[#974400]"
+            :disabled="isSaving"
+            @click="saveSupply"
+          >
+            {{
+              supplyModalMode === 'edit'
+                ? t('inventory.actions.editSupply')
+                : t('inventory.actions.addSupply')
+            }}
+          </Button>
+        </footer>
+      </Card>
+    </div>
+
+    <div
+      v-if="isAdjustmentModalOpen && selectedItem"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+    >
+      <Card class="w-full max-w-[450px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0">
+        <header class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+          <h2 class="text-base font-black">{{ t('inventory.adjustment.title') }}</h2>
+          <Button variant="tertiary" size="icon" class="size-8" @click="closeAdjustmentModal">
+            <X class="size-4" />
+          </Button>
+        </header>
+
+        <div class="space-y-5 p-6">
+          <div class="flex items-center gap-3 rounded-xl bg-[#F6F6F6] p-3">
+            <div
+              class="flex size-11 items-center justify-center overflow-hidden rounded-lg bg-white"
+            >
+              <img
+                v-if="selectedItem.imageUrl"
+                :src="getImageUrl(selectedItem.imageUrl)"
+                :alt="selectedItem.name"
+                class="h-full w-full object-cover"
+              />
+              <Box v-else class="size-5 text-stone-400" />
+            </div>
+            <div>
+              <p class="text-sm font-black">{{ selectedItem.name }}</p>
+              <p class="text-xs font-semibold text-[#737373]">
+                {{
+                  t('inventory.adjustment.currentStock', {
+                    quantity: selectedItem.quantity,
+                    unit: selectedItem.unitOfMeasure,
+                  })
+                }}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <p class="mb-2 text-[11px] font-black uppercase text-[#A3A3A3]">
+              {{ t('inventory.adjustment.typeAndAmount') }}
+            </p>
+            <div class="grid grid-cols-2 overflow-hidden rounded-xl bg-[#F6F6F6] p-1">
+              <Button
+                variant="tertiary"
+                class="rounded-lg py-2 text-xs font-black"
+                :class="adjustmentForm.adjustmentType === 'add' ? 'bg-white text-[#974400]' : ''"
+                @click="adjustmentForm.adjustmentType = 'add'"
+              >
+                {{ t('inventory.adjustment.addStock') }}
+              </Button>
+              <Button
+                variant="tertiary"
+                class="rounded-lg py-2 text-xs font-black"
+                :class="adjustmentForm.adjustmentType === 'remove' ? 'bg-white text-[#974400]' : ''"
+                @click="adjustmentForm.adjustmentType = 'remove'"
+              >
+                {{ t('inventory.adjustment.removeStock') }}
+              </Button>
+            </div>
+          </div>
+
+          <div class="relative">
+            <Input
+              v-model="adjustmentForm.amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              class="h-12 rounded-xl bg-[#FAFAFA] text-center text-lg font-black"
+            />
+            <span
+              class="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-[#A3A3A3]"
+            >
+              {{ selectedItem.unitOfMeasure }}
+            </span>
+          </div>
+
+          <Label
+            class="flex flex-col items-start gap-2 text-xs font-black uppercase text-[#A3A3A3]"
+          >
+            {{ t('inventory.adjustment.notes') }}
+            <Textarea
+              v-model="adjustmentForm.notes"
+              :placeholder="t('inventory.adjustment.notesPlaceholder')"
+              class="min-h-28 rounded-xl bg-[#FAFAFA] text-sm font-semibold normal-case"
+            />
+          </Label>
+        </div>
+
+        <footer class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4">
+          <Button
+            variant="tertiary"
+            class="h-11 rounded-xl px-6 font-bold"
+            @click="closeAdjustmentModal"
+          >
+            {{ t('common.cancel') }}
+          </Button>
+          <Button
+            class="h-11 rounded-xl bg-[#974400] px-6 font-bold text-white hover:bg-[#7d3900]"
+            :disabled="isSaving"
+            @click="saveAdjustment"
+          >
+            {{ t('common.confirm') }}
+          </Button>
+        </footer>
+      </Card>
+    </div>
+  </div>
+</template>

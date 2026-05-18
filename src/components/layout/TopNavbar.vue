@@ -28,15 +28,28 @@ const pageTitle = computed(() => {
       return t('app.title')
   }
 })
+
+const pageSubtitle = computed(() => {
+  if (route.name === APP_ROUTES.INVENTORY.name) {
+    return t('inventory.subtitle')
+  }
+
+  return ''
+})
 </script>
 
 <template>
   <header
-    class="h-16 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between px-8 shrink-0"
+    class="min-h-16 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between px-8 py-3 shrink-0"
   >
-    <h2 class="font-bold text-stone-800 dark:text-stone-50 text-lg">
-      {{ pageTitle }}
-    </h2>
+    <div>
+      <h2 class="font-bold text-stone-800 dark:text-stone-50 text-lg leading-tight">
+        {{ pageTitle }}
+      </h2>
+      <p v-if="pageSubtitle" class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">
+        {{ pageSubtitle }}
+      </p>
+    </div>
     <div class="flex items-center gap-3">
       <button
         class="w-10 h-10 rounded-full flex items-center justify-center text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"

@@ -41,7 +41,8 @@
       "dashboard": "ផ្ទាំងគ្រប់គ្រង",
       "pos": "POS",
       "orders": "ការបញ្ជាទិញ",
-      "products": "ផលិតផល",
+      "inventory": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
+      "products": "ស្តុក",
       "categories": "ប្រភេទ",
       "saleReports": "របាយការណ៍លក់",
       "analytics": "វិភាគ",
@@ -145,9 +146,109 @@
       }
     }
   },
+  "inventory": {
+    "title": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
+    "subtitle": "ឃ្លាំង A",
+    "searchPlaceholder": "ស្វែងរកសម្ភារៈ...",
+    "summary": {
+      "totalSupplies": "សម្ភារៈសរុប",
+      "stockHealth": "{percentage}%",
+      "lowStock": "ការព្រមាន៖ ស្តុកទាប",
+      "outOfStock": "ធ្ងន់ធ្ងរ៖ អស់ពីស្តុក",
+      "newCount": "{count} ថ្មី",
+      "alertCount": "{count} ជូនដំណឹង"
+    },
+    "table": {
+      "allSupplies": "សម្ភារៈទាំងអស់",
+      "showing": "បង្ហាញ {shown} នៃ {total} មុខ",
+      "showingRange": "បង្ហាញ {start}-{end} នៃ {total} មុខ",
+      "name": "ឈ្មោះ",
+      "stockLevel": "កម្រិតស្តុក",
+      "unit": "ឯកតា",
+      "status": "ស្ថានភាព",
+      "actions": "សកម្មភាព"
+    },
+    "status": {
+      "inStock": "មានក្នុងស្តុក",
+      "lowStock": "ស្តុកទាប",
+      "outOfStock": "អស់ពីស្តុក"
+    },
+    "filters": {
+      "status": "ស្ថានភាព",
+      "unit": "ឯកតា",
+      "allStatuses": "ស្ថានភាពទាំងអស់",
+      "allUnits": "ឯកតាទាំងអស់",
+      "clear": "សម្អាតតម្រង"
+    },
+    "actions": {
+      "addItem": "បន្ថែមមុខទំនិញ",
+      "refresh": "ផ្ទុកឡើងវិញ",
+      "filters": "តម្រង",
+      "adjust": "កែសម្រួលស្តុក",
+      "view": "មើល",
+      "edit": "កែសម្រួល",
+      "delete": "លុប",
+      "restock": "បំពេញស្តុក",
+      "viewAllWarnings": "មើលការព្រមានទាំងអស់",
+      "close": "បិទ",
+      "editSupply": "កែសម្រួលសម្ភារៈ",
+      "addSupply": "បន្ថែមសម្ភារៈ"
+    },
+    "panels": {
+      "criticalStock": "ស្តុកធ្ងន់ធ្ងរ ({count})",
+      "lowStockWarnings": "ការព្រមានស្តុកទាប ({count})",
+      "noCriticalStock": "មិនមានស្តុកធ្ងន់ធ្ងរ។",
+      "noLowStock": "មិនមានការព្រមានស្តុកទាប។",
+      "lowStockRatio": "{quantity} / អប្បបរមា {threshold} {unit}"
+    },
+    "modal": {
+      "addTitle": "បន្ថែមសម្ភារៈថ្មី",
+      "editTitle": "កែសម្រួលសម្ភារៈ",
+      "viewTitle": "ព័ត៌មានលម្អិតសម្ភារៈ"
+    },
+    "form": {
+      "itemName": "ឈ្មោះមុខទំនិញ",
+      "itemNamePlaceholder": "ឧ. Double Wall Glassware",
+      "numberOfItems": "ចំនួនមុខទំនិញ",
+      "unitOfMeasure": "ឯកតារង្វាស់",
+      "minAlert": "ការព្រមានស្តុកទាបអប្បបរមា",
+      "minAlertPlaceholder": "ឧ. 5",
+      "itemImage": "រូបភាពមុខទំនិញ",
+      "imageRecommendation": "បង្ហោះឯកសារ ឬអូសទម្លាក់ PNG, JPG រហូតដល់ 10MB"
+    },
+    "units": {
+      "packs": "កញ្ចប់",
+      "kg": "kg",
+      "liters": "លីត្រ",
+      "units": "ឯកតា"
+    },
+    "adjustment": {
+      "title": "កែសម្រួលស្តុករហ័ស",
+      "currentStock": "ស្តុកបច្ចុប្បន្ន៖ {quantity} {unit}",
+      "typeAndAmount": "ប្រភេទ និងចំនួនកែសម្រួល",
+      "addStock": "+ បន្ថែមស្តុក",
+      "removeStock": "- ដកស្តុក",
+      "notes": "កំណត់ចំណាំ",
+      "notesPlaceholder": "បន្ថែមព័ត៌មានលម្អិតអំពីការកែសម្រួលនេះ..."
+    },
+    "messages": {
+      "loading": "កំពុងផ្ទុកសារពើភ័ណ្ឌ...",
+      "empty": "រកមិនឃើញសម្ភារៈ។",
+      "loadError": "មិនអាចផ្ទុកសារពើភ័ណ្ឌបានទេ។",
+      "createSuccess": "បានបន្ថែមសម្ភារៈ។",
+      "updateSuccess": "បានធ្វើបច្ចុប្បន្នភាពសម្ភារៈ។",
+      "saveError": "មិនអាចរក្សាទុកសម្ភារៈបានទេ។",
+      "deleteSuccess": "បានលុបសម្ភារៈ។",
+      "deleteError": "មិនអាចលុបសម្ភារៈបានទេ។",
+      "adjustSuccess": "បានកែសម្រួលស្តុក។",
+      "adjustError": "មិនអាចកែសម្រួលស្តុកបានទេ។"
+    }
+  },
   "common": {
     "save": "រក្សាទុក",
     "cancel": "បោះបង់",
+    "confirm": "បញ្ជាក់",
+    "close": "បិទ",
     "delete": "លុប",
     "edit": "កែសម្រួល",
     "create": "បង្កើត",

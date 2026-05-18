@@ -41,7 +41,8 @@
       "dashboard": "Dashboard",
       "pos": "POS",
       "orders": "Orders",
-      "products": "Products",
+      "inventory": "Inventory Management",
+      "products": "Stock",
       "categories": "Categories",
       "saleReports": "Sale",
       "analytics": "Analytics",
@@ -146,9 +147,109 @@
       }
     }
   },
+  "inventory": {
+    "title": "Inventory Management",
+    "subtitle": "Warehouse A",
+    "searchPlaceholder": "Search supplies...",
+    "summary": {
+      "totalSupplies": "Total Supplies",
+      "stockHealth": "{percentage}%",
+      "lowStock": "Warning: Low Stock",
+      "outOfStock": "Critical: Out of Stock",
+      "newCount": "{count} New",
+      "alertCount": "{count} Alert"
+    },
+    "table": {
+      "allSupplies": "All Supplies",
+      "showing": "Showing {shown} of {total} items",
+      "showingRange": "Showing {start}-{end} of {total} items",
+      "name": "Name",
+      "stockLevel": "Stock Level",
+      "unit": "Unit",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "inStock": "In Stock",
+      "lowStock": "Low Stock",
+      "outOfStock": "Out of Stock"
+    },
+    "filters": {
+      "status": "Status",
+      "unit": "Unit",
+      "allStatuses": "All Statuses",
+      "allUnits": "All Units",
+      "clear": "Clear Filters"
+    },
+    "actions": {
+      "addItem": "Add Item",
+      "refresh": "Refresh",
+      "filters": "Filters",
+      "adjust": "Adjust",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "restock": "Restock",
+      "viewAllWarnings": "View All Warnings",
+      "close": "Close",
+      "editSupply": "Edit Supply",
+      "addSupply": "Add Supply"
+    },
+    "panels": {
+      "criticalStock": "Critical Stock ({count})",
+      "lowStockWarnings": "Low Stock Warnings ({count})",
+      "noCriticalStock": "No critical stock.",
+      "noLowStock": "No low stock warnings.",
+      "lowStockRatio": "{quantity} / min {threshold} {unit}"
+    },
+    "modal": {
+      "addTitle": "Add New Supply",
+      "editTitle": "Edit Supply",
+      "viewTitle": "Supply Detail"
+    },
+    "form": {
+      "itemName": "Item Name",
+      "itemNamePlaceholder": "e.g. Double Wall Glassware",
+      "numberOfItems": "Number of Items",
+      "unitOfMeasure": "Unit of Measure",
+      "minAlert": "Min Low Stock Alert",
+      "minAlertPlaceholder": "e.g. 5",
+      "itemImage": "Item Image",
+      "imageRecommendation": "Upload a file or drag and drop PNG, JPG up to 10MB"
+    },
+    "units": {
+      "packs": "Packs",
+      "kg": "kg",
+      "liters": "Liters",
+      "units": "Units"
+    },
+    "adjustment": {
+      "title": "Quick Stock Adjustment",
+      "currentStock": "Current Stock: {quantity} {unit}",
+      "typeAndAmount": "Adjustment Type & Amount",
+      "addStock": "+ Add Stock",
+      "removeStock": "- Remove Stock",
+      "notes": "Notes",
+      "notesPlaceholder": "Add additional details about this adjustment..."
+    },
+    "messages": {
+      "loading": "Loading inventory...",
+      "empty": "No supplies found.",
+      "loadError": "Unable to load inventory.",
+      "createSuccess": "Supply added.",
+      "updateSuccess": "Supply updated.",
+      "saveError": "Unable to save supply.",
+      "deleteSuccess": "Supply removed.",
+      "deleteError": "Unable to remove supply.",
+      "adjustSuccess": "Stock adjusted.",
+      "adjustError": "Unable to adjust stock."
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
