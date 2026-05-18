@@ -6,6 +6,8 @@ import type {
 } from '@/types/inventory.types'
 import { inventoryAdjustmentSchema, inventoryItemSchema } from '@/validations/inventoryValidation'
 
+const INVENTORY_ENDPOINT = '/api/inventories'
+
 const toInventoryFormData = (payload: InventoryItemPayload) => {
   const parsed = inventoryItemSchema.parse(payload)
   const formData = new FormData()
@@ -25,7 +27,7 @@ const multipartConfig = {
 }
 
 export const getInventoryItems = async (): Promise<InventoryItem[]> => {
-  const res = await http.get<InventoryItem[]>('/api/inventory')
+  const res = await http.get<InventoryItem[]>(INVENTORY_ENDPOINT)
   return res.data
 }
 
@@ -33,7 +35,7 @@ export const createInventoryItem = async (
   payload: InventoryItemPayload
 ): Promise<InventoryItem> => {
   const res = await http.post<InventoryItem>(
-    '/api/inventory',
+    INVENTORY_ENDPOINT,
     toInventoryFormData(payload),
     multipartConfig
   )
@@ -45,7 +47,7 @@ export const updateInventoryItem = async (
   payload: InventoryItemPayload
 ): Promise<InventoryItem> => {
   const res = await http.put<InventoryItem>(
-    `/api/inventory/${id}`,
+    `${INVENTORY_ENDPOINT}/${id}`,
     toInventoryFormData(payload),
     multipartConfig
   )
@@ -53,7 +55,7 @@ export const updateInventoryItem = async (
 }
 
 export const deleteInventoryItem = async (id: number): Promise<void> => {
-  await http.delete(`/api/inventory/${id}`)
+  await http.delete(`${INVENTORY_ENDPOINT}/${id}`)
 }
 
 export const adjustInventoryItem = async (
@@ -61,6 +63,9 @@ export const adjustInventoryItem = async (
   payload: InventoryAdjustmentPayload
 ): Promise<InventoryItem> => {
   const parsedPayload = inventoryAdjustmentSchema.parse(payload)
-  const res = await http.post<InventoryItem>(`/api/inventory/${id}/adjust`, parsedPayload)
+  const res = await http.post<InventoryItem>(
+    `${INVENTORY_ENDPOINT}/${id}/adjustments`,
+    parsedPayload
+  )
   return res.data
 }
