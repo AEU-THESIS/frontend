@@ -12,5 +12,18 @@ export const getProducts = async (categoryId?: number, search?: string): Promise
   if (search) params.search = search
 
   const res = await http.get<Product[]>('/api/products', { params })
-  return res.data
+  return res.data.map(product => ({
+    ...product,
+    price: Number(product.price),
+    optionSets: (product.optionSets || []).map(pos => ({
+      ...pos,
+      optionSet: {
+        ...pos.optionSet,
+        elements: (pos.optionSet?.elements || []).map(el => ({
+          ...el,
+          priceModifier: Number(el.priceModifier),
+        })),
+      },
+    })),
+  }))
 }

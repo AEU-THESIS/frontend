@@ -10,7 +10,6 @@ import ProductModifierModal from '@/components/pos/ProductModifierModal.vue'
 import CashPaymentModal from '@/components/pos/CashPaymentModal.vue'
 import CheckoutSuccessModal from '@/components/pos/CheckoutSuccessModal.vue'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { toast } from 'vue-sonner'
 
 const { t } = useI18n()
@@ -37,7 +36,7 @@ onMounted(async () => {
   try {
     await Promise.all([productStore.fetchCategories(), productStore.fetchProducts()])
   } catch {
-    toast.error(t('cart.fetchFailed') || 'Failed to load POS catalog data')
+    toast.error(t('cart.fetchFailed'))
   }
 })
 
@@ -57,7 +56,7 @@ const handleProductSelect = (product: Product) => {
   } else {
     // Directly add simple products with no custom modifiers
     cartStore.addToCart(product.id, product.name, product.imageUrl, Number(product.price), 1, [])
-    toast.success(t('cart.addedToCart', { name: product.name }) || `${product.name} added to cart!`)
+    toast.success(t('cart.addedToCart', { name: product.name }))
   }
 }
 
@@ -103,14 +102,16 @@ const handleSuccessModalClose = () => {
             :placeholder="t('home.searchPlaceholder')"
             type="text"
           />
-          <button
+          <Button
             v-if="searchInput"
             type="button"
-            class="text-stone-400 hover:text-stone-600"
+            variant="tertiary"
+            size="icon"
+            class="h-6 w-6 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-850 hover:no-underline p-0 flex items-center justify-center bg-transparent shadow-none"
             @click="searchInput = ''"
           >
             <span class="material-symbols-outlined text-base">close</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -158,7 +159,7 @@ const handleSuccessModalClose = () => {
           class="animate-spin h-8 w-8 border-4 border-amber-600 border-t-transparent rounded-full"
         ></div>
         <span class="text-xs font-bold uppercase tracking-wider">{{
-          t('cart.loadingCatalog') || 'Loading POS Catalog...'
+          t('cart.loadingCatalog')
         }}</span>
       </div>
 
@@ -168,9 +169,7 @@ const handleSuccessModalClose = () => {
         class="h-64 flex flex-col items-center justify-center text-stone-400 dark:text-stone-600 gap-2 select-none"
       >
         <span class="material-symbols-outlined text-5xl">local_cafe</span>
-        <span class="text-sm font-bold">{{
-          t('home.noProducts') || 'No items found in this category'
-        }}</span>
+        <span class="text-sm font-bold">{{ t('home.noProducts') }}</span>
       </div>
 
       <!-- Premium Grid View -->

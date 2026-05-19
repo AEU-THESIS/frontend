@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 import type { Product, OptionSetElement } from '@/types/product.types'
 import type { CartItemOption } from '@/types/order.types'
 import { useCartStore } from '@/store/useCartStore'
-import { Button } from '@/components/ui/button'
 
 const props = defineProps<{
   product: Product | null
@@ -23,26 +22,34 @@ const selectedElements = ref<
   Record<number, { elementId: number; label: string; priceModifier: number; groupName: string }>
 >({})
 
-// Initialize or reset modifiers when product changes
-watch(
-  () => props.product,
-  newProduct => {
-    if (!newProduct) return
-    quantity.value = 1
-    selectedElements.value = {}
+// Helper to reset selection and pre-select defaults
+const resetSelection = () => {
+  if (!props.product) return
+  quantity.value = 1
+  selectedElements.value = {}
 
-    // Pre-select first/default elements for each option set
-    for (const pos of newProduct.optionSets) {
-      const elements = pos.optionSet.elements
-      if (elements.length > 0) {
-        const defaultEl = elements[0]
-        selectedElements.value[pos.optionSet.id] = {
-          elementId: defaultEl.id,
-          label: defaultEl.label,
-          priceModifier: Number(defaultEl.priceModifier),
-          groupName: pos.optionSet.name,
-        }
+  // Pre-select first/default elements for each option set
+  for (const pos of props.product.optionSets) {
+    const elements = pos.optionSet.elements
+    if (elements.length > 0) {
+      const defaultEl = elements[0]
+      selectedElements.value[pos.optionSet.id] = {
+        elementId: defaultEl.id,
+        label: defaultEl.label,
+        priceModifier: Number(defaultEl.priceModifier),
+        groupName: pos.optionSet.name,
       }
+    }
+  }
+}
+
+// Watch both product changes and modal visibility to trigger resetSelection
+watch(
+  [() => props.product, () => props.isOpen],
+  ([newProduct, newIsOpen], oldState) => {
+    const [oldProduct, oldIsOpen] = oldState || [null, false]
+    if (newProduct && (newProduct !== oldProduct || (newIsOpen && !oldIsOpen))) {
+      resetSelection()
     }
   },
   { immediate: true }
@@ -131,13 +138,15 @@ const handleAddToCart = () => {
             {{ product.category.name }}
           </p>
         </div>
-        <button
+        <Button
           type="button"
-          class="h-9 w-9 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 flex items-center justify-center hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+          variant="tertiary"
+          size="icon"
+          class="h-9 w-9 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 flex items-center justify-center hover:bg-stone-200 dark:hover:bg-stone-700 hover:no-underline transition-colors p-0"
           @click="emit('close')"
         >
           <span class="material-symbols-outlined text-lg">close</span>
-        </button>
+        </Button>
       </div>
 
       <!-- Content -->
@@ -161,14 +170,15 @@ const handleAddToCart = () => {
           </div>
 
           <div class="grid grid-cols-3 gap-2.5">
-            <button
+            <Button
               v-for="el in pos.optionSet.elements"
               :key="el.id"
               type="button"
+              variant="tertiary"
               :class="[
-                'p-3.5 rounded-xl border-2 text-center transition-all flex flex-col justify-center items-center gap-1 active:scale-98 select-none',
+                'p-3.5 rounded-xl border-2 text-center transition-all flex flex-col justify-center items-center gap-1 active:scale-98 select-none h-auto hover:no-underline',
                 selectedElements[pos.optionSet.id]?.elementId === el.id
-                  ? 'border-primary bg-primary/5 text-primary font-bold'
+                  ? 'border-primary bg-primary/5 text-primary font-bold hover:bg-primary/5 hover:text-primary'
                   : 'border-stone-100 dark:border-stone-800 hover:border-stone-200 dark:hover:border-stone-700 text-stone-700 dark:text-stone-300 font-medium bg-stone-50 dark:bg-stone-900/50',
               ]"
               @click="selectElement(pos.optionSet.id, el, pos.optionSet.name)"
@@ -177,7 +187,7 @@ const handleAddToCart = () => {
               <span v-if="Number(el.priceModifier) > 0" class="text-[11px] opacity-80 select-none">
                 +${{ Number(el.priceModifier).toFixed(2) }}
               </span>
-            </button>
+            </Button>
           </div>
         </div>
 

@@ -3,7 +3,6 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
 import type { PaymentCurrency, OrderResult } from '@/types/order.types'
-import { Button } from '@/components/ui/button'
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
@@ -139,13 +138,14 @@ const handleCheckoutSubmit = async () => {
             <h2 class="text-xl font-headline font-bold text-stone-900 dark:text-stone-50">
               {{ t('cart.paymentDetails') }}
             </h2>
-            <button
+            <Button
               type="button"
-              class="md:hidden h-9 w-9 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 flex items-center justify-center hover:bg-stone-200 dark:hover:bg-stone-700"
+              variant="icon"
+              class="md:hidden h-9 w-9 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 flex items-center justify-center hover:bg-stone-200 dark:hover:bg-stone-700 p-0"
               @click="emit('close')"
             >
               <span class="material-symbols-outlined text-lg">close</span>
-            </button>
+            </Button>
           </div>
 
           <!-- DUAL CURRENCY DUE DISPLAY -->
@@ -160,7 +160,7 @@ const handleCheckoutSubmit = async () => {
               <span
                 class="text-[10px] bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 font-bold px-2 py-0.5 rounded-full select-none"
               >
-                1 USD = {{ cartStore.exchangeRate }} KHR
+                {{ t('payments.rate_usd_to_khr', { rate: cartStore.exchangeRate }) }}
               </span>
             </div>
 
@@ -199,10 +199,11 @@ const handleCheckoutSubmit = async () => {
             <div
               class="grid grid-cols-2 gap-1.5 bg-stone-100 dark:bg-stone-950 p-1 rounded-xl border border-stone-200/10"
             >
-              <button
+              <Button
                 type="button"
+                variant="tertiary"
                 :class="[
-                  'py-3 rounded-lg text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 active:scale-98 border',
+                  'py-3 rounded-lg text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 active:scale-98 border h-auto',
                   paymentCurrency === 'USD'
                     ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 border-stone-200/50 dark:border-stone-700/50 shadow-sm'
                     : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300',
@@ -212,12 +213,13 @@ const handleCheckoutSubmit = async () => {
                 <span class="material-symbols-outlined text-lg text-amber-700 dark:text-amber-500"
                   >attach_money</span
                 >
-                USD ($)
-              </button>
-              <button
+                {{ t('payments.usd_label') }}
+              </Button>
+              <Button
                 type="button"
+                variant="tertiary"
                 :class="[
-                  'py-3 rounded-lg text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 active:scale-98 border',
+                  'py-3 rounded-lg text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 active:scale-98 border h-auto',
                   paymentCurrency === 'KHR'
                     ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 border-stone-200/50 dark:border-stone-700/50 shadow-sm'
                     : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300',
@@ -227,8 +229,8 @@ const handleCheckoutSubmit = async () => {
                 <span class="material-symbols-outlined text-lg text-amber-700 dark:text-amber-500"
                   >payments</span
                 >
-                KHR (៛)
-              </button>
+                {{ t('payments.khr_label') }}
+              </Button>
             </div>
           </div>
 
@@ -310,14 +312,15 @@ const handleCheckoutSubmit = async () => {
                 {{ t('cart.amountReceived') }}
               </span>
               <!-- Exact Amount Pill Button -->
-              <button
+              <Button
                 type="button"
-                class="px-3 py-1 rounded-lg border border-amber-600/35 hover:border-amber-600 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-100/50 text-amber-700 dark:text-amber-400 font-extrabold text-[11px] transition-all flex items-center gap-1 active:scale-95 shadow-sm"
+                variant="tertiary"
+                class="px-3 py-1 rounded-lg border border-amber-600/35 hover:border-amber-600 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-100/50 text-amber-700 dark:text-amber-400 font-extrabold text-[11px] transition-all flex items-center gap-1 active:scale-95 shadow-sm h-auto hover:no-underline"
                 @click="handleExactAmount"
               >
                 <span class="material-symbols-outlined text-[13px]">done_all</span>
                 {{ t('cart.exactAmount') }}
-              </button>
+              </Button>
             </div>
             <div class="flex items-baseline gap-1 select-all text-right">
               <span class="text-3xl font-headline font-extrabold text-stone-900 dark:text-stone-50">
@@ -331,44 +334,49 @@ const handleCheckoutSubmit = async () => {
 
           <!-- On-screen Numpad -->
           <div class="grid grid-cols-3 gap-2">
-            <button
+            <Button
               v-for="num in ['1', '2', '3', '4', '5', '6', '7', '8', '9']"
               :key="num"
               type="button"
-              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98"
+              variant="icon"
+              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
               @click="handleNumClick(num)"
             >
               {{ num }}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98"
+              variant="icon"
+              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
               @click="handleNumClick('.')"
             >
               .
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98"
+              variant="icon"
+              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
               @click="handleNumClick('0')"
             >
               0
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              class="py-3 sm:py-4.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xl font-extrabold border border-red-500/10 flex items-center justify-center transition-all active:scale-98"
+              variant="icon"
+              class="py-3 sm:py-4.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xl font-extrabold border border-red-500/10 flex items-center justify-center transition-all active:scale-98 h-auto"
               @click="handleBackspace"
             >
               <span class="material-symbols-outlined">backspace</span>
-            </button>
+            </Button>
           </div>
-          <button
+          <Button
             type="button"
-            class="w-full py-3.5 sm:py-4 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-850 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 font-extrabold text-sm border border-stone-200/15 transition-all"
+            variant="secondary"
+            class="w-full py-3.5 sm:py-4 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-850 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 font-extrabold text-sm border border-stone-200/15 transition-all h-auto"
             @click="handleClear"
           >
             {{ t('cart.clear') }}
-          </button>
+          </Button>
         </div>
 
         <!-- Mobile Complete Action -->

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
-import { Button } from '@/components/ui/button'
 
 import type { CartItemOption } from '@/types/order.types'
 
@@ -30,15 +29,16 @@ const handlePayCash = () => {
         >
           {{ t('cart.currentOrder') }}
         </span>
-        <button
+        <Button
           v-if="cartStore.items.length > 0"
           type="button"
-          class="text-[10px] font-extrabold text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-all uppercase tracking-wider select-none active:scale-95 flex items-center gap-1 bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-xl border border-red-200/10 shadow-sm hover:shadow"
+          variant="tertiary"
+          class="text-[10px] font-extrabold text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-all uppercase tracking-wider select-none active:scale-95 flex items-center gap-1 bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-xl border border-red-200/10 shadow-sm hover:shadow h-auto"
           @click="cartStore.clearCart()"
         >
           <span class="material-symbols-outlined text-[14px]">delete_sweep</span>
           {{ t('cart.clearAll') }}
-        </button>
+        </Button>
       </div>
       <div class="h-px bg-stone-200/60 dark:bg-stone-800/60 w-full"></div>
     </div>
@@ -89,25 +89,27 @@ const handlePayCash = () => {
         <div
           class="flex items-center gap-1.5 bg-stone-100 dark:bg-stone-950 rounded-xl p-1 shrink-0 border border-stone-200/10"
         >
-          <button
+          <Button
             type="button"
-            class="w-7 h-7 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-50 flex items-center justify-center active:scale-90"
+            variant="icon"
+            class="w-7 h-7 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-50 flex items-center justify-center active:scale-90 p-0"
             @click="cartStore.updateQuantity(item.cartId, item.quantity - 1)"
           >
             <span class="material-symbols-outlined text-[13px] font-bold">remove</span>
-          </button>
+          </Button>
           <span
             class="font-extrabold text-stone-900 dark:text-stone-50 px-1 text-sm min-w-4 text-center"
           >
             {{ item.quantity }}
           </span>
-          <button
+          <Button
             type="button"
-            class="w-7 h-7 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-50 flex items-center justify-center active:scale-90"
+            variant="icon"
+            class="w-7 h-7 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-50 flex items-center justify-center active:scale-90 p-0"
             @click="cartStore.updateQuantity(item.cartId, item.quantity + 1)"
           >
             <span class="material-symbols-outlined text-[13px] font-bold">add</span>
-          </button>
+          </Button>
         </div>
 
         <!-- Price -->

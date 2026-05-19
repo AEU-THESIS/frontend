@@ -8,7 +8,7 @@ export interface OptionSetElement {
   id: number
   optionSetId: number
   label: string
-  priceModifier: number | string
+  priceModifier: number
   position?: number
 }
 
@@ -30,7 +30,7 @@ export interface Product {
   id: number
   categoryId: number
   name: string
-  price: number | string
+  price: number
   imageUrl: string | null
   isAvailable: boolean
   category: Category

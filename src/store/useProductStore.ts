@@ -13,6 +13,8 @@ export const useProductStore = defineStore('product', () => {
   // Filters
   const selectedCategoryId = ref<number | undefined>(undefined)
   const searchQuery = ref('')
+  let currentRequestId = 0
+  let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null
 
   // Actions
   const fetchCategories = async () => {
@@ -32,25 +34,46 @@ export const useProductStore = defineStore('product', () => {
   const fetchProducts = async () => {
     isProductsLoading.value = true
     lastError.value = null
+    currentRequestId++
+    const requestId = currentRequestId
     try {
-      products.value = await getProducts(selectedCategoryId.value, searchQuery.value)
+      const result = await getProducts(selectedCategoryId.value, searchQuery.value)
+      if (requestId === currentRequestId) {
+        products.value = result
+      }
     } catch (err) {
-      const error = err as Error
-      lastError.value = error.message || 'Failed to fetch products'
-      throw err
+      if (requestId === currentRequestId) {
+        const error = err as Error
+        lastError.value = error.message || 'Failed to fetch products'
+        throw err
+      }
     } finally {
-      isProductsLoading.value = false
+      if (requestId === currentRequestId) {
+        isProductsLoading.value = false
+      }
     }
   }
 
-  const setCategoryFilter = (catId?: number) => {
+  const setCategoryFilter = async (catId?: number) => {
     selectedCategoryId.value = catId
-    fetchProducts()
+    await fetchProducts()
   }
 
-  const setSearchQuery = (query: string) => {
+  const setSearchQuery = (query: string): Promise<void> => {
     searchQuery.value = query
-    fetchProducts()
+    if (searchDebounceTimeout) {
+      clearTimeout(searchDebounceTimeout)
+    }
+    return new Promise<void>((resolve, reject) => {
+      searchDebounceTimeout = setTimeout(async () => {
+        try {
+          await fetchProducts()
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
+      }, 300)
+    })
   }
 
   return {

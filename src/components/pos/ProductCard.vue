@@ -69,12 +69,12 @@ const handleSelect = () => {
           {{ displayPrice }}
         </span>
 
-        <button
+        <Button
           type="button"
-          class="h-8 w-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 flex items-center justify-center group-hover:bg-amber-600 dark:group-hover:bg-amber-500 group-hover:text-white dark:group-hover:text-white transition-all duration-200"
+          class="h-8 w-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 flex items-center justify-center group-hover:bg-amber-600 dark:group-hover:bg-amber-500 group-hover:text-white dark:group-hover:text-white transition-all duration-200 p-0"
         >
           <span class="material-symbols-outlined text-lg">add</span>
-        </button>
+        </Button>
       </div>
     </div>
   </div>

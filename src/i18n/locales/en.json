@@ -415,5 +415,10 @@
       "weekly": "This Week",
       "monthly": "This Month"
     }
+  },
+  "payments": {
+    "rate_usd_to_khr": "1 USD = {rate} KHR",
+    "usd_label": "USD ($)",
+    "khr_label": "KHR (៛)"
   }
 }
