@@ -43,6 +43,7 @@
       "orders": "Orders",
       "products": "Products",
       "categories": "Categories",
+      "inventory": "Inventory",
       "saleReports": "Sale",
       "analytics": "Analytics",
       "staff": "Staff",
@@ -68,7 +69,8 @@
       "croissant": "Butter Croissant",
       "avocadoToast": "Avocado Toast",
       "matchaLatte": "Matcha Latte"
-    }
+    },
+    "noProducts": "No items found in this category"
   },
   "cart": {
     "order": "Order",
@@ -83,7 +85,37 @@
     "options": {
       "oatMilk": "Oat Milk, 50% Sugar",
       "warmed": "Warmed"
-    }
+    },
+    "currentOrder": "Current Order",
+    "required": "Required",
+    "quantity": "Quantity",
+    "empty": "Your cart is empty",
+    "clearAll": "Clear All",
+    "amountDue": "Amount Due",
+    "selectPaymentCurrency": "Select Payment Currency",
+    "changeDue": "Change Due",
+    "insufficientReceived": "Received amount is insufficient",
+    "cancel": "Cancel",
+    "completePayment": "Complete Payment",
+    "processing": "Processing...",
+    "amountReceived": "Amount Received",
+    "quickCash": "Quick Cash Select",
+    "exactAmount": "Exact Amount",
+    "clear": "Clear",
+    "paymentSuccessful": "Payment Successful!",
+    "orderPlacedDesc": "The transaction completed cleanly, and the order has been recorded.",
+    "orderNumber": "Order Number",
+    "changeReturned": "Change Returned",
+    "newOrder": "New Order",
+    "printReceipt": "Print Receipt",
+    "fetchFailed": "Failed to load POS catalog",
+    "addedToCart": "{name} added to cart!",
+    "addToCart": "Add to Cart",
+    "insufficientPayment": "Payment received is less than total amount due",
+    "checkoutFailed": "Failed to complete transaction",
+    "orderCreatedSuccess": "Order #{num} created successfully!",
+    "paymentDetails": "Payment Details",
+    "loadingCatalog": "Loading POS Catalog..."
   },
   "maintenance": {
     "title": "Under Maintenance",
@@ -290,5 +322,98 @@
     "recommendation": "JPG, PNG or WEBP. Max 2MB.",
     "errorTooLarge": "File size must be less than {max}MB",
     "upload": "Upload"
+  },
+  "inventory": {
+    "title": "Inventory Management",
+    "searchPlaceholder": "Search ingredients...",
+    "all": "All Ingredients",
+    "lowStock": "Low Stock",
+    "outOfStock": "Out of Stock",
+    "good": "In Stock",
+    "stockIn": "Restock (Stock-In)",
+    "stockOut": "Waste / Spoilage (Stock-Out)",
+    "stockCount": "Physical Count (Correction)",
+    "logs": "Audit Trails",
+    "table": {
+      "ingredient": "Ingredient",
+      "currentStock": "Current Stock",
+      "lowThreshold": "Min Threshold",
+      "status": "Status",
+      "lastUpdated": "Last Updated",
+      "actions": "Actions"
+    },
+    "status": {
+      "good": "In Stock",
+      "low": "Low Stock",
+      "out": "Out of Stock"
+    },
+    "modals": {
+      "stockInTitle": "Restock Ingredient",
+      "stockOutTitle": "Log Waste / Spoilage",
+      "stockCountTitle": "Physical Count Correction",
+      "ingredientLabel": "Ingredient",
+      "quantityLabel": "Quantity to Adjust",
+      "actualCountLabel": "Actual Physical Count",
+      "reasonLabel": "Reason / Notes",
+      "reasonPlaceholder": "e.g. Weekly Restock, Broken Cup, etc...",
+      "submitting": "Processing adjustment...",
+      "submit": "Confirm Adjustment",
+      "cancel": "Cancel",
+      "successStockIn": "Successfully restocked ingredient!",
+      "successStockOut": "Successfully recorded waste/deduction!",
+      "successStockCount": "Successfully updated physical count!"
+    },
+    "drawer": {
+      "title": "Ingredient Audit Trail",
+      "type": "Type",
+      "quantity": "Adjustment",
+      "reason": "Reason",
+      "user": "Performed By",
+      "date": "Date & Time",
+      "empty": "No audit records logged for this ingredient."
+    }
+  },
+  "dashboard": {
+    "title": "Manager Analytics Dashboard",
+    "salesOverview": "Sales Overview",
+    "kpis": {
+      "totalSales": "Total Sales (USD)",
+      "totalOrders": "Total Paid Orders",
+      "avgOrder": "Average Order Value",
+      "khrConversion": "Riel Exchange Total"
+    },
+    "performance": {
+      "topProducts": "Top 5 Best-Selling Items",
+      "bottomProducts": "Bottom 5 Lowest-Selling Items",
+      "product": "Product",
+      "qty": "Qty Sold",
+      "revenue": "Revenue",
+      "noData": "No product sales data recorded for this period."
+    },
+    "category": {
+      "title": "Category Performance Breakdown",
+      "noData": "No category data recorded."
+    },
+    "alerts": {
+      "title": "Low & Out of Stock Alerts",
+      "outOfStock": "Out of Stock Items",
+      "lowStock": "Low Stock Items",
+      "good": "All ingredients are sufficiently stocked!",
+      "outBadge": "OUT",
+      "lowBadge": "LOW"
+    },
+    "export": {
+      "button": "Export Report (CSV)",
+      "selectType": "Select Data Type",
+      "sales": "Sales Transactions",
+      "inventory": "Inventory Status",
+      "exporting": "Downloading...",
+      "success": "Report downloaded successfully!"
+    },
+    "periods": {
+      "daily": "Today",
+      "weekly": "This Week",
+      "monthly": "This Month"
+    }
   }
 }
