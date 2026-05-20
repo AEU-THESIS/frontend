@@ -123,7 +123,7 @@ const handlePrintReceipt = () => {
         >
           <svg class="w-[52px] h-[52px] block" viewBox="0 0 52 52">
             <circle
-              class="stroke-[3] [stroke-dasharray:166] [stroke-dashoffset:166] [stroke-miterlimit:10] stroke-emerald-500 fill-none animate-stroke-circle"
+              class="stroke-3 [stroke-dasharray:166] [stroke-dashoffset:166] [stroke-miterlimit:10] stroke-emerald-500 fill-none animate-stroke-circle"
               cx="26"
               cy="26"
               r="25"

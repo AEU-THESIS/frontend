@@ -2,6 +2,15 @@
   "app": {
     "title": "RoutinCafe POS"
   },
+  "preferences": {
+    "title": "System Preference",
+    "language": "Language",
+    "english": "English",
+    "khmer": "Khmer",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "auth": {
     "login": "Login",
     "logout": "Logout",
