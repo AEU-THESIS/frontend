@@ -12,7 +12,7 @@ export const buttonVariants = cva(
           'bg-[#FFDDC7] text-[#2D241E] hover:bg-[#FFDFC9] disabled:bg-[#F9EFE9] disabled:text-[#B6A295]',
         tertiary: [
           'bg-transparent text-[#2D241E] shadow-none', // Default
-          'hover:underline hover:bg-transparent', // Hover
+          'hover:bg-transparent', // Hover
           'disabled:text-[#B6A295] disabled:no-underline', // Disabled
         ],
         icon: 'bg-[#EDEDED] text-[#2D241E] hover:bg-[#E2E2E2] rounded-xl',
