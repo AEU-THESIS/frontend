@@ -1,0 +1,28 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: ['prod', 'main']
+
+concurrency:
+  group: 'deploy-${{ github.ref }}'
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Navigate to the frontend directory inside the main repository on the server
+            cd ~/projects/rountin-cafe/frontend
+            git pull origin ${{ github.ref_name }}
+
+            # Go back to the parent directory where deploy.sh and docker-compose.yaml are located
+            cd ..
+            sh deploy.sh
