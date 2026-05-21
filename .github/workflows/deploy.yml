@@ -4,6 +4,10 @@ on:
   push:
     branches: ['prod', 'main']
 
+concurrency:
+  group: 'deploy-${{ github.ref }}'
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,7 +21,7 @@ jobs:
           script: |
             # Navigate to the frontend directory inside the main repository on the server
             cd ~/projects/rountin-cafe/frontend
-            git pull origin prod
+            git pull origin ${{ github.ref_name }}
 
             # Go back to the parent directory where deploy.sh and docker-compose.yaml are located
             cd ..
