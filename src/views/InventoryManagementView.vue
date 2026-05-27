@@ -41,7 +41,7 @@ import { getImageUrl } from '@/utils/image'
 type SupplyModalMode = 'add' | 'edit' | 'view'
 type InventoryFilterStatus = 'all' | InventoryStatus
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const inventoryStore = useInventoryStore()
 const {
   items,
@@ -65,19 +65,22 @@ const selectedUnit = ref('all')
 const isFilterPanelOpen = ref(false)
 const currentPage = ref(1)
 const pageSize = 10
+const showAllCriticalStock = ref(false)
 const showAllLowStockWarnings = ref(false)
 const isSupplyModalOpen = ref(false)
 const isAdjustmentModalOpen = ref(false)
 const supplyModalMode = ref<SupplyModalMode>('add')
 const selectedItem = ref<InventoryItem | null>(null)
+const itemPendingDelete = ref<InventoryItem | null>(null)
 const selectedImageFile = ref<File | null>(null)
+const supplyNameTouched = ref(false)
 
 const supplyForm = reactive({
   name: '',
   quantity: 0,
   unitOfMeasure: 'Packs',
   minAlertThreshold: 5,
-  imageUrl: '',
+  imageUrl: null as string | null,
 })
 
 const adjustmentForm = reactive({
@@ -86,19 +89,17 @@ const adjustmentForm = reactive({
   notes: '',
 })
 
-const filteredItems = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
+const inventoryQueryFilters = computed(() => {
+  const filters: { search?: string; status?: InventoryStatus; unit?: string } = {}
+  const search = searchQuery.value.trim()
 
-  return items.value.filter(item => {
-    const matchesQuery =
-      !query ||
-      [item.name, item.sku, item.unitOfMeasure].some(value => value?.toLowerCase().includes(query))
-    const matchesStatus = selectedStatus.value === 'all' || item.status === selectedStatus.value
-    const matchesUnit = selectedUnit.value === 'all' || item.unitOfMeasure === selectedUnit.value
+  if (search) filters.search = search
+  if (selectedStatus.value !== 'all') filters.status = selectedStatus.value
+  if (selectedUnit.value !== 'all') filters.unit = selectedUnit.value
 
-    return matchesQuery && matchesStatus && matchesUnit
-  })
+  return filters
 })
+const filteredItems = computed(() => items.value)
 
 const unitFilterOptions = computed(() => {
   const availableUnits = new Set(items.value.map(item => item.unitOfMeasure).filter(Boolean))
@@ -130,8 +131,28 @@ const visiblePaginationPages = computed(() => {
   return Array.from({ length: maxVisible }, (_, index) => start + index)
 })
 const displayedLowStockItems = computed(() =>
-  showAllLowStockWarnings.value ? lowStockItems.value : lowStockItems.value.slice(0, 4)
+  showAllLowStockWarnings.value ? lowStockItems.value : lowStockItems.value.slice(0, 2)
 )
+const displayedCriticalStockItems = computed(() =>
+  showAllCriticalStock.value ? outOfStockItems.value : outOfStockItems.value.slice(0, 2)
+)
+const numberLocale = computed(() => (locale.value === 'kh' ? 'km-KH' : locale.value))
+const formatNumber = (value: number) => value.toLocaleString(numberLocale.value)
+const hasSupplyNameError = computed(
+  () => supplyNameTouched.value && supplyForm.name.trim().length === 0
+)
+const toWholeNumber = (value: unknown, min = 0) => {
+  const numberValue = Number(value)
+  if (!Number.isFinite(numberValue)) return min
+  return Math.max(min, Math.round(numberValue))
+}
+const normalizeSupplyCounts = () => {
+  supplyForm.quantity = toWholeNumber(supplyForm.quantity)
+  supplyForm.minAlertThreshold = toWholeNumber(supplyForm.minAlertThreshold)
+}
+const setAdjustmentAmount = (value: unknown) => {
+  adjustmentForm.amount = toWholeNumber(value, 1)
+}
 
 const statusMeta = {
   in_stock: {
@@ -154,21 +175,21 @@ const statusMeta = {
 const summaryCards = computed(() => [
   {
     label: t('inventory.summary.totalSupplies'),
-    value: totalSupplies.value.toLocaleString('en-US'),
+    value: formatNumber(totalSupplies.value),
     detail: t('inventory.summary.stockHealth', { percentage: stockHealthPercentage.value }),
     icon: Archive,
     class: 'text-[#974400] bg-[#FFF7ED]',
   },
   {
     label: t('inventory.summary.lowStock'),
-    value: lowStockItems.value.length.toLocaleString('en-US'),
+    value: formatNumber(lowStockItems.value.length),
     detail: t('inventory.summary.newCount', { count: lowStockItems.value.length }),
     icon: AlertTriangle,
     class: 'text-amber-600 bg-amber-50',
   },
   {
     label: t('inventory.summary.outOfStock'),
-    value: outOfStockItems.value.length.toLocaleString('en-US'),
+    value: formatNumber(outOfStockItems.value.length),
     detail: t('inventory.summary.alertCount', { count: outOfStockItems.value.length }),
     icon: Box,
     class: 'text-rose-600 bg-rose-50',
@@ -180,8 +201,9 @@ const resetSupplyForm = () => {
   supplyForm.quantity = 0
   supplyForm.unitOfMeasure = 'Packs'
   supplyForm.minAlertThreshold = 5
-  supplyForm.imageUrl = ''
+  supplyForm.imageUrl = null
   selectedImageFile.value = null
+  supplyNameTouched.value = false
 }
 
 const openSupplyModal = (mode: SupplyModalMode, item?: InventoryItem) => {
@@ -194,7 +216,7 @@ const openSupplyModal = (mode: SupplyModalMode, item?: InventoryItem) => {
     supplyForm.quantity = item.quantity
     supplyForm.unitOfMeasure = item.unitOfMeasure
     supplyForm.minAlertThreshold = item.minAlertThreshold
-    supplyForm.imageUrl = item.imageUrl || ''
+    supplyForm.imageUrl = item.imageUrl
   } else {
     resetSupplyForm()
   }
@@ -221,7 +243,7 @@ const closeAdjustmentModal = () => {
   selectedItem.value = null
 }
 
-const handleImageChange = (file: File) => {
+const handleImageChange = (file: File | null) => {
   selectedImageFile.value = file
 }
 
@@ -231,12 +253,19 @@ const saveSupply = async () => {
     return
   }
 
+  supplyNameTouched.value = true
+  if (!supplyForm.name.trim()) {
+    toast.error(t('inventory.messages.nameRequired'))
+    return
+  }
+
   try {
+    normalizeSupplyCounts()
     const payload = {
-      name: supplyForm.name,
+      name: supplyForm.name.trim(),
       unit_of_measure: supplyForm.unitOfMeasure,
-      quantity: Number(supplyForm.quantity),
-      min_alert_threshold: Number(supplyForm.minAlertThreshold),
+      quantity: supplyForm.quantity,
+      min_alert_threshold: supplyForm.minAlertThreshold,
       image: selectedImageFile.value,
     }
 
@@ -246,6 +275,13 @@ const saveSupply = async () => {
     } else {
       await inventoryStore.addItem(payload)
       toast.success(t('inventory.messages.createSuccess'))
+      searchQuery.value = ''
+      selectedStatus.value = 'all'
+      selectedUnit.value = 'all'
+      currentPage.value = 1
+      void inventoryStore.fetchItems().catch(() => {
+        toast.error(t('inventory.messages.loadError'))
+      })
     }
 
     closeSupplyModal()
@@ -254,10 +290,21 @@ const saveSupply = async () => {
   }
 }
 
-const deleteSupply = async (item: InventoryItem) => {
+const openDeleteConfirm = (item: InventoryItem) => {
+  itemPendingDelete.value = item
+}
+
+const closeDeleteConfirm = () => {
+  itemPendingDelete.value = null
+}
+
+const deleteSupply = async () => {
+  if (!itemPendingDelete.value) return
+
   try {
-    await inventoryStore.removeItem(item.id)
+    await inventoryStore.removeItem(itemPendingDelete.value.id)
     toast.success(t('inventory.messages.deleteSuccess'))
+    closeDeleteConfirm()
   } catch {
     toast.error(t('inventory.messages.deleteError'))
   }
@@ -267,9 +314,10 @@ const saveAdjustment = async () => {
   if (!selectedItem.value) return
 
   try {
+    setAdjustmentAmount(adjustmentForm.amount)
     await inventoryStore.adjustItem(selectedItem.value.id, {
       adjustment_type: adjustmentForm.adjustmentType,
-      change_amount: Number(adjustmentForm.amount),
+      change_amount: adjustmentForm.amount,
       notes: adjustmentForm.notes.trim() || null,
     })
     toast.success(t('inventory.messages.adjustSuccess'))
@@ -294,12 +342,25 @@ watch([searchQuery, selectedStatus, selectedUnit], () => {
   currentPage.value = 1
 })
 
+let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null
+watch([searchQuery, selectedStatus, selectedUnit], () => {
+  if (searchDebounceTimeout) {
+    clearTimeout(searchDebounceTimeout)
+  }
+
+  searchDebounceTimeout = setTimeout(() => {
+    inventoryStore.fetchItems(inventoryQueryFilters.value).catch(() => {
+      toast.error(t('inventory.messages.loadError'))
+    })
+  }, 300)
+})
+
 watch(totalPages, pages => {
   if (currentPage.value > pages) currentPage.value = pages
 })
 
 onMounted(() => {
-  inventoryStore.fetchItems().catch(() => {
+  inventoryStore.fetchItems(inventoryQueryFilters.value).catch(() => {
     toast.error(t('inventory.messages.loadError'))
   })
 })
@@ -324,7 +385,7 @@ onMounted(() => {
             <p class="text-[11px] font-black uppercase tracking-wide text-[#A3A3A3]">
               {{ card.label }}
             </p>
-            <p class="mt-1 text-2xl font-black">{{ card.value }}</p>
+            <p class="mt-1 text-2xl font-black text-[#1A1C1C]">{{ card.value }}</p>
           </div>
           <span class="self-start text-xs font-black" :class="card.class.split(' ')[0]">
             {{ card.detail }}
@@ -363,7 +424,7 @@ onMounted(() => {
           </Button>
         </div>
         <Button
-          class="h-11 rounded-xl bg-[#974400] px-6 font-bold text-white shadow-lg shadow-[#974400]/20 hover:bg-[#7d3900]"
+          class="h-11 rounded-xl bg-primary px-6 font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
           @click="openSupplyModal('add')"
         >
           <Plus class="size-4" />
@@ -421,7 +482,7 @@ onMounted(() => {
         </Card>
       </div>
 
-      <Card class="overflow-hidden rounded-xl border-none bg-white p-0 shadow-sm">
+      <Card class="overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm">
         <div class="overflow-x-auto">
           <table class="w-full min-w-[820px] text-left">
             <thead>
@@ -448,7 +509,7 @@ onMounted(() => {
                 v-for="item in paginatedItems"
                 v-else
                 :key="item.id"
-                class="border-b border-slate-100 text-sm font-bold last:border-0"
+                class="border-b border-slate-100 text-sm font-bold text-[#1A1C1C] last:border-0"
               >
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
@@ -464,15 +525,18 @@ onMounted(() => {
                       <ImagePlus v-else class="size-5 text-stone-400" />
                     </div>
                     <div>
-                      <p>{{ item.name }}</p>
+                      <p class="text-[#1A1C1C]">{{ item.name }}</p>
                       <p v-if="item.sku" class="text-xs font-semibold text-[#A3A3A3]">
                         {{ item.sku }}
                       </p>
                     </div>
                   </div>
                 </td>
-                <td class="px-6 py-4" :class="{ 'text-rose-600': item.status === 'out_of_stock' }">
-                  {{ item.quantity.toLocaleString('en-US') }}
+                <td
+                  class="px-6 py-4"
+                  :class="item.status === 'out_of_stock' ? 'text-rose-600' : 'text-[#1A1C1C]'"
+                >
+                  {{ formatNumber(item.quantity) }}
                 </td>
                 <td class="px-6 py-4 text-[#737373]">{{ item.unitOfMeasure }}</td>
                 <td class="px-6 py-4 text-center">
@@ -524,7 +588,7 @@ onMounted(() => {
                       size="icon"
                       class="size-5 rounded-none text-[#EF4444] hover:bg-transparent hover:no-underline"
                       :title="t('inventory.actions.delete')"
-                      @click="deleteSupply(item)"
+                      @click="openDeleteConfirm(item)"
                     >
                       <Trash2 class="size-4 stroke-[2.4]" />
                     </Button>
@@ -600,7 +664,7 @@ onMounted(() => {
               {{ t('inventory.panels.noCriticalStock') }}
             </div>
             <div
-              v-for="item in outOfStockItems.slice(0, 4)"
+              v-for="item in displayedCriticalStockItems"
               :key="item.id"
               class="flex items-center justify-between gap-3"
             >
@@ -617,7 +681,7 @@ onMounted(() => {
                   <ImagePlus v-else class="size-5 text-rose-400" />
                 </div>
                 <div>
-                  <p class="text-sm font-black">{{ item.name }}</p>
+                  <p class="text-sm font-black text-[#1A1C1C]">{{ item.name }}</p>
                   <p class="text-xs font-semibold text-[#A3A3A3]">
                     {{ t('inventory.status.outOfStock') }}
                   </p>
@@ -625,12 +689,24 @@ onMounted(() => {
               </div>
               <Button
                 variant="tertiary"
-                class="h-8 text-xs font-black uppercase text-[#974400]"
+                class="h-8 text-xs font-black uppercase text-primary"
                 @click="openAdjustmentModal(item)"
               >
                 {{ t('inventory.actions.restock') }}
               </Button>
             </div>
+            <Button
+              v-if="outOfStockItems.length > 2"
+              variant="tertiary"
+              class="h-9 w-full rounded-lg bg-[#FAFAFA] text-xs font-black uppercase text-[#1A1C1C] hover:bg-[#F4F4F5] hover:no-underline"
+              @click="showAllCriticalStock = !showAllCriticalStock"
+            >
+              {{
+                showAllCriticalStock
+                  ? t('inventory.actions.viewLessCriticalStock')
+                  : t('inventory.actions.viewAllCriticalStock')
+              }}
+            </Button>
           </div>
         </Card>
 
@@ -665,7 +741,7 @@ onMounted(() => {
                   <ImagePlus v-else class="size-5 text-amber-400" />
                 </div>
                 <div>
-                  <p class="text-sm font-black">{{ item.name }}</p>
+                  <p class="text-sm font-black text-[#1A1C1C]">{{ item.name }}</p>
                   <p class="text-xs font-black uppercase text-amber-600">
                     {{
                       t('inventory.panels.lowStockRatio', {
@@ -679,12 +755,16 @@ onMounted(() => {
               </div>
             </div>
             <Button
-              v-if="lowStockItems.length > 0"
+              v-if="lowStockItems.length > 2"
               variant="tertiary"
-              class="h-9 w-full rounded-lg bg-[#FAFAFA] text-xs font-black uppercase text-[#525252] hover:bg-[#F4F4F5] hover:no-underline"
+              class="h-9 w-full rounded-lg bg-[#FAFAFA] text-xs font-black uppercase text-[#1A1C1C] hover:bg-[#F4F4F5] hover:no-underline"
               @click="showAllLowStockWarnings = !showAllLowStockWarnings"
             >
-              {{ t('inventory.actions.viewAllWarnings') }}
+              {{
+                showAllLowStockWarnings
+                  ? t('inventory.actions.viewLessWarnings')
+                  : t('inventory.actions.viewAllWarnings')
+              }}
             </Button>
           </div>
         </Card>
@@ -697,7 +777,7 @@ onMounted(() => {
     >
       <Card class="w-full max-w-[520px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0">
         <header class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-          <h2 class="text-lg font-black">{{ getModalTitle() }}</h2>
+          <h2 class="text-lg font-black text-[#1A1C1C]">{{ getModalTitle() }}</h2>
           <Button variant="tertiary" size="icon" class="size-8" @click="closeSupplyModal">
             <X class="size-4" />
           </Button>
@@ -705,13 +785,27 @@ onMounted(() => {
 
         <div class="space-y-4 p-6">
           <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
-            {{ t('inventory.form.itemName') }}
+            <span>
+              {{ t('inventory.form.itemName') }}
+              <span class="text-rose-600">{{ t('inventory.form.required') }}</span>
+            </span>
             <Input
               v-model="supplyForm.name"
               :disabled="supplyModalMode === 'view'"
               :placeholder="t('inventory.form.itemNamePlaceholder')"
+              :aria-invalid="hasSupplyNameError"
               class="h-11 rounded-xl bg-[#FAFAFA] font-bold"
+              :class="
+                hasSupplyNameError
+                  ? 'border-rose-300 text-rose-700 focus-visible:ring-rose-200'
+                  : ''
+              "
+              required
+              @blur="supplyNameTouched = true"
             />
+            <span v-if="hasSupplyNameError" class="text-xs font-bold text-rose-600">
+              {{ t('inventory.messages.nameRequired') }}
+            </span>
           </Label>
 
           <div class="grid gap-4 sm:grid-cols-2">
@@ -722,8 +816,9 @@ onMounted(() => {
                 :disabled="supplyModalMode === 'view'"
                 type="number"
                 min="0"
-                step="0.01"
+                step="1"
                 class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold"
+                @blur="supplyForm.quantity = toWholeNumber(supplyForm.quantity)"
               />
             </Label>
             <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
@@ -748,9 +843,10 @@ onMounted(() => {
               :disabled="supplyModalMode === 'view'"
               type="number"
               min="0"
-              step="0.01"
+              step="1"
               :placeholder="t('inventory.form.minAlertPlaceholder')"
               class="h-11 rounded-xl bg-[#FAFAFA] font-bold"
+              @blur="supplyForm.minAlertThreshold = toWholeNumber(supplyForm.minAlertThreshold)"
             />
           </Label>
 
@@ -775,7 +871,7 @@ onMounted(() => {
           </Button>
           <Button
             v-if="supplyModalMode !== 'view'"
-            class="h-11 rounded-xl bg-[#B65A00] px-6 font-bold text-white hover:bg-[#974400]"
+            class="h-11 rounded-xl bg-primary px-6 font-bold text-primary-foreground hover:bg-primary/90"
             :disabled="isSaving"
             @click="saveSupply"
           >
@@ -784,6 +880,51 @@ onMounted(() => {
                 ? t('inventory.actions.editSupply')
                 : t('inventory.actions.addSupply')
             }}
+          </Button>
+        </footer>
+      </Card>
+    </div>
+
+    <div
+      v-if="itemPendingDelete"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+      @click.self="closeDeleteConfirm"
+    >
+      <Card class="w-full max-w-[420px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0">
+        <header class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+          <h2 class="text-lg font-black text-[#1A1C1C]">
+            {{ t('inventory.deleteConfirm.title') }}
+          </h2>
+          <Button variant="tertiary" size="icon" class="size-8" @click="closeDeleteConfirm">
+            <X class="size-4" />
+          </Button>
+        </header>
+
+        <div class="space-y-3 p-6">
+          <p class="text-sm font-semibold leading-6 text-[#737373]">
+            {{
+              t('inventory.deleteConfirm.message', {
+                name: itemPendingDelete.name,
+              })
+            }}
+          </p>
+        </div>
+
+        <footer class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4">
+          <Button
+            variant="tertiary"
+            class="h-11 rounded-xl px-6 font-bold text-[#1A1C1C]"
+            :disabled="isSaving"
+            @click="closeDeleteConfirm"
+          >
+            {{ t('common.cancel') }}
+          </Button>
+          <Button
+            class="h-11 rounded-xl bg-destructive px-6 font-bold text-white hover:bg-destructive/90"
+            :disabled="isSaving"
+            @click="deleteSupply"
+          >
+            {{ t('inventory.actions.delete') }}
           </Button>
         </footer>
       </Card>
@@ -875,16 +1016,17 @@ onMounted(() => {
               variant="tertiary"
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
-              @click="adjustmentForm.amount = Math.max(0, Number(adjustmentForm.amount) - 1)"
+              @click="setAdjustmentAmount(Number(adjustmentForm.amount) - 1)"
             >
               <Minus class="size-4" />
             </Button>
             <Input
               v-model="adjustmentForm.amount"
               type="number"
-              min="0.01"
-              step="0.01"
+              min="1"
+              step="1"
               class="h-full border-0 bg-transparent px-0 text-right text-xl font-normal text-[#222222] shadow-none [appearance:textfield] focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              @blur="setAdjustmentAmount(adjustmentForm.amount)"
             />
             <span class="pl-4 text-sm font-normal text-[#B2B2B2]">
               {{ selectedItem.unitOfMeasure }}
@@ -893,7 +1035,7 @@ onMounted(() => {
               variant="tertiary"
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
-              @click="adjustmentForm.amount = Number(adjustmentForm.amount) + 1"
+              @click="setAdjustmentAmount(Number(adjustmentForm.amount) + 1)"
             >
               <Plus class="size-4" />
             </Button>

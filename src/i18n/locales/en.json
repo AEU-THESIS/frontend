@@ -2,6 +2,15 @@
   "app": {
     "title": "RoutinCafe POS"
   },
+  "preferences": {
+    "title": "System Preference",
+    "language": "Language",
+    "english": "English",
+    "khmer": "Khmer",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "auth": {
     "login": "Login",
     "logout": "Logout",
@@ -44,6 +53,7 @@
       "inventory": "Inventory Management",
       "products": "Stock",
       "categories": "Categories",
+      "inventory": "Inventory",
       "saleReports": "Sale",
       "analytics": "Analytics",
       "staff": "Staff",
@@ -69,7 +79,8 @@
       "croissant": "Butter Croissant",
       "avocadoToast": "Avocado Toast",
       "matchaLatte": "Matcha Latte"
-    }
+    },
+    "noProducts": "No items found in this category"
   },
   "cart": {
     "order": "Order",
@@ -84,7 +95,37 @@
     "options": {
       "oatMilk": "Oat Milk, 50% Sugar",
       "warmed": "Warmed"
-    }
+    },
+    "currentOrder": "Current Order",
+    "required": "Required",
+    "quantity": "Quantity",
+    "empty": "Your cart is empty",
+    "clearAll": "Clear All",
+    "amountDue": "Amount Due",
+    "selectPaymentCurrency": "Select Payment Currency",
+    "changeDue": "Change Due",
+    "insufficientReceived": "Received amount is insufficient",
+    "cancel": "Cancel",
+    "completePayment": "Complete Payment",
+    "processing": "Processing...",
+    "amountReceived": "Amount Received",
+    "quickCash": "Quick Cash Select",
+    "exactAmount": "Exact Amount",
+    "clear": "Clear",
+    "paymentSuccessful": "Payment Successful!",
+    "orderPlacedDesc": "The transaction completed cleanly, and the order has been recorded.",
+    "orderNumber": "Order Number",
+    "changeReturned": "Change Returned",
+    "newOrder": "New Order",
+    "printReceipt": "Print Receipt",
+    "fetchFailed": "Failed to load POS catalog",
+    "addedToCart": "{name} added to cart!",
+    "addToCart": "Add to Cart",
+    "insufficientPayment": "Payment received is less than total amount due",
+    "checkoutFailed": "Failed to complete transaction",
+    "orderCreatedSuccess": "Order #{num} created successfully!",
+    "paymentDetails": "Payment Details",
+    "loadingCatalog": "Loading POS Catalog..."
   },
   "maintenance": {
     "title": "Under Maintenance",
@@ -191,6 +232,9 @@
       "delete": "Delete",
       "restock": "Restock",
       "viewAllWarnings": "View All Warnings",
+      "viewLessWarnings": "View Less Warnings",
+      "viewAllCriticalStock": "View All Critical Stock",
+      "viewLessCriticalStock": "View Less Critical Stock",
       "close": "Close",
       "editSupply": "Edit Supply",
       "addSupply": "Add Supply"
@@ -207,8 +251,13 @@
       "editTitle": "Edit Supply",
       "viewTitle": "Supply Detail"
     },
+    "deleteConfirm": {
+      "title": "Delete Supply",
+      "message": "Are you sure you want to delete {name}? This action cannot be undone."
+    },
     "form": {
       "itemName": "Item Name",
+      "required": " *",
       "itemNamePlaceholder": "e.g. Double Wall Glassware",
       "numberOfItems": "Number of Items",
       "unitOfMeasure": "Unit of Measure",
@@ -236,6 +285,7 @@
       "loading": "Loading inventory...",
       "empty": "No supplies found.",
       "loadError": "Unable to load inventory.",
+      "nameRequired": "Item name is required.",
       "createSuccess": "Supply added.",
       "updateSuccess": "Supply updated.",
       "saveError": "Unable to save supply.",
@@ -391,5 +441,53 @@
     "recommendation": "JPG, PNG or WEBP. Max 2MB.",
     "errorTooLarge": "File size must be less than {max}MB",
     "upload": "Upload"
+  },
+  "dashboard": {
+    "title": "Manager Analytics Dashboard",
+    "salesOverview": "Sales Overview",
+    "kpis": {
+      "totalSales": "Total Sales (USD)",
+      "totalOrders": "Total Paid Orders",
+      "avgOrder": "Average Order Value",
+      "khrConversion": "Riel Exchange Total"
+    },
+    "performance": {
+      "topProducts": "Top 5 Best-Selling Items",
+      "bottomProducts": "Bottom 5 Lowest-Selling Items",
+      "product": "Product",
+      "qty": "Qty Sold",
+      "revenue": "Revenue",
+      "noData": "No product sales data recorded for this period."
+    },
+    "category": {
+      "title": "Category Performance Breakdown",
+      "noData": "No category data recorded."
+    },
+    "alerts": {
+      "title": "Low & Out of Stock Alerts",
+      "outOfStock": "Out of Stock Items",
+      "lowStock": "Low Stock Items",
+      "good": "All ingredients are sufficiently stocked!",
+      "outBadge": "OUT",
+      "lowBadge": "LOW"
+    },
+    "export": {
+      "button": "Export Report (CSV)",
+      "selectType": "Select Data Type",
+      "sales": "Sales Transactions",
+      "inventory": "Inventory Status",
+      "exporting": "Downloading...",
+      "success": "Report downloaded successfully!"
+    },
+    "periods": {
+      "daily": "Today",
+      "weekly": "This Week",
+      "monthly": "This Month"
+    }
+  },
+  "payments": {
+    "rate_usd_to_khr": "1 USD = {rate} KHR",
+    "usd_label": "USD ($)",
+    "khr_label": "KHR (៛)"
   }
 }

@@ -1,9 +1,12 @@
 export interface User {
-  user_id: number
+  user_id?: number
+  id?: number
   name?: string
   email?: string
-  shop_id: number
+  shop_id?: number
   role: string | null
+  image_url?: string | null
+  imageUrl?: string | null
 }
 
 export interface AuthResponse {

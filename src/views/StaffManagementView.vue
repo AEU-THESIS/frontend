@@ -82,7 +82,7 @@ const getRoleBadgeClass = (role: string | null) => {
 </script>
 
 <template>
-  <div class="flex h-full flex-col bg-[#F9FAFB] font-body overflow-hidden">
+  <div class="flex h-full flex-col bg-[#F9FAFB] dark:bg-stone-900 font-body overflow-hidden">
     <div class="flex-1 overflow-y-auto custom-scrollbar px-10 py-10">
       <div class="mx-auto w-full max-w-[1400px] space-y-8">
         <!-- Stats Cards Row -->
@@ -115,7 +115,9 @@ const getRoleBadgeClass = (role: string | null) => {
         </div>
 
         <!-- Main Card -->
-        <Card class="overflow-hidden border-none shadow-sm rounded-2xl bg-white">
+        <Card
+          class="overflow-hidden border border-transparent dark:border-stone-800 shadow-sm rounded-2xl bg-white dark:bg-stone-900/50 backdrop-blur-sm"
+        >
           <!-- Toolbar -->
           <div class="p-8 flex flex-col gap-6 md:flex-row md:items-center justify-between">
             <div class="flex flex-col md:flex-row items-center gap-8 flex-1">
@@ -125,7 +127,7 @@ const getRoleBadgeClass = (role: string | null) => {
                 <Input
                   v-model="searchQuery"
                   :placeholder="t('staff.searchPlaceholder')"
-                  class="h-12 rounded-xl border-none bg-[#FAFAFA] pl-11 pr-4 text-sm font-medium focus-visible:ring-1 focus-visible:ring-primary/20 transition-all placeholder:text-[#A3A3A3]"
+                  class="h-12 rounded-xl border-none bg-[#FAFAFA] dark:bg-stone-800/50 pl-11 pr-4 text-sm font-medium focus-visible:ring-1 focus-visible:ring-primary/20 transition-all placeholder:text-[#A3A3A3] text-stone-800 dark:text-stone-100"
                   @input="handleSearch"
                 />
               </div>
@@ -138,7 +140,7 @@ const getRoleBadgeClass = (role: string | null) => {
                 <div class="relative min-w-[140px]">
                   <Select v-model="roleFilter">
                     <SelectTrigger
-                      class="h-12 w-full border-none bg-[#FAFAFA] px-5 text-sm font-bold text-[#1A1C1C] focus:ring-0"
+                      class="h-12 w-full border-none bg-[#FAFAFA] dark:bg-stone-800/50 px-5 text-sm font-bold text-[#1A1C1C] dark:text-stone-100 focus:ring-0"
                     >
                       <SelectValue :placeholder="t('staff.allRoles')" />
                     </SelectTrigger>
@@ -168,7 +170,7 @@ const getRoleBadgeClass = (role: string | null) => {
             <table class="w-full text-left">
               <thead>
                 <tr
-                  class="text-[11px] font-bold uppercase tracking-wider text-[#A3A3A3] border-b border-slate-50"
+                  class="text-[11px] font-bold uppercase tracking-wider text-[#A3A3A3] border-b border-slate-50 dark:border-stone-800"
                 >
                   <th class="px-8 py-4 font-bold">{{ t('staff.table.staffMember') }}</th>
                   <th class="px-8 py-4 font-bold text-center">{{ t('staff.table.role') }}</th>
@@ -177,7 +179,7 @@ const getRoleBadgeClass = (role: string | null) => {
                   <th class="px-8 py-4 font-bold text-right">{{ t('staff.table.actions') }}</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-50">
+              <tbody class="divide-y divide-slate-50 dark:divide-stone-800">
                 <tr v-if="isLoading">
                   <td colspan="5" class="px-8 py-20 text-center text-slate-400">
                     <LoaderCircle class="size-8 animate-spin mx-auto mb-2 text-primary/40" />
@@ -196,12 +198,12 @@ const getRoleBadgeClass = (role: string | null) => {
                 <tr
                   v-for="member in staffMembers"
                   :key="member.id"
-                  class="group hover:bg-slate-50/50 transition-colors"
+                  class="group hover:bg-slate-50/50 dark:hover:bg-stone-800/30 transition-colors"
                 >
                   <td class="px-8 py-5">
                     <div class="flex items-center gap-4">
                       <div
-                        class="size-10 overflow-hidden rounded-full shadow-sm shrink-0 border border-slate-50"
+                        class="size-10 overflow-hidden rounded-full shadow-sm shrink-0 border border-slate-50 dark:border-stone-800"
                       >
                         <img
                           v-if="member.imageUrl"
@@ -210,14 +212,16 @@ const getRoleBadgeClass = (role: string | null) => {
                         />
                         <div
                           v-else
-                          class="flex size-full items-center justify-center bg-[#F3F4F6] text-[#A3A3A3] text-xs font-bold"
+                          class="flex size-full items-center justify-center bg-[#F3F4F6] dark:bg-stone-800 text-[#A3A3A3] text-xs font-bold"
                         >
                           {{ getInitials(member.name) }}
                         </div>
                       </div>
                       <div>
-                        <p class="text-[14px] font-bold text-[#1A1C1C]">{{ member.name }}</p>
-                        <p class="text-[11px] font-bold text-[#737373] mt-0.5">
+                        <p class="text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
+                          {{ member.name }}
+                        </p>
+                        <p class="text-[11px] font-bold text-[#737373] dark:text-stone-400 mt-0.5">
                           {{ t('staff.employeeId') }}: {{ member.employeeId }}
                         </p>
                       </div>
@@ -233,19 +237,25 @@ const getRoleBadgeClass = (role: string | null) => {
                   </td>
                   <td class="px-8 py-5">
                     <div class="text-[13px]">
-                      <p class="font-bold text-[#1A1C1C]">{{ member.email }}</p>
-                      <p class="font-bold text-[#737373]">{{ member.phone || t('common.na') }}</p>
+                      <p class="font-bold text-[#1A1C1C] dark:text-stone-100">{{ member.email }}</p>
+                      <p class="font-bold text-[#737373] dark:text-stone-400">
+                        {{ member.phone || t('common.na') }}
+                      </p>
                     </div>
                   </td>
                   <td class="px-8 py-5">
                     <div class="flex items-center gap-2.5">
                       <div
                         class="size-2 rounded-full"
-                        :class="member.isActive ? 'bg-[#22C55E]' : 'bg-slate-300'"
+                        :class="member.isActive ? 'bg-[#22C55E]' : 'bg-slate-300 dark:bg-stone-600'"
                       ></div>
                       <span
                         class="text-[13px] font-bold"
-                        :class="member.isActive ? 'text-[#1A1C1C]' : 'text-[#A3A3A3]'"
+                        :class="
+                          member.isActive
+                            ? 'text-[#1A1C1C] dark:text-stone-100'
+                            : 'text-[#A3A3A3] dark:text-stone-500'
+                        "
                       >
                         {{ member.isActive ? t('staff.table.active') : t('staff.table.notActive') }}
                       </span>
@@ -256,7 +266,7 @@ const getRoleBadgeClass = (role: string | null) => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        class="size-8 text-[#22C55E] hover:bg-[#22C55E]/10"
+                        class="size-8 text-[#22C55E] hover:bg-[#22C55E]/10 dark:hover:bg-[#22C55E]/20"
                         @click="openDetailDialog(member)"
                       >
                         <Eye class="size-5" />
@@ -264,7 +274,7 @@ const getRoleBadgeClass = (role: string | null) => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        class="size-8 text-slate-400 hover:bg-slate-100"
+                        class="size-8 text-slate-400 hover:bg-slate-100 dark:hover:bg-stone-800"
                         @click="openEditDialog(member)"
                       >
                         <Pencil class="size-5" />
@@ -273,7 +283,7 @@ const getRoleBadgeClass = (role: string | null) => {
                         v-if="member.id !== authStore.user?.user_id"
                         variant="ghost"
                         size="icon"
-                        class="size-8 text-rose-400 hover:bg-rose-50"
+                        class="size-8 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50"
                         @click="handleDelete(member.id)"
                       >
                         <Trash2 class="size-4" />
@@ -287,7 +297,7 @@ const getRoleBadgeClass = (role: string | null) => {
 
           <!-- Pagination -->
           <div
-            class="p-8 flex flex-col md:flex-row items-center justify-between border-t border-slate-50 gap-4"
+            class="p-8 flex flex-col md:flex-row items-center justify-between border-t border-slate-50 dark:border-stone-800 gap-4"
           >
             <p class="text-sm font-bold text-slate-400">
               {{
@@ -303,7 +313,7 @@ const getRoleBadgeClass = (role: string | null) => {
               <Button
                 variant="outline"
                 size="icon"
-                class="size-10 border-slate-100 text-slate-400 hover:bg-slate-50"
+                class="size-10 border-slate-100 dark:border-stone-700 text-slate-400 dark:text-stone-400 bg-white dark:bg-stone-800 hover:bg-slate-50 dark:hover:bg-stone-700"
                 :disabled="pagination.page === 1"
                 @click="changePage(pagination.page - 1)"
               >
@@ -319,7 +329,7 @@ const getRoleBadgeClass = (role: string | null) => {
                   :class="
                     pagination.page === p
                       ? 'bg-[#D2691E] text-white hover:bg-[#B35919]'
-                      : 'bg-white text-[#737373] border-[#EEEEEE] hover:bg-slate-50'
+                      : 'bg-white dark:bg-stone-800 text-[#737373] dark:text-stone-300 border-[#EEEEEE] dark:border-stone-700 hover:bg-slate-50 dark:hover:bg-stone-700'
                   "
                   @click="changePage(p)"
                 >
@@ -330,7 +340,7 @@ const getRoleBadgeClass = (role: string | null) => {
               <Button
                 variant="outline"
                 size="icon"
-                class="size-10 border-slate-100 text-slate-400 hover:bg-slate-50"
+                class="size-10 border-slate-100 dark:border-stone-700 text-slate-400 dark:text-stone-400 bg-white dark:bg-stone-800 hover:bg-slate-50 dark:hover:bg-stone-700"
                 :disabled="pagination.page === pagination.totalPages"
                 @click="changePage(pagination.page + 1)"
               >

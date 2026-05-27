@@ -48,6 +48,16 @@ http.interceptors.request.use(config => {
   const authStore = useAuthStore()
   const token = authStore.getAccessToken()
 
+  if (config.data instanceof FormData) {
+    const headers = config.headers as { delete?: (name: string) => void; [key: string]: unknown }
+    if (headers.delete) {
+      headers.delete('Content-Type')
+    } else {
+      delete headers['Content-Type']
+      delete headers['content-type']
+    }
+  }
+
   if (authStore.isAuthenticated()) {
     config.headers.Authorization = `Bearer ${token}`
   }

@@ -47,9 +47,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Store only minimal non-PII fields
     const minimalUser = {
-      user_id: response.user.user_id,
+      user_id: response.user.user_id || response.user.id,
       shop_id: response.user.shop_id,
       role: response.user.role,
+      name: response.user.name,
+      imageUrl: response.user.image_url || response.user.imageUrl,
     }
     localStorage.setItem('user', JSON.stringify(minimalUser))
   }

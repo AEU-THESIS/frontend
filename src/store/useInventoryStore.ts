@@ -6,6 +6,7 @@ import {
   deleteInventoryItem,
   getInventoryItems,
   updateInventoryItem,
+  type InventoryItemFilters,
 } from '@/api/inventory'
 import type {
   InventoryAdjustmentPayload,
@@ -38,12 +39,21 @@ export const useInventoryStore = defineStore('inventory', () => {
     items.value[index] = item
   }
 
-  const fetchItems = async () => {
+  let currentRequestId = 0
+
+  const fetchItems = async (filters: InventoryItemFilters = {}) => {
     isLoading.value = true
+    currentRequestId += 1
+    const requestId = currentRequestId
     try {
-      items.value = await getInventoryItems()
+      const result = await getInventoryItems(filters)
+      if (requestId === currentRequestId) {
+        items.value = result
+      }
     } finally {
-      isLoading.value = false
+      if (requestId === currentRequestId) {
+        isLoading.value = false
+      }
     }
   }
 
@@ -70,8 +80,13 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   const removeItem = async (id: number) => {
-    await deleteInventoryItem(id)
-    items.value = items.value.filter(item => item.id !== id)
+    isSaving.value = true
+    try {
+      await deleteInventoryItem(id)
+      items.value = items.value.filter(item => item.id !== id)
+    } finally {
+      isSaving.value = false
+    }
   }
 
   const adjustItem = async (id: number, payload: InventoryAdjustmentPayload) => {

@@ -8,6 +8,12 @@ import { inventoryAdjustmentSchema, inventoryItemSchema } from '@/validations/in
 
 const INVENTORY_ENDPOINT = '/api/inventories'
 
+export interface InventoryItemFilters {
+  search?: string
+  status?: InventoryItem['status']
+  unit?: string
+}
+
 const toInventoryFormData = (payload: InventoryItemPayload) => {
   const parsed = inventoryItemSchema.parse(payload)
   const formData = new FormData()
@@ -23,11 +29,13 @@ const toInventoryFormData = (payload: InventoryItemPayload) => {
 }
 
 const multipartConfig = {
-  headers: { 'Content-Type': 'multipart/form-data' },
+  headers: {},
 }
 
-export const getInventoryItems = async (): Promise<InventoryItem[]> => {
-  const res = await http.get<InventoryItem[]>(INVENTORY_ENDPOINT)
+export const getInventoryItems = async (
+  filters: InventoryItemFilters = {}
+): Promise<InventoryItem[]> => {
+  const res = await http.get<InventoryItem[]>(INVENTORY_ENDPOINT, { params: filters })
   return res.data
 }
 
