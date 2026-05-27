@@ -10,8 +10,12 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  CircleCheck,
+  CircleMinus,
+  CirclePlus,
   Eye,
   ImagePlus,
+  Minus,
   Pencil,
   Plus,
   Search,
@@ -787,20 +791,29 @@ onMounted(() => {
 
     <div
       v-if="isAdjustmentModalOpen && selectedItem"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]"
     >
-      <Card class="w-full max-w-[450px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0">
-        <header class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-          <h2 class="text-base font-black">{{ t('inventory.adjustment.title') }}</h2>
-          <Button variant="tertiary" size="icon" class="size-8" @click="closeAdjustmentModal">
-            <X class="size-4" />
+      <Card
+        class="w-full max-w-[414px] gap-0 overflow-hidden rounded-[14px] border-none bg-white p-0 shadow-2xl"
+      >
+        <header class="flex items-center justify-between border-b border-slate-100 px-5 py-[18px]">
+          <h2 class="text-base font-medium text-[#222222]">
+            {{ t('inventory.adjustment.title') }}
+          </h2>
+          <Button
+            variant="tertiary"
+            size="icon"
+            class="size-8 text-[#9A9A9A] hover:text-[#2D241E]"
+            @click="closeAdjustmentModal"
+          >
+            <X class="size-5" />
           </Button>
         </header>
 
-        <div class="space-y-5 p-6">
-          <div class="flex items-center gap-3 rounded-xl bg-[#F6F6F6] p-3">
+        <div class="space-y-5 px-5 py-[22px]">
+          <div class="flex items-center gap-4 rounded-lg bg-[#F4F4F4] p-4">
             <div
-              class="flex size-11 items-center justify-center overflow-hidden rounded-lg bg-white"
+              class="flex size-[38px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-white shadow-sm"
             >
               <img
                 v-if="selectedItem.imageUrl"
@@ -811,8 +824,8 @@ onMounted(() => {
               <Box v-else class="size-5 text-stone-400" />
             </div>
             <div>
-              <p class="text-sm font-black">{{ selectedItem.name }}</p>
-              <p class="text-xs font-semibold text-[#737373]">
+              <p class="text-sm font-medium leading-5 text-[#2D241E]">{{ selectedItem.name }}</p>
+              <p class="text-xs leading-5 text-[#666666]">
                 {{
                   t('inventory.adjustment.currentStock', {
                     quantity: selectedItem.quantity,
@@ -824,69 +837,94 @@ onMounted(() => {
           </div>
 
           <div>
-            <p class="mb-2 text-[11px] font-black uppercase text-[#A3A3A3]">
+            <p class="mb-3 text-sm font-normal uppercase text-[#8A8A8A]">
               {{ t('inventory.adjustment.typeAndAmount') }}
             </p>
-            <div class="grid grid-cols-2 overflow-hidden rounded-xl bg-[#F6F6F6] p-1">
+            <div class="grid h-9 grid-cols-2 overflow-hidden rounded-md bg-[#F3F3F3] p-[3px]">
               <Button
                 variant="tertiary"
-                class="rounded-lg py-2 text-xs font-black"
-                :class="adjustmentForm.adjustmentType === 'add' ? 'bg-white text-[#974400]' : ''"
+                class="h-full rounded px-3 text-[11px] font-bold uppercase leading-none text-[#5D5D5D] no-underline hover:no-underline"
+                :class="
+                  adjustmentForm.adjustmentType === 'add' ? 'bg-white text-[#A64E05] shadow-sm' : ''
+                "
                 @click="adjustmentForm.adjustmentType = 'add'"
               >
+                <CirclePlus class="size-3.5" />
                 {{ t('inventory.adjustment.addStock') }}
               </Button>
               <Button
                 variant="tertiary"
-                class="rounded-lg py-2 text-xs font-black"
-                :class="adjustmentForm.adjustmentType === 'remove' ? 'bg-white text-[#974400]' : ''"
+                class="h-full rounded px-3 text-[11px] font-bold uppercase leading-none text-[#5D5D5D] no-underline hover:no-underline"
+                :class="
+                  adjustmentForm.adjustmentType === 'remove'
+                    ? 'bg-white text-[#A64E05] shadow-sm'
+                    : ''
+                "
                 @click="adjustmentForm.adjustmentType = 'remove'"
               >
+                <CircleMinus class="size-3.5" />
                 {{ t('inventory.adjustment.removeStock') }}
               </Button>
             </div>
           </div>
 
-          <div class="relative">
+          <div
+            class="grid h-[54px] grid-cols-[46px_minmax(0,1fr)_64px_46px] items-center rounded-xl border border-[#E1E1E1] bg-[#FAFAFA] shadow-sm"
+          >
+            <Button
+              variant="tertiary"
+              size="icon"
+              class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
+              @click="adjustmentForm.amount = Math.max(0, Number(adjustmentForm.amount) - 1)"
+            >
+              <Minus class="size-4" />
+            </Button>
             <Input
               v-model="adjustmentForm.amount"
               type="number"
               min="0.01"
               step="0.01"
-              class="h-12 rounded-xl bg-[#FAFAFA] text-center text-lg font-black"
+              class="h-full border-0 bg-transparent px-0 text-right text-xl font-normal text-[#222222] shadow-none [appearance:textfield] focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
-            <span
-              class="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-[#A3A3A3]"
-            >
+            <span class="pl-4 text-sm font-normal text-[#B2B2B2]">
               {{ selectedItem.unitOfMeasure }}
             </span>
+            <Button
+              variant="tertiary"
+              size="icon"
+              class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
+              @click="adjustmentForm.amount = Number(adjustmentForm.amount) + 1"
+            >
+              <Plus class="size-4" />
+            </Button>
           </div>
 
           <Label
-            class="flex flex-col items-start gap-2 text-xs font-black uppercase text-[#A3A3A3]"
+            class="flex flex-col items-start gap-3 text-sm font-normal uppercase text-[#8A8A8A]"
           >
             {{ t('inventory.adjustment.notes') }}
             <Textarea
               v-model="adjustmentForm.notes"
               :placeholder="t('inventory.adjustment.notesPlaceholder')"
-              class="min-h-28 rounded-xl bg-[#FAFAFA] text-sm font-semibold normal-case"
+              class="min-h-[88px] resize-none rounded-xl border-[#E1E1E1] bg-white px-4 py-3 text-base font-normal normal-case text-[#2D241E] shadow-sm placeholder:text-[#7D8796] focus-visible:ring-0"
             />
           </Label>
         </div>
 
-        <footer class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4">
+        <footer class="flex gap-3 border-t border-slate-100 bg-[#F1F1F1] px-5 py-[18px]">
           <Button
             variant="tertiary"
-            class="h-11 rounded-xl px-6 font-bold"
+            class="h-[46px] flex-1 rounded-lg border border-[#E4E4E4] bg-white px-6 text-sm font-normal text-[#444444] shadow-sm hover:bg-white hover:no-underline"
             @click="closeAdjustmentModal"
           >
             {{ t('common.cancel') }}
           </Button>
           <Button
-            class="h-11 rounded-xl bg-[#974400] px-6 font-bold text-white hover:bg-[#7d3900]"
+            class="h-[46px] flex-1 rounded-lg bg-[#A64E05] px-6 text-sm font-normal text-white shadow-md shadow-[#A64E05]/25 hover:bg-[#8f4102]"
             :disabled="isSaving"
             @click="saveAdjustment"
           >
+            <CircleCheck class="size-4" />
             {{ t('common.confirm') }}
           </Button>
         </footer>
