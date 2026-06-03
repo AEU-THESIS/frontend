@@ -2,6 +2,30 @@
   "app": {
     "title": "RoutinCafe POS"
   },
+  "login": {
+    "shopLogoAlt": "និមិត្តសញ្ញាហាង"
+  },
+  "orders": {
+    "paginationShowing": "បង្ហាញពី {start} ដល់ {end} នៃប្រតិបត្តិការសរុប {total}",
+    "pageOf": "ទំព័រ {page} នៃ {totalPages}"
+  },
+  "product": {
+    "thumbnailAlt": "រូបភាពផលិតផល"
+  },
+  "checkout": {
+    "thankYou": "សូមអរគុណសម្រាប់ការមកកាន់ហាងរបស់យើង!"
+  },
+  "order": {
+    "status": {
+      "connected": "បានភ្ជាប់សកម្មភាពភ្លាមៗ",
+      "disconnected": "បានដាច់ការតភ្ជាប់",
+      "live": "បន្តផ្ទាល់",
+      "offline": "ក្រៅបណ្តាញ"
+    }
+  },
+  "ui": {
+    "thankYou": "សូមអរគុណសម្រាប់ការមកកាន់ហាងរបស់យើង!"
+  },
   "preferences": {
     "title": "ចំណង់ចំណូលចិត្តប្រព័ន្ធ",
     "language": "ភាសា",
@@ -39,6 +63,8 @@
     "station": "ស្ថានីយ ០១",
     "help": "ជំនួយ",
     "logout": "ចាកចេញ",
+    "your_shop": "ហាងរបស់អ្នក",
+    "shop_logo": "និមិត្តសញ្ញាហាង",
     "sections": {
       "home": "ទំព័រដើម",
       "pos": "ផលិតផលលក់ POS",
@@ -164,7 +190,8 @@
     },
     "receipt": {
       "title": "ការកំណត់វិក្កយបត្រ",
-      "description": "កែសម្រួលអ្វីដែលអតិថិជននឹងឃើញលើវិក្កយបត្រដែលបានបោះពុម្ព។"
+      "description": "កែសម្រួលអ្វីដែលអតិថិជននឹងឃើញលើវិក្កយបត្រដែលបានបោះពុម្ព។",
+      "brand": "Routine Café & Bakery"
     },
     "fields": {
       "shopName": "ឈ្មោះហាង",

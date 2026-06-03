@@ -43,20 +43,22 @@ const dateFilters = computed(() => {
         startDate: formatDate(today),
         endDate: formatDate(today),
       }
-    case 'yesterday':
+    case 'yesterday': {
       const yesterday = new Date()
       yesterday.setDate(today.getDate() - 1)
       return {
         startDate: formatDate(yesterday),
         endDate: formatDate(yesterday),
       }
-    case 'last7Days':
+    }
+    case 'last7Days': {
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(today.getDate() - 7)
       return {
         startDate: formatDate(sevenDaysAgo),
         endDate: formatDate(today),
       }
+    }
     case 'customRange':
       return {
         startDate: customStartDate.value || undefined,
@@ -84,9 +86,18 @@ const fetchHistory = async () => {
   })
 }
 
-// Watch filters to fetch automatically
-watch([fulfillmentStatus, paymentStatus, datePreset, customStartDate, customEndDate, page], () => {
+// Watch page to fetch automatically
+watch(page, () => {
   fetchHistory()
+})
+
+// Watch filters to fetch automatically
+watch([fulfillmentStatus, paymentStatus, datePreset, customStartDate, customEndDate], () => {
+  if (page.value !== 1) {
+    page.value = 1
+  } else {
+    fetchHistory()
+  }
 })
 
 // Debounce search to avoid unnecessary API queries
@@ -194,7 +205,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex-1 overflow-hidden flex flex-col p-6 gap-6 h-full relative">
+  <div class="flex-1 overflow-hidden flex flex-col p-6 gap-6 h-full relative receipt-print-wrapper">
     <!-- ── HEADER ── -->
     <header class="shrink-0 flex justify-end">
       <!-- Fuzzy search input -->
@@ -383,7 +394,7 @@ onUnmounted(() => {
               <td
                 class="py-3.5 px-6 text-right font-extrabold text-stone-900 dark:text-stone-50 font-headline"
               >
-                ${{ Number(order.totalAmount).toFixed(2) }}
+                {{ shopSettingsStore.formatAmount(Number(order.totalAmount)) }}
               </td>
             </tr>
 
@@ -407,9 +418,13 @@ onUnmounted(() => {
         class="p-4 border-t border-stone-100 dark:border-stone-800 shrink-0 flex items-center justify-between text-xs font-bold text-stone-400 select-none bg-stone-50/40"
       >
         <div>
-          Showing {{ (page - 1) * limit + (historyOrders.length > 0 ? 1 : 0) }} to
-          {{ (page - 1) * limit + historyOrders.length }} of
-          {{ historyPagination.total }} transactions
+          {{
+            t('orders.paginationShowing', {
+              start: (page - 1) * limit + (historyOrders.length > 0 ? 1 : 0),
+              end: (page - 1) * limit + historyOrders.length,
+              total: historyPagination.total,
+            })
+          }}
         </div>
 
         <div class="flex items-center gap-2">
@@ -421,7 +436,7 @@ onUnmounted(() => {
             <span class="material-symbols-outlined text-base">chevron_left</span>
           </button>
           <span class="px-2 text-stone-800 dark:text-stone-200">
-            Page {{ page }} of {{ historyPagination.totalPages }}
+            {{ t('orders.pageOf', { page, totalPages: historyPagination.totalPages }) }}
           </span>
           <button
             class="p-2 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors disabled:opacity-40 disabled:pointer-events-none active:scale-95 shrink-0 flex"
@@ -438,7 +453,7 @@ onUnmounted(() => {
     <transition name="slide">
       <section
         v-if="selectedOrder"
-        class="absolute inset-y-0 right-0 w-full md:w-[480px] bg-white dark:bg-stone-900 border-l border-stone-200 dark:border-stone-800 shadow-2xl z-40 flex flex-col transition-all duration-300 overflow-hidden print:static print:w-full print:h-auto print:border-0 print:shadow-none"
+        class="print:block absolute inset-y-0 right-0 w-full md:w-[480px] bg-white dark:bg-stone-900 border-l border-stone-200 dark:border-stone-800 shadow-2xl z-40 flex flex-col transition-all duration-300 overflow-hidden print:static print:w-full print:h-auto print:border-0 print:shadow-none"
       >
         <!-- Drawer Header -->
         <header
@@ -538,7 +553,7 @@ onUnmounted(() => {
               <p
                 class="font-extrabold text-sm text-[#b05a18] dark:text-amber-500 mt-1 font-headline"
               >
-                ${{ Number(selectedOrder.totalAmount).toFixed(2) }}
+                {{ shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount)) }}
               </p>
             </div>
           </div>
@@ -565,7 +580,7 @@ onUnmounted(() => {
                   <img
                     :src="item.product.imageUrl"
                     class="w-full h-full object-cover"
-                    alt="Product thumbnail"
+                    :alt="t('product.thumbnailAlt')"
                   />
                 </div>
                 <div
@@ -583,7 +598,9 @@ onUnmounted(() => {
                       {{ item.product?.name }}
                     </p>
                     <p class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2">
-                      ${{ (Number(item.price) + Number(item.extraPrice)).toFixed(2) }}
+                      {{
+                        shopSettingsStore.formatAmount(Number(item.price) + Number(item.extraPrice))
+                      }}
                     </p>
                   </div>
 
@@ -610,7 +627,7 @@ onUnmounted(() => {
                         v-if="Number(option.extraPrice) > 0"
                         class="text-stone-400 font-medium shrink-0"
                       >
-                        +${{ Number(option.extraPrice).toFixed(2) }}
+                        +{{ shopSettingsStore.formatAmount(Number(option.extraPrice)) }}
                       </span>
                     </li>
                   </ul>
@@ -634,25 +651,29 @@ onUnmounted(() => {
             >
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.subtotal') }}</span>
-                <span class="text-stone-800 dark:text-stone-200"
-                  >${{ Number(selectedOrder.totalAmount).toFixed(2) }}</span
-                >
+                <span class="text-stone-800 dark:text-stone-200">{{
+                  shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount))
+                }}</span>
               </div>
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.discount') }}</span>
-                <span class="text-stone-800 dark:text-stone-200">$0.00</span>
+                <span class="text-stone-800 dark:text-stone-200">{{
+                  shopSettingsStore.formatAmount(0)
+                }}</span>
               </div>
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.serviceFee') }}</span>
-                <span class="text-stone-800 dark:text-stone-200">$0.00</span>
+                <span class="text-stone-800 dark:text-stone-200">{{
+                  shopSettingsStore.formatAmount(0)
+                }}</span>
               </div>
               <div
                 class="flex justify-between font-extrabold text-lg text-[#b05a18] dark:text-amber-500 pt-3 border-t border-stone-100 dark:border-stone-800 print:text-sm print:pt-2"
               >
                 <span>{{ t('orderDashboard.total') }}</span>
-                <span class="font-headline"
-                  >${{ Number(selectedOrder.totalAmount).toFixed(2) }}</span
-                >
+                <span class="font-headline">{{
+                  shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount))
+                }}</span>
               </div>
             </div>
           </div>
@@ -703,7 +724,7 @@ onUnmounted(() => {
             class="hidden print:block text-center mt-12 border-t pt-4 text-[10px] text-stone-400 font-medium"
           >
             <p>{{ t('auth.copyright') }}</p>
-            <p class="mt-1">Thank you for your visit!</p>
+            <p class="mt-1">{{ t('checkout.thankYou') }}</p>
           </div>
         </div>
       </section>
@@ -743,20 +764,24 @@ onUnmounted(() => {
 
 /* Printing styles for thermal receipt */
 @media print {
-  body * {
+  .receipt-print-wrapper * {
     visibility: hidden;
   }
 
-  .print\:block,
-  .print\:block * {
+  .receipt-print-wrapper .print\:block,
+  .receipt-print-wrapper .print\:block * {
     visibility: visible;
   }
 
-  .print\:block {
+  .receipt-print-wrapper {
     position: absolute;
     left: 0;
     top: 0;
     width: 80mm;
+  }
+
+  .print\:block {
+    position: relative;
   }
 }
 </style>

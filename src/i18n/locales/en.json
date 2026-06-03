@@ -2,6 +2,30 @@
   "app": {
     "title": "RoutinCafe POS"
   },
+  "login": {
+    "shopLogoAlt": "Shop Logo"
+  },
+  "orders": {
+    "paginationShowing": "Showing {start} to {end} of {total} transactions",
+    "pageOf": "Page {page} of {totalPages}"
+  },
+  "product": {
+    "thumbnailAlt": "Product thumbnail"
+  },
+  "checkout": {
+    "thankYou": "Thank you for your visit!"
+  },
+  "order": {
+    "status": {
+      "connected": "Real-time connected",
+      "disconnected": "Disconnected",
+      "live": "Live",
+      "offline": "Offline"
+    }
+  },
+  "ui": {
+    "thankYou": "Thank you for your visit!"
+  },
   "preferences": {
     "title": "System Preference",
     "language": "Language",
@@ -39,6 +63,8 @@
     "station": "Station 01",
     "help": "Help",
     "logout": "Logout",
+    "your_shop": "Your Shop",
+    "shop_logo": "Shop Logo",
     "sections": {
       "home": "Home",
       "pos": "POS & Order",
@@ -165,7 +191,8 @@
     },
     "receipt": {
       "title": "Receipt Configuration",
-      "description": "Customize what customers see on their printed receipts."
+      "description": "Customize what customers see on their printed receipts.",
+      "brand": "Routine Café & Bakery"
     },
     "fields": {
       "shopName": "Shop Name",

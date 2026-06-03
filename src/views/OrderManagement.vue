@@ -5,9 +5,11 @@ import { useOrderStore } from '@/store/useOrderStore'
 import { storeToRefs } from 'pinia'
 import type { OrderDetail } from '@/types/order.types'
 import { toast } from 'vue-sonner'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
+const shopSettingsStore = useShopSettingsStore()
 const { orders, loading, selectedOrder, isConnected } = storeToRefs(orderStore)
 
 // Active filter tab: default to operational "preparing" tab
@@ -100,7 +102,7 @@ const handlePrint = () => {
 </script>
 
 <template>
-  <div class="flex-1 overflow-hidden flex flex-col p-6 gap-6 h-full relative">
+  <div class="flex-1 overflow-hidden flex flex-col p-6 gap-6 h-full relative receipt-print-wrapper">
     <!-- ── TOP COUNTERS / METRIC CARDS ── -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
       <!-- Preparing Card -->
@@ -275,9 +277,9 @@ const handlePrint = () => {
             :class="
               isConnected ? 'bg-emerald-500 shadow-emerald-400' : 'bg-rose-500 shadow-rose-400'
             "
-            :title="isConnected ? 'Real-time connected' : 'Disconnected'"
+            :title="isConnected ? t('order.status.connected') : t('order.status.disconnected')"
           ></span>
-          <span>{{ isConnected ? 'Live' : 'Offline' }}</span>
+          <span>{{ isConnected ? t('order.status.live') : t('order.status.offline') }}</span>
         </div>
       </div>
     </div>
@@ -451,7 +453,7 @@ const handlePrint = () => {
     <transition name="slide">
       <section
         v-if="selectedOrder"
-        class="absolute inset-y-0 right-0 w-full md:w-[480px] bg-white dark:bg-stone-900 border-l border-stone-200 dark:border-stone-800 shadow-2xl z-40 flex flex-col transition-all duration-300 overflow-hidden print:static print:w-full print:h-auto print:border-0 print:shadow-none"
+        class="print:block absolute inset-y-0 right-0 w-full md:w-[480px] bg-white dark:bg-stone-900 border-l border-stone-200 dark:border-stone-800 shadow-2xl z-40 flex flex-col transition-all duration-300 overflow-hidden print:static print:w-full print:h-auto print:border-0 print:shadow-none"
       >
         <!-- Drawer Header -->
         <header
@@ -552,7 +554,7 @@ const handlePrint = () => {
               <p
                 class="font-extrabold text-sm text-[#b05a18] dark:text-amber-500 mt-1 font-headline"
               >
-                ${{ Number(selectedOrder.totalAmount).toFixed(2) }}
+                {{ shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount)) }}
               </p>
             </div>
           </div>
@@ -579,7 +581,7 @@ const handlePrint = () => {
                   <img
                     :src="item.product.imageUrl"
                     class="w-full h-full object-cover"
-                    alt="Product thumbnail"
+                    :alt="t('product.thumbnailAlt')"
                   />
                 </div>
                 <div
@@ -597,7 +599,9 @@ const handlePrint = () => {
                       {{ item.product?.name }}
                     </p>
                     <p class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2">
-                      ${{ (Number(item.price) + Number(item.extraPrice)).toFixed(2) }}
+                      {{
+                        shopSettingsStore.formatAmount(Number(item.price) + Number(item.extraPrice))
+                      }}
                     </p>
                   </div>
 
@@ -625,7 +629,7 @@ const handlePrint = () => {
                         v-if="Number(option.extraPrice) > 0"
                         class="text-stone-400 font-medium shrink-0"
                       >
-                        +${{ Number(option.extraPrice).toFixed(2) }}
+                        +{{ shopSettingsStore.formatAmount(Number(option.extraPrice)) }}
                       </span>
                     </li>
                   </ul>
@@ -649,25 +653,29 @@ const handlePrint = () => {
             >
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.subtotal') }}</span>
-                <span class="text-stone-800 dark:text-stone-200"
-                  >${{ Number(selectedOrder.totalAmount).toFixed(2) }}</span
-                >
+                <span class="text-stone-800 dark:text-stone-200">{{
+                  shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount))
+                }}</span>
               </div>
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.discount') }}</span>
-                <span class="text-stone-800 dark:text-stone-200">$0.00</span>
+                <span class="text-stone-800 dark:text-stone-200">{{
+                  shopSettingsStore.formatAmount(0)
+                }}</span>
               </div>
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.serviceFee') }}</span>
-                <span class="text-stone-800 dark:text-stone-200">$0.00</span>
+                <span class="text-stone-800 dark:text-stone-200">{{
+                  shopSettingsStore.formatAmount(0)
+                }}</span>
               </div>
               <div
                 class="flex justify-between font-extrabold text-lg text-[#b05a18] dark:text-amber-500 pt-3 border-t border-stone-100 dark:border-stone-800 print:text-sm print:pt-2"
               >
                 <span>{{ t('orderDashboard.total') }}</span>
-                <span class="font-headline"
-                  >${{ Number(selectedOrder.totalAmount).toFixed(2) }}</span
-                >
+                <span class="font-headline">{{
+                  shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount))
+                }}</span>
               </div>
             </div>
           </div>
@@ -676,7 +684,7 @@ const handlePrint = () => {
             class="hidden print:block text-center mt-12 border-t pt-4 text-[10px] text-stone-400 font-medium"
           >
             <p>{{ t('auth.copyright') }}</p>
-            <p class="mt-1">Thank you for your visit!</p>
+            <p class="mt-1">{{ t('ui.thankYou') }}</p>
           </div>
         </div>
       </section>
@@ -729,21 +737,24 @@ const handlePrint = () => {
 
 /* Printing styles wrapper */
 @media print {
-  body * {
+  .receipt-print-wrapper * {
     visibility: hidden;
   }
 
-  .print\:block,
-  .print\:block * {
+  .receipt-print-wrapper .print\:block,
+  .receipt-print-wrapper .print\:block * {
     visibility: visible;
   }
 
-  .print\:block {
+  .receipt-print-wrapper {
     position: absolute;
     left: 0;
     top: 0;
     width: 80mm;
-    /* Standard thermal receipt page width */
+  }
+
+  .print\:block {
+    position: relative;
   }
 }
 </style>

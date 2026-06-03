@@ -4,6 +4,18 @@ import { getOrders, getOrderDetails, updateOrderStatus } from '@/api/order'
 import { useAuthStore } from './useAuthStore'
 import type { OrderDetail } from '@/types/order.types'
 
+let audioCtx: AudioContext | null = null
+
+const isToday = (dateString: string) => {
+  const date = new Date(dateString)
+  const today = new Date()
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  )
+}
+
 export const useOrderStore = defineStore('orders', () => {
   const orders = ref<OrderDetail[]>([])
   const historyOrders = ref<OrderDetail[]>([])
@@ -17,17 +29,27 @@ export const useOrderStore = defineStore('orders', () => {
   const loading = ref(false)
   const selectedOrder = ref<OrderDetail | null>(null)
 
-  // Real-time EventSource reference
-  const sseSource = ref<EventSource | null>(null)
+  // Real-time stream controller reference
+  const sseController = ref<AbortController | null>(null)
   const isConnected = ref(false)
+  let retryTimeout: ReturnType<typeof setTimeout> | null = null
 
   // Play synthesized notification chime for new incoming orders (resolves mp3 file requirements)
   const playNewOrderAlert = () => {
     try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-      if (!AudioContextClass) return
+      if (!audioCtx) {
+        const AudioContextClass =
+          window.AudioContext ||
+          (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+        if (!AudioContextClass) return
+        audioCtx = new AudioContextClass()
+      }
 
-      const ctx = new AudioContextClass()
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume()
+      }
+
+      const ctx = audioCtx
 
       const playTone = (freq: number, start: number, duration: number) => {
         const osc = ctx.createOscillator()
@@ -117,23 +139,43 @@ export const useOrderStore = defineStore('orders', () => {
 
   // ── 4. Trigger Quick Status Updates ───────────────────────────────
   const changeStatus = async (id: number, status: string) => {
+    const liveIdx = orders.value.findIndex(o => o.id === id)
+    const histIdx = historyOrders.value.findIndex(o => o.id === id)
+    const isSelected = selectedOrder.value && selectedOrder.value.id === id
+
+    // Capture previous status
+    const prevLiveStatus = liveIdx !== -1 ? orders.value[liveIdx].fulfillmentStatus : null
+    const prevHistStatus = histIdx !== -1 ? historyOrders.value[histIdx].fulfillmentStatus : null
+    const prevSelectedStatus =
+      isSelected && selectedOrder.value ? selectedOrder.value.fulfillmentStatus : null
+
     try {
       // Optimistic Update for zero-latency lag UI
-      const liveIdx = orders.value.findIndex(o => o.id === id)
       if (liveIdx !== -1) {
         orders.value[liveIdx].fulfillmentStatus = status
       }
-      const histIdx = historyOrders.value.findIndex(o => o.id === id)
       if (histIdx !== -1) {
         historyOrders.value[histIdx].fulfillmentStatus = status
       }
-      if (selectedOrder.value && selectedOrder.value.id === id) {
+      if (isSelected && selectedOrder.value) {
         selectedOrder.value.fulfillmentStatus = status
       }
 
       await updateOrderStatus(id, status)
     } catch (error) {
       console.error('Failed to update status on server, reverting state:', error)
+
+      // Revert optimistic updates
+      if (liveIdx !== -1 && prevLiveStatus !== null) {
+        orders.value[liveIdx].fulfillmentStatus = prevLiveStatus
+      }
+      if (histIdx !== -1 && prevHistStatus !== null) {
+        historyOrders.value[histIdx].fulfillmentStatus = prevHistStatus
+      }
+      if (isSelected && selectedOrder.value && prevSelectedStatus !== null) {
+        selectedOrder.value.fulfillmentStatus = prevSelectedStatus
+      }
+
       // Force reload to sync state on failure
       fetchTodayOrders()
     }
@@ -141,7 +183,7 @@ export const useOrderStore = defineStore('orders', () => {
 
   // ── 5. Server-Sent Events SSE Subscriber ─────────────────────────
   const subscribeToOrderStream = () => {
-    if (sseSource.value) {
+    if (sseController.value) {
       return // Already subscribed
     }
 
@@ -153,25 +195,14 @@ export const useOrderStore = defineStore('orders', () => {
       return
     }
 
-    const sseUrl = `${import.meta.env.VITE_API_URL}/api/orders/stream?token=${token}`
-    const source = new EventSource(sseUrl)
-    sseSource.value = source
+    const controller = new AbortController()
+    sseController.value = controller
 
-    source.onopen = () => {
-      isConnected.value = true
-      console.log('📡 SSE: Stream connection established.')
-    }
+    const sseUrl = `${import.meta.env.VITE_API_URL}/api/orders/stream`
 
-    source.onerror = e => {
-      isConnected.value = false
-      console.error('❌ SSE: Connection encountered an error. Attempting auto-retry...', e)
-    }
-
-    // New order placed
-    source.addEventListener('order_created', (event: any) => {
+    const handleOrderCreated = (data: string) => {
       try {
-        const newOrder = JSON.parse(event.data) as OrderDetail
-
+        const newOrder = JSON.parse(data) as OrderDetail
         // Prevent duplicate append
         const exists = orders.value.some(o => o.id === newOrder.id)
         if (!exists) {
@@ -182,20 +213,20 @@ export const useOrderStore = defineStore('orders', () => {
       } catch (err) {
         console.error('Error parsing SSE order_created event:', err)
       }
-    })
+    }
 
-    // Order status modified on another terminal/POS
-    source.addEventListener('order_updated', (event: any) => {
+    const handleOrderUpdated = (data: string) => {
       try {
-        const updatedOrder = JSON.parse(event.data) as OrderDetail
-
+        const updatedOrder = JSON.parse(data) as OrderDetail
         // Update operational list
         const idx = orders.value.findIndex(o => o.id === updatedOrder.id)
         if (idx !== -1) {
           orders.value[idx] = updatedOrder
         } else {
           // If status updated and belongs to today, add it (just in case)
-          orders.value.unshift(updatedOrder)
+          if (updatedOrder.createdAt && isToday(updatedOrder.createdAt)) {
+            orders.value.unshift(updatedOrder)
+          }
         }
 
         // Update selected detail modal if open
@@ -209,14 +240,98 @@ export const useOrderStore = defineStore('orders', () => {
       } catch (err) {
         console.error('Error parsing SSE order_updated event:', err)
       }
-    })
+    }
+
+    const startStream = async () => {
+      try {
+        const response = await fetch(sseUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        isConnected.value = true
+        console.log('📡 SSE: Stream connection established.')
+
+        const reader = response.body?.getReader()
+        if (!reader) {
+          throw new Error('ReadableStream reader is not available')
+        }
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const parts = buffer.split('\n\n')
+          buffer = parts.pop() || ''
+
+          for (const part of parts) {
+            if (!part.trim()) continue
+
+            let eventName = 'message'
+            let dataStr = ''
+
+            const lines = part.split('\n')
+            for (const line of lines) {
+              if (line.startsWith('event:')) {
+                eventName = line.slice(6).trim()
+              } else if (line.startsWith('data:')) {
+                dataStr = line.slice(5).trim()
+              }
+            }
+
+            if (dataStr) {
+              if (eventName === 'order_created') {
+                handleOrderCreated(dataStr)
+              } else if (eventName === 'order_updated') {
+                handleOrderUpdated(dataStr)
+              }
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          console.log('📡 SSE: Stream connection aborted.')
+          return
+        }
+
+        isConnected.value = false
+        console.error(
+          '❌ SSE: Connection encountered an error. Attempting auto-retry in 5s...',
+          err
+        )
+
+        if (!controller.signal.aborted) {
+          retryTimeout = setTimeout(() => {
+            if (!controller.signal.aborted) {
+              startStream()
+            }
+          }, 5000)
+        }
+      }
+    }
+
+    startStream()
   }
 
   // ── 6. SSE Stream Cleanup ─────────────────────────────────────────
   const unsubscribeFromOrderStream = () => {
-    if (sseSource.value) {
-      sseSource.value.close()
-      sseSource.value = null
+    if (retryTimeout) {
+      clearTimeout(retryTimeout)
+      retryTimeout = null
+    }
+    if (sseController.value) {
+      sseController.value.abort()
+      sseController.value = null
       isConnected.value = false
       console.log('🔌 SSE: Stream connection closed gracefully.')
     }

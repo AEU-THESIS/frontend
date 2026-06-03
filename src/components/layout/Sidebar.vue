@@ -109,7 +109,7 @@ const navSections = computed(() => {
 })
 
 const shopDisplayName = computed(() => {
-  const name = shopSettingsStore.shop_name || 'Your Shop'
+  const name = shopSettingsStore.shop_name || t('sidebar.your_shop')
   const idx = name.indexOf(' ')
   if (idx !== -1) {
     return {
@@ -137,7 +137,11 @@ const shopDisplayName = computed(() => {
       :class="isCollapsed ? 'px-0 justify-center' : 'px-6'"
       @click="toggleSidebar"
     >
-      <img :src="logoImg" class="w-12 h-12 rounded-xl object-cover shrink-0" alt="Shop Logo" />
+      <img
+        :src="logoImg"
+        class="w-12 h-12 rounded-xl object-cover shrink-0"
+        :alt="t('sidebar.shop_logo')"
+      />
       <div v-if="!isCollapsed" class="overflow-hidden whitespace-nowrap">
         <h2
           class="font-bold text-stone-800 dark:text-stone-50 font-headline tracking-tight text-lg leading-tight"

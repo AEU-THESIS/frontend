@@ -102,7 +102,7 @@ const handleLogin = async () => {
           <img
             :src="logoImg"
             class="mb-8 size-20 rounded-[28px] object-cover shadow-2xl hover:rotate-6 transition-transform duration-500"
-            alt="Shop Logo"
+            :alt="t('login.shopLogoAlt')"
           />
           <h1 class="text-3xl font-black tracking-tight text-slate-900 mb-2">
             {{ t('auth.title') }}

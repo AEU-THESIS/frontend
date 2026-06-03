@@ -34,7 +34,7 @@ const form = reactive({
   currencySymbol: '',
   exchangeRate: '',
   receiptFooter: '',
-  isOrderManagementEnabled: true,
+  isOrderManagementEnabled: false,
 })
 
 const receiptItems = [
@@ -102,7 +102,7 @@ const fillForm = (settings: ShopSettings) => {
     settings.currencySymbol === LEGACY_KHR_CODE ? KHR_SYMBOL : settings.currencySymbol || ''
   form.exchangeRate = getExchangeRateInputValue(settings.exchangeRate)
   form.receiptFooter = settings.receiptFooter || ''
-  form.isOrderManagementEnabled = settings.isOrderManagementEnabled !== false
+  form.isOrderManagementEnabled = settings.isOrderManagementEnabled === true
 }
 
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -274,7 +274,7 @@ onMounted(loadSettings)
 
             <!-- Enable Order Management Switch -->
             <div
-              class="md:col-span-2 border-t border-stone-100 dark:border-stone-850 pt-5 mt-2 flex items-center justify-between"
+              class="md:col-span-2 border-t border-stone-100 dark:border-stone-800 pt-5 mt-2 flex items-center justify-between"
             >
               <div>
                 <h3 class="text-sm font-bold text-stone-950 dark:text-stone-50">

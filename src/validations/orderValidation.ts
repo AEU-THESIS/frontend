@@ -23,3 +23,16 @@ export const createOrderSchema = z.object({
   totalAmount: z.number().positive(),
   items: z.array(cartItemPayloadSchema).min(1, 'At least one item is required'),
 })
+
+export const fulfillmentStatusSchema = z.enum(['preparing', 'ready', 'completed', 'canceled'])
+
+export const getOrdersParamsSchema = z.object({
+  status: z.string().optional(),
+  paymentStatus: z.string().optional(),
+  date: z.string().optional(),
+  search: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  page: z.number().int().positive().optional(),
+  limit: z.number().int().positive().optional(),
+})

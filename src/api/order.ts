@@ -5,7 +5,11 @@ import type {
   OrderDetail,
   PaginatedOrders,
 } from '@/types/order.types'
-import { createOrderSchema } from '@/validations/orderValidation'
+import {
+  createOrderSchema,
+  fulfillmentStatusSchema,
+  getOrdersParamsSchema,
+} from '@/validations/orderValidation'
 
 export const placeOrder = async (payload: CreateOrderPayload): Promise<OrderResult> => {
   const parsedPayload = createOrderSchema.parse(payload)
@@ -23,7 +27,8 @@ export const getOrders = async (params?: {
   page?: number
   limit?: number
 }): Promise<PaginatedOrders> => {
-  const res = await http.get<PaginatedOrders>('/api/orders', { params })
+  const parsedParams = params ? getOrdersParamsSchema.parse(params) : undefined
+  const res = await http.get<PaginatedOrders>('/api/orders', { params: parsedParams })
   return res.data
 }
 
@@ -33,6 +38,7 @@ export const getOrderDetails = async (id: number): Promise<OrderDetail> => {
 }
 
 export const updateOrderStatus = async (id: number, status: string): Promise<OrderDetail> => {
-  const res = await http.put<OrderDetail>(`/api/orders/${id}/status`, { status })
+  const parsedStatus = fulfillmentStatusSchema.parse(status)
+  const res = await http.put<OrderDetail>(`/api/orders/${id}/status`, { status: parsedStatus })
   return res.data
 }
