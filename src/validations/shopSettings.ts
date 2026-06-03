@@ -12,4 +12,5 @@ export const shopSettingsSchema = z.object({
     .finite('Exchange rate must be a valid number')
     .positive('Exchange rate must be greater than 0'),
   receipt_footer: z.string().trim().nullable(),
+  is_order_management_enabled: z.boolean().optional(),
 })

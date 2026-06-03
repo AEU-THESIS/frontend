@@ -65,8 +65,8 @@ const handlePaymentSuccess = (result: OrderResult & { changeUSD: number; changeK
   checkoutResult.value = {
     orderId: result.id,
     orderNumber: result.orderNumber,
-    totalAmount: result.totalAmount,
-    receivedAmount: result.receivedAmount,
+    totalAmount: Number(result.totalAmount),
+    receivedAmount: Number(result.receivedAmount),
     paymentCurrency: result.paymentCurrency,
     changeUSD: result.changeUSD,
     changeKHR: result.changeKHR,

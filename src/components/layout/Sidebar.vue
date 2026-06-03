@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/useAuthStore'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { ROLES, type RoleType } from '@/constants/roles'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
-import logoImg from '@/assets/shop-logo.svg'
+import logoImg from '@/assets/shop-logo-bg.png'
 
 const route = useRoute()
 const router = useRouter()
@@ -61,7 +61,10 @@ const navSections = computed(() => {
       roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER],
       items: [
         { nameKey: 'sidebar.items.pos', route: APP_ROUTES.HOME, icon: 'point_of_sale' },
-        { nameKey: 'sidebar.items.orders', route: APP_ROUTES.ORDERS, icon: 'receipt_long' },
+        ...(shopSettingsStore.is_order_management_enabled
+          ? [{ nameKey: 'sidebar.items.orders', route: APP_ROUTES.ORDERS, icon: 'receipt_long' }]
+          : []),
+        { nameKey: 'sidebar.items.orderHistory', route: APP_ROUTES.ORDER_HISTORY, icon: 'history' },
       ],
     },
     {
@@ -104,6 +107,21 @@ const navSections = computed(() => {
     return !allowedRoles || allowedRoles.includes(userRole as RoleType)
   })
 })
+
+const shopDisplayName = computed(() => {
+  const name = shopSettingsStore.shop_name || t('sidebar.your_shop')
+  const idx = name.indexOf(' ')
+  if (idx !== -1) {
+    return {
+      top: name.substring(0, idx),
+      bottom: name.substring(idx + 1),
+    }
+  }
+  return {
+    top: name,
+    bottom: t('sidebar.station'),
+  }
+})
 </script>
 
 <template>
@@ -119,19 +137,19 @@ const navSections = computed(() => {
       :class="isCollapsed ? 'px-0 justify-center' : 'px-6'"
       @click="toggleSidebar"
     >
-      <div
-        class="w-12 h-12 rounded-xl bg-amber-700 dark:bg-amber-600 flex items-center justify-center text-white shrink-0"
-      >
-        <img :src="logoImg" class="w-[28px] h-[28px]" alt="Shop Logo" />
-      </div>
+      <img
+        :src="logoImg"
+        class="w-12 h-12 rounded-xl object-cover shrink-0"
+        :alt="t('sidebar.shop_logo')"
+      />
       <div v-if="!isCollapsed" class="overflow-hidden whitespace-nowrap">
         <h2
           class="font-bold text-stone-800 dark:text-stone-50 font-headline tracking-tight text-lg leading-tight"
         >
-          {{ shopSettingsStore.shop_name || 'Your Shop' }}
+          {{ shopDisplayName.top }}
         </h2>
         <p class="text-[13px] text-stone-500 dark:text-stone-400 font-medium leading-tight mt-0.5">
-          {{ t('sidebar.station') }}
+          {{ shopDisplayName.bottom }}
         </p>
       </div>
     </div>
@@ -147,7 +165,7 @@ const navSections = computed(() => {
         <!-- Section Title -->
         <h3
           class="font-bold text-stone-800 dark:text-stone-50 mb-2 uppercase tracking-wide"
-          :class="isCollapsed ? 'text-[10px] text-center w-full px-1' : 'text-sm px-6'"
+          :class="isCollapsed ? 'text-[9px] text-center w-full px-1 leading-tight' : 'text-sm px-6'"
         >
           {{ t(section.titleKey) }}
         </h3>
@@ -161,7 +179,7 @@ const navSections = computed(() => {
             class="flex transition-all duration-200 border-l-4 relative group"
             :class="[
               isCollapsed
-                ? 'flex-col items-center justify-center py-3 rounded-xl'
+                ? 'flex-col items-center justify-center py-2.5 px-1 rounded-xl'
                 : 'items-center gap-3 py-3 px-6 rounded-r-xl',
               route.name === item.route.name
                 ? 'bg-[#fcf3eb] dark:bg-amber-900/20 text-[#b05a18] dark:text-amber-500 border-[#b05a18] dark:border-amber-500'
@@ -177,7 +195,11 @@ const navSections = computed(() => {
             </span>
             <span
               class="font-semibold transition-all"
-              :class="isCollapsed ? 'text-[11px] leading-none' : 'text-[15px]'"
+              :class="
+                isCollapsed
+                  ? 'text-[10px] leading-tight mt-0.5 text-center break-words w-full px-1'
+                  : 'text-[15px] text-left'
+              "
             >
               {{ t(item.nameKey) }}
             </span>
@@ -195,7 +217,7 @@ const navSections = computed(() => {
         class="flex transition-all duration-200 border-l-4 border-transparent text-stone-500 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 cursor-pointer group"
         :class="
           isCollapsed
-            ? 'flex-col items-center justify-center py-3 rounded-xl'
+            ? 'flex-col items-center justify-center py-2.5 px-1 rounded-xl'
             : 'items-center gap-3 py-3 px-6 rounded-r-xl'
         "
       >
@@ -207,7 +229,11 @@ const navSections = computed(() => {
         >
         <span
           class="font-semibold"
-          :class="isCollapsed ? 'text-[11px] leading-none' : 'text-[15px]'"
+          :class="
+            isCollapsed
+              ? 'text-[10px] leading-tight mt-0.5 text-center break-words w-full px-1'
+              : 'text-[15px] text-left'
+          "
           >{{ t('sidebar.help') }}</span
         >
       </a>
@@ -215,7 +241,7 @@ const navSections = computed(() => {
         class="flex transition-all duration-200 border-l-4 border-transparent text-stone-500 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 cursor-pointer group"
         :class="
           isCollapsed
-            ? 'flex-col items-center justify-center py-3 rounded-xl'
+            ? 'flex-col items-center justify-center py-2.5 px-1 rounded-xl'
             : 'items-center gap-3 py-3 px-6 rounded-r-xl'
         "
         @click.prevent="handleLogout"
@@ -228,7 +254,11 @@ const navSections = computed(() => {
         >
         <span
           class="font-semibold"
-          :class="isCollapsed ? 'text-[11px] leading-none' : 'text-[15px]'"
+          :class="
+            isCollapsed
+              ? 'text-[10px] leading-tight mt-0.5 text-center break-words w-full px-1'
+              : 'text-[15px] text-left'
+          "
           >{{ t('sidebar.logout') }}</span
         >
       </a>

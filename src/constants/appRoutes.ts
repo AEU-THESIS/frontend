@@ -2,6 +2,7 @@ export const APP_ROUTES = {
   HOME: { path: '/', name: 'Home' },
   DASHBOARD: { path: '/dashboard', name: 'Dashboard' },
   ORDERS: { path: '/orders', name: 'Orders' },
+  ORDER_HISTORY: { path: '/orders/history', name: 'OrderHistory' },
   INVENTORY: { path: '/inventory', name: 'Inventory' },
   CATEGORIES: { path: '/categories', name: 'Categories' },
   SALE_REPORTS: { path: '/sale-reports', name: 'SaleReports' },

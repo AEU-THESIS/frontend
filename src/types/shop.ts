@@ -10,6 +10,7 @@ export interface ShopSettings {
   // Prisma Decimal values can arrive from the API as strings; callers normalize at the boundary.
   exchangeRate: string | number
   receiptFooter: string | null
+  isOrderManagementEnabled?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -23,4 +24,5 @@ export interface UpdateShopSettingsPayload {
   currency_symbol: string
   exchange_rate: number
   receipt_footer: string | null
+  is_order_management_enabled?: boolean
 }
