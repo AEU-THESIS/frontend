@@ -27,7 +27,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: APP_ROUTES.INVENTORY.path,
         name: APP_ROUTES.INVENTORY.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/InventoryManagementView.vue'),
         meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {

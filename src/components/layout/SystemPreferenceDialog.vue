@@ -27,6 +27,7 @@ const setDark = () => {
 const setLanguage = (lang: string) => {
   locale.value = lang
   localStorage.setItem('app-locale', lang)
+  document.documentElement.lang = lang === 'kh' ? 'km' : 'en'
 }
 </script>
 

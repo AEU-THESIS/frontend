@@ -68,7 +68,7 @@ const navSections = computed(() => {
       titleKey: 'sidebar.sections.inventory',
       roles: [ROLES.ADMIN, ROLES.MANAGER],
       items: [
-        { nameKey: 'sidebar.items.products', route: APP_ROUTES.INVENTORY, icon: 'inventory_2' },
+        { nameKey: 'sidebar.items.inventory', route: APP_ROUTES.INVENTORY, icon: 'inventory_2' },
         { nameKey: 'sidebar.items.categories', route: APP_ROUTES.CATEGORIES, icon: 'category' },
       ],
     },

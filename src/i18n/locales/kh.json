@@ -50,7 +50,8 @@
       "dashboard": "ផ្ទាំងគ្រប់គ្រង",
       "pos": "POS",
       "orders": "ការបញ្ជាទិញ",
-      "products": "ផលិតផល",
+      "inventory": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
+      "products": "ស្តុក",
       "categories": "ប្រភេទ",
       "inventory": "សារពើភ័ណ្ឌ",
       "saleReports": "របាយការណ៍លក់",
@@ -186,9 +187,118 @@
       }
     }
   },
+  "inventory": {
+    "title": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
+    "subtitle": "ឃ្លាំង A",
+    "searchPlaceholder": "ស្វែងរកសម្ភារៈ...",
+    "summary": {
+      "totalSupplies": "សម្ភារៈសរុប",
+      "stockHealth": "{percentage}%",
+      "lowStock": "ការព្រមាន៖ ស្តុកទាប",
+      "outOfStock": "ធ្ងន់ធ្ងរ៖ អស់ពីស្តុក",
+      "newCount": "{count} ថ្មី",
+      "alertCount": "{count} ជូនដំណឹង"
+    },
+    "table": {
+      "allSupplies": "សម្ភារៈទាំងអស់",
+      "showing": "បង្ហាញ {shown} នៃ {total} មុខ",
+      "showingRange": "បង្ហាញ {start}-{end} នៃ {total} មុខ",
+      "name": "ឈ្មោះ",
+      "stockLevel": "កម្រិតស្តុក",
+      "unit": "ឯកតា",
+      "status": "ស្ថានភាព",
+      "actions": "សកម្មភាព"
+    },
+    "status": {
+      "inStock": "មានក្នុងស្តុក",
+      "lowStock": "ស្តុកទាប",
+      "outOfStock": "អស់ពីស្តុក"
+    },
+    "filters": {
+      "status": "ស្ថានភាព",
+      "unit": "ឯកតា",
+      "allStatuses": "ស្ថានភាពទាំងអស់",
+      "allUnits": "ឯកតាទាំងអស់",
+      "clear": "សម្អាតតម្រង"
+    },
+    "actions": {
+      "addItem": "បន្ថែមមុខទំនិញ",
+      "refresh": "ផ្ទុកឡើងវិញ",
+      "filters": "តម្រង",
+      "adjust": "កែសម្រួលស្តុក",
+      "view": "មើល",
+      "edit": "កែសម្រួល",
+      "delete": "លុប",
+      "restock": "បំពេញស្តុក",
+      "viewAllWarnings": "មើលការព្រមានទាំងអស់",
+      "viewLessWarnings": "មើលតិចជាងមុន",
+      "viewAllCriticalStock": "មើលស្តុកធ្ងន់ធ្ងរទាំងអស់",
+      "viewLessCriticalStock": "មើលស្តុកធ្ងន់ធ្ងរតិចជាងមុន",
+      "close": "បិទ",
+      "editSupply": "កែសម្រួលសម្ភារៈ",
+      "addSupply": "បន្ថែមសម្ភារៈ"
+    },
+    "panels": {
+      "criticalStock": "ស្តុកធ្ងន់ធ្ងរ ({count})",
+      "lowStockWarnings": "ការព្រមានស្តុកទាប ({count})",
+      "noCriticalStock": "មិនមានស្តុកធ្ងន់ធ្ងរ។",
+      "noLowStock": "មិនមានការព្រមានស្តុកទាប។",
+      "lowStockRatio": "{quantity} / អប្បបរមា {threshold} {unit}"
+    },
+    "modal": {
+      "addTitle": "បន្ថែមសម្ភារៈថ្មី",
+      "editTitle": "កែសម្រួលសម្ភារៈ",
+      "viewTitle": "ព័ត៌មានលម្អិតសម្ភារៈ"
+    },
+    "deleteConfirm": {
+      "title": "លុបសម្ភារៈ",
+      "message": "តើអ្នកប្រាកដជាចង់លុប {name} មែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។"
+    },
+    "form": {
+      "required": " *",
+      "itemName": "ឈ្មោះមុខទំនិញ",
+      "itemNamePlaceholder": "ឧ. Double Wall Glassware",
+      "numberOfItems": "ចំនួនមុខទំនិញ",
+      "unitOfMeasure": "ឯកតារង្វាស់",
+      "minAlert": "ការព្រមានស្តុកទាបអប្បបរមា",
+      "minAlertPlaceholder": "ឧ. 5",
+      "itemImage": "រូបភាពមុខទំនិញ",
+      "imageRecommendation": "បង្ហោះឯកសារ ឬអូសទម្លាក់ PNG, JPG រហូតដល់ 10MB"
+    },
+    "units": {
+      "packs": "កញ្ចប់",
+      "kg": "kg",
+      "liters": "លីត្រ",
+      "units": "ឯកតា"
+    },
+    "adjustment": {
+      "title": "កែសម្រួលស្តុករហ័ស",
+      "currentStock": "ស្តុកបច្ចុប្បន្ន៖ {quantity} {unit}",
+      "typeAndAmount": "ប្រភេទ និងចំនួនកែសម្រួល",
+      "addStock": "+ បន្ថែមស្តុក",
+      "removeStock": "- ដកស្តុក",
+      "notes": "កំណត់ចំណាំ",
+      "notesPlaceholder": "បន្ថែមព័ត៌មានលម្អិតអំពីការកែសម្រួលនេះ..."
+    },
+    "messages": {
+      "loading": "កំពុងផ្ទុកសារពើភ័ណ្ឌ...",
+      "empty": "រកមិនឃើញសម្ភារៈ។",
+      "loadError": "មិនអាចផ្ទុកសារពើភ័ណ្ឌបានទេ។",
+      "nameRequired": "ត្រូវបំពេញឈ្មោះមុខទំនិញ។",
+      "createSuccess": "បានបន្ថែមសម្ភារៈ។",
+      "updateSuccess": "បានធ្វើបច្ចុប្បន្នភាពសម្ភារៈ។",
+      "saveError": "មិនអាចរក្សាទុកសម្ភារៈបានទេ។",
+      "deleteSuccess": "បានលុបសម្ភារៈ។",
+      "deleteError": "មិនអាចលុបសម្ភារៈបានទេ។",
+      "adjustSuccess": "បានកែសម្រួលស្តុក។",
+      "adjustError": "មិនអាចកែសម្រួលស្តុកបានទេ។"
+    }
+  },
   "common": {
     "save": "រក្សាទុក",
     "cancel": "បោះបង់",
+    "confirm": "បញ្ជាក់",
+    "close": "បិទ",
     "delete": "លុប",
     "edit": "កែសម្រួល",
     "create": "បង្កើត",
@@ -312,56 +422,6 @@
     "recommendation": "JPG, PNG ឬ WEBP។ ទំហំអតិបរមា 2MB។",
     "errorTooLarge": "ទំហំឯកសារត្រូវតែតិចជាង {max}MB",
     "upload": "បង្ហោះ"
-  },
-  "inventory": {
-    "title": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
-    "searchPlaceholder": "ស្វែងរកគ្រឿងផ្សំ...",
-    "all": "គ្រឿងផ្សំទាំងអស់",
-    "lowStock": "ស្តុកទាប",
-    "outOfStock": "អស់ពីស្តុក",
-    "good": "មានក្នុងស្តុក",
-    "stockIn": "បំពេញស្តុកបន្ថែម (Stock-In)",
-    "stockOut": "កត់ត្រាការខូចខាត (Stock-Out)",
-    "stockCount": "រាប់ស្តុកជាក់ស្តែង (កែតម្រូវ)",
-    "logs": "ប្រវត្តិកែតម្រូវស្តុក",
-    "table": {
-      "ingredient": "គ្រឿងផ្សំ",
-      "currentStock": "ស្តុកបច្ចុប្បន្ន",
-      "lowThreshold": "ស្តុកទាបបំផុត",
-      "status": "ស្ថានភាព",
-      "lastUpdated": "កាលបរិច្ឆេទកែប្រែ",
-      "actions": "សកម្មភាព"
-    },
-    "status": {
-      "good": "មានក្នុងស្តុក",
-      "low": "ស្តុកទាប",
-      "out": "អស់ពីស្តុក"
-    },
-    "modals": {
-      "stockInTitle": "បំពេញគ្រឿងផ្សំបន្ថែម",
-      "stockOutTitle": "កត់ត្រាការខូចខាត/គ្រឿងផ្សំបោះចោល",
-      "stockCountTitle": "កែតម្រូវចំនួនរាប់ជាក់ស្តែង",
-      "ingredientLabel": "គ្រឿងផ្សំ",
-      "quantityLabel": "ចំនួនត្រូវកែតម្រូវ",
-      "actualCountLabel": "ចំនួនរាប់ជាក់ស្តែង",
-      "reasonLabel": "មូលហេតុ / កំណត់សម្គាល់",
-      "reasonPlaceholder": "ឧ. ការបំពេញស្តុកប្រចាំសប្តាហ៍ កែវបែកជាដើម...",
-      "submitting": "កំពុងដំណើរការ...",
-      "submit": "បញ្ជាក់ការកែតម្រូវ",
-      "cancel": "បោះបង់",
-      "successStockIn": "បានបំពេញស្តុកគ្រឿងផ្សំដោយជោគជ័យ!",
-      "successStockOut": "បានកត់ត្រាការខូចខាតគ្រឿងផ្សំដោយជោគជ័យ!",
-      "successStockCount": "បានធ្វើបច្ចុប្បន្នភាពចំនួនស្តុកជាក់ស្តែងដោយជោគជ័យ!"
-    },
-    "drawer": {
-      "title": "ប្រវត្តិនៃការកែតម្រូវគ្រឿងផ្សំ",
-      "type": "ប្រភេទ",
-      "quantity": "ចំនួនកែប្រែ",
-      "reason": "មូលហេតុ",
-      "user": "អនុវត្តដោយ",
-      "date": "កាលបរិច្ឆេទ",
-      "empty": "មិនមានប្រវត្តិកែតម្រូវសម្រាប់គ្រឿងផ្សំនេះទេ។"
-    }
   },
   "dashboard": {
     "title": "ផ្ទាំងគ្រប់គ្រងការវិភាគទិន្នន័យ",

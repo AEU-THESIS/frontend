@@ -28,8 +28,13 @@ const emit = defineEmits<{
   (e: 'fileChange', file: File | null): void
 }>()
 
-const handleImageChange = (file: File) => {
+const handleImageChange = (file: File | null) => {
   emit('fileChange', file)
+  if (!file) {
+    emit('update:field', { field: 'imageUrl', value: null })
+    return
+  }
+
   // Local preview
   const reader = new FileReader()
   reader.onload = e => {
