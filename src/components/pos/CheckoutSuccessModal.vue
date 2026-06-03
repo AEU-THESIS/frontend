@@ -77,7 +77,7 @@ const handlePrintReceipt = () => {
       <body>
         <div class="w-full max-w-sm mx-auto">
           <div class="text-center mb-6">
-            <h1 class="text-xl font-bold uppercase tracking-wide">Routine Cafe & Bakery</h1>
+            <h1 class="text-xl font-bold uppercase tracking-wide">Routine Café & Bakery</h1>
             <p class="text-xs text-stone-500">Receipt / Invoice</p>
           </div>
           ${receiptRef.value.outerHTML}

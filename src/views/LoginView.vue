@@ -11,6 +11,7 @@ import { loginSchema } from '@/validations/authValidation'
 import type { LoginInput } from '@/validations/authValidation'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import logoImg from '@/assets/shop-logo-bg.png'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -98,13 +99,11 @@ const handleLogin = async () => {
     >
       <CardContent class="p-10 md:p-12">
         <div class="flex flex-col items-center text-center">
-          <div
-            class="mb-8 flex size-20 items-center justify-center rounded-[28px] bg-primary shadow-2xl shadow-primary/30 group hover:rotate-6 transition-transform duration-500"
-          >
-            <span class="material-symbols-outlined text-[40px] text-white" aria-hidden="true">
-              coffee
-            </span>
-          </div>
+          <img
+            :src="logoImg"
+            class="mb-8 size-20 rounded-[28px] object-cover shadow-2xl hover:rotate-6 transition-transform duration-500"
+            alt="Shop Logo"
+          />
           <h1 class="text-3xl font-black tracking-tight text-slate-900 mb-2">
             {{ t('auth.title') }}
           </h1>

@@ -16,7 +16,7 @@
     "logout": "Logout",
     "email": "Email Address",
     "password": "Password",
-    "title": "Routine Cafe & Bakery",
+    "title": "Routine Café & Bakery",
     "subtitle": "Sign in to your account",
     "emailPlaceholder": "staff{'@'}routine.com",
     "passwordPlaceholder": "********",
@@ -41,7 +41,7 @@
     "logout": "Logout",
     "sections": {
       "home": "Home",
-      "pos": "POS Sale Products",
+      "pos": "POS & Order",
       "inventory": "Inventory",
       "reports": "Reports",
       "settings": "Settings"
@@ -50,6 +50,7 @@
       "dashboard": "Dashboard",
       "pos": "POS",
       "orders": "Orders",
+      "orderHistory": "Order History",
       "inventory": "Inventory Management",
       "products": "Stock",
       "categories": "Categories",
@@ -85,6 +86,7 @@
   "cart": {
     "order": "Order",
     "dineIn": "Dine-in",
+    "dine_in": "Dine-in",
     "takeaway": "Takeaway",
     "subtotal": "Subtotal",
     "addDiscount": "Add Discount",
@@ -152,6 +154,10 @@
       "title": "Branch Information",
       "description": "Update your cafe profile displayed across the POS."
     },
+    "orderManagement": {
+      "title": "Enable Order Management Dashboard",
+      "description": "If enabled, orders go through Preparing/Ready flow. If disabled, orders are automatically completed immediately after checkout."
+    },
     "financials": {
       "title": "Financials & Payments",
       "description": "Manage currency, exchange rates, and digital payments.",
@@ -178,7 +184,7 @@
       "khrCode": "KHR"
     },
     "receiptPreview": {
-      "fallbackShopName": "ROUTINE CAFE & BAKERY",
+      "fallbackShopName": "ROUTINE CAFÉ & BAKERY",
       "total": "TOTAL",
       "inRiel": "In Riel ({rate})",
       "mockupLabel": "Receipt Preview Mockup",
@@ -386,8 +392,7 @@
       "name": "Full Name",
       "namePlaceholder": "e.g. Jonathan Smith",
       "email": "Email Address",
-      "emailPlaceholder": "jonathan{'@'}cinnamonpos.com",
-      "emailNotice": "A setup link valid for 8 hours will be sent to this email.",
+      "emailPlaceholder": "staff{'@'}routine.com",
       "password": "Password",
       "passwordPlaceholder": "********",
       "phoneOptional": "Phone Number (Optional)",
@@ -489,5 +494,69 @@
     "rate_usd_to_khr": "1 USD = {rate} KHR",
     "usd_label": "USD ($)",
     "khr_label": "KHR (៛)"
+  },
+  "orderDashboard": {
+    "title": "Order Management",
+    "station": "Warehouse A",
+    "preparing": "Preparing",
+    "ready": "Ready",
+    "completed": "Completed",
+    "canceled": "Canceled",
+    "unpaid": "UNPAID",
+    "paid": "PAID",
+    "items": "Items",
+    "noIce": "No Ice",
+    "oatMilk": "Oat Milk",
+    "extraShot": "Extra Shot",
+    "orderType": "Order Type",
+    "stationLabel": "Station",
+    "totalItems": "Total Items",
+    "totalPrice": "Total Price",
+    "paymentSummary": "Payment Summary",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "serviceFee": "Service Fee",
+    "total": "Total",
+    "backToOrders": "Back to Orders",
+    "printReceipt": "Print Receipt",
+    "emptyDashboard": "No active orders in this tab",
+    "preparingDesc": "Incoming & preparing orders",
+    "readyDesc": "Ready for pickup / table delivery",
+    "canceledDesc": "Canceled orders today",
+    "completedDesc": "Fulfilled orders today",
+    "changeStatus": "Change Status",
+    "statusUpdated": "Order status updated successfully",
+    "viewDetails": "View Details"
+  },
+  "orderHistory": {
+    "title": "Order History",
+    "subtitle": "Search and filter past order transactions and print receipts.",
+    "searchPlaceholder": "Search orders, items, or customers...",
+    "filterStatus": "Fulfillment Status",
+    "filterPayment": "Payment Status",
+    "datePreset": "Date Preset",
+    "allStatuses": "All Statuses",
+    "allPayments": "All Payments",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last7Days": "Last 7 Days",
+    "customRange": "Custom Range",
+    "table": {
+      "dateTime": "Date & Time",
+      "orderId": "Order ID",
+      "customer": "Customer",
+      "payment": "Payment",
+      "fulfillment": "Fulfillment",
+      "total": "Total Price"
+    },
+    "noHistory": "No historical transactions found matching criteria.",
+    "reprintReceipt": "Reprint Receipt",
+    "actions": {
+      "cancelOrder": "Cancel Order",
+      "completeOrder": "Mark as Completed",
+      "confirmCancel": "Confirm Cancel?"
+    },
+    "startDate": "Start Date",
+    "endDate": "End Date"
   }
 }

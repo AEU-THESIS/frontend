@@ -16,7 +16,7 @@
     "logout": "ចាកចេញ",
     "email": "អាសយដ្ឋានអ៊ីមែល",
     "password": "ពាក្យសម្ងាត់",
-    "title": "Routine Cafe & Bakery",
+    "title": "Routine Café & Bakery",
     "subtitle": "ចូលប្រើគណនីរបស់អ្នក",
     "emailPlaceholder": "staff{'@'}routine.com",
     "passwordPlaceholder": "********",
@@ -50,6 +50,7 @@
       "dashboard": "ផ្ទាំងគ្រប់គ្រង",
       "pos": "POS",
       "orders": "ការបញ្ជាទិញ",
+      "orderHistory": "ប្រវត្តិនៃការបញ្ជាទិញ",
       "inventory": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
       "products": "ស្តុក",
       "categories": "ប្រភេទ",
@@ -85,6 +86,7 @@
   "cart": {
     "order": "ការបញ្ជាទិញ",
     "dineIn": "ញ៉ាំក្នុងហាង",
+    "dine_in": "ញ៉ាំក្នុងហាង",
     "takeaway": "ខ្ចប់ទៅក្រៅ",
     "subtotal": "សរុបរង",
     "addDiscount": "បន្ថែមការបញ្ចុះតម្លៃ",
@@ -151,6 +153,10 @@
       "title": "ព័ត៌មានសាខា",
       "description": "ធ្វើបច្ចុប្បន្នភាពព័ត៌មានកាហ្វេរបស់អ្នក ដែលបង្ហាញនៅក្នុងប្រព័ន្ធ POS។"
     },
+    "orderManagement": {
+      "title": "បើកដំណើរការផ្ទាំងគ្រប់គ្រងការបញ្ជាទិញ",
+      "description": "ប្រសិនបើបើក ការបញ្ជាទិញនឹងឆ្លងកាត់ដំណើរការ កំពុងរៀបចំ/រួចរាល់។ ប្រសិនបើបិទ ការបញ្ជាទិញនឹងត្រូវបានបញ្ចប់ដោយស្វ័យប្រវត្តភ្លាមៗបន្ទាប់ពីទូទាត់ប្រាក់។"
+    },
     "financials": {
       "title": "ហិរញ្ញវត្ថុ និងការទូទាត់",
       "description": "គ្រប់គ្រងរូបិយប័ណ្ណ អត្រាប្តូរប្រាក់ និងការទូទាត់ឌីជីថល។",
@@ -177,7 +183,7 @@
       "khrCode": "KHR"
     },
     "receiptPreview": {
-      "fallbackShopName": "ROUTINE CAFE & BAKERY",
+      "fallbackShopName": "ROUTINE CAFÉ & BAKERY",
       "total": "សរុប",
       "inRiel": "ជារៀល ({rate})",
       "mockupLabel": "គំរូមើលវិក្កយបត្រ",
@@ -367,8 +373,7 @@
       "name": "ឈ្មោះពេញ",
       "namePlaceholder": "ឧ. Jonathan Smith",
       "email": "អាសយដ្ឋានអ៊ីមែល",
-      "emailPlaceholder": "jonathan{'@'}cinnamonpos.com",
-      "emailNotice": "តំណភ្ជាប់រៀបចំដែលមានសុពលភាពរយៈពេល 8 ម៉ោងនឹងត្រូវបានផ្ញើទៅកាន់អ៊ីមែលនេះ។",
+      "emailPlaceholder": "staff{'@'}routine.com",
       "password": "ពាក្យសម្ងាត់",
       "passwordPlaceholder": "********",
       "phoneOptional": "លេខទូរស័ព្ទ (ជម្រើស)",
@@ -470,5 +475,69 @@
     "rate_usd_to_khr": "1 USD = {rate} រៀល",
     "usd_label": "USD ($)",
     "khr_label": "KHR (៛)"
+  },
+  "orderDashboard": {
+    "title": "ការគ្រប់គ្រងការបញ្ជាទិញ",
+    "station": "ឃ្លាំង A",
+    "preparing": "កំពុងរៀបចំ",
+    "ready": "រួចរាល់",
+    "completed": "បានបញ្ចប់",
+    "canceled": "បានបោះបង់",
+    "unpaid": "មិនទាន់បង់ប្រាក់",
+    "paid": "បានបង់ប្រាក់",
+    "items": "មុខទំនិញ",
+    "noIce": "គ្មានទឹកកក",
+    "oatMilk": "ទឹកដោះគោ Oat",
+    "extraShot": "ថែម espresso",
+    "orderType": "ប្រភេទបញ្ជាទិញ",
+    "stationLabel": "ស្ថានីយ",
+    "totalItems": "ទំនិញសរុប",
+    "totalPrice": "តម្លៃសរុប",
+    "paymentSummary": "សេចក្តីសរុបការទូទាត់",
+    "subtotal": "សរុបរង",
+    "discount": "បញ្ចុះតម្លៃ",
+    "serviceFee": "កម្រៃសេវា",
+    "total": "សរុប",
+    "backToOrders": "ត្រឡប់ទៅការបញ្ជាទិញ",
+    "printReceipt": "បោះពុម្ពវិក្កយបត្រ",
+    "emptyDashboard": "មិនមានការបញ្ជាទិញសកម្មក្នុងផ្ទាំងនេះទេ",
+    "preparingDesc": "ការបញ្ជាទិញកំពុងចូល និងកំពុងរៀបចំ",
+    "readyDesc": "រួចរាល់សម្រាប់យក ឬជូនដល់តុ",
+    "canceledDesc": "ការបញ្ជាទិញដែលបានបោះបង់ថ្ងៃនេះ",
+    "completedDesc": "ការបញ្ជាទិញដែលបានបំពេញរួចរាល់ថ្ងៃនេះ",
+    "changeStatus": "ផ្លាស់ប្តូរស្ថានភាព",
+    "statusUpdated": "ស្ថានភាពការបញ្ជាទិញត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ",
+    "viewDetails": "មើលលម្អិត"
+  },
+  "orderHistory": {
+    "title": "ប្រវត្តិនៃការបញ្ជាទិញ",
+    "subtitle": "ស្វែងរក និងចម្រោះប្រវត្តិនៃការបញ្ជាទិញ និងបោះពុម្ពវិក្កយបត្រឡើងវិញ។",
+    "searchPlaceholder": "ស្វែងរកការបញ្ជាទិញ ទំនិញ ឬអតិថិជន...",
+    "filterStatus": "ស្ថានភាពបំពេញ",
+    "filterPayment": "ស្ថានភាពទូទាត់",
+    "datePreset": "កម្រិតកំណត់ស្រាប់",
+    "allStatuses": "ស្ថានភាពទាំងអស់",
+    "allPayments": "ការទូទាត់ទាំងអស់",
+    "today": "ថ្ងៃនេះ",
+    "yesterday": "ម្សិលមិញ",
+    "last7Days": "៧ ថ្ងៃចុងក្រោយ",
+    "customRange": "ជ្រើសរើសថ្ងៃ",
+    "table": {
+      "dateTime": "ថ្ងៃខែ & ម៉ោង",
+      "orderId": "លេខបញ្ជាទិញ",
+      "customer": "អតិថិជន",
+      "payment": "ការទូទាត់",
+      "fulfillment": "ស្ថានភាពបំពេញ",
+      "total": "តម្លៃសរុប"
+    },
+    "noHistory": "មិនឃើញប្រវត្តិប្រតិបត្តិការដែលត្រូវនឹងលក្ខខណ្ឌចម្រោះទេ។",
+    "reprintReceipt": "បោះពុម្ពវិក្កយបត្រឡើងវិញ",
+    "actions": {
+      "cancelOrder": "បោះបង់ការបញ្ជាទិញ",
+      "completeOrder": "សម្គាល់ថាបានបញ្ចប់",
+      "confirmCancel": "បញ្ជាក់ការបោះបង់?"
+    },
+    "startDate": "ថ្ងៃចាប់ផ្តើម",
+    "endDate": "ថ្ងៃបញ្ចប់"
   }
 }

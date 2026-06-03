@@ -23,7 +23,9 @@ const pageTitle = computed(() => {
     case APP_ROUTES.HOME.name:
       return t('navbar.menuManagement')
     case APP_ROUTES.ORDERS.name:
-      return t('sidebar.items.orders')
+      return t('orderDashboard.title')
+    case APP_ROUTES.ORDER_HISTORY.name:
+      return t('orderHistory.title')
     case APP_ROUTES.DASHBOARD.name:
       return t('sidebar.items.dashboard')
     case APP_ROUTES.INVENTORY.name:

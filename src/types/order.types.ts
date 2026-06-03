@@ -40,11 +40,61 @@ export interface CreateOrderPayload {
 export interface OrderResult {
   id: number
   orderNumber: string
-  totalAmount: number
-  receivedAmount: number
+  totalAmount: number | string
+  receivedAmount: number | string
   paymentCurrency: PaymentCurrency
-  changeAmount: number
-  exchangeRateSnapshot: number
+  changeAmount: number | string
+  exchangeRateSnapshot: number | string
   paymentStatus: string
   fulfillmentStatus: string
+}
+
+export interface OrderItemOptionDetail {
+  id: number
+  orderItemId: number
+  groupName: string
+  optionName: string
+  extraPrice: number | string
+}
+
+export interface OrderItemDetail {
+  id: number
+  orderId: number
+  productId: number
+  quantity: number
+  price: number | string
+  extraPrice: number | string
+  subtotal: number | string
+  product: {
+    id: number
+    name: string
+    imageUrl: string | null
+    price: number | string
+  }
+  options: OrderItemOptionDetail[]
+}
+
+export interface OrderDetail extends OrderResult {
+  createdAt: string
+  updatedAt: string
+  userId: number | null
+  tableSessionId: number | null
+  promotionId: number | null
+  orderType: OrderType
+  customerName: string | null
+  customerPhone: string | null
+  deliveryAddress: string | null
+  paymentMethod: string
+  khqrString: string | null
+  items: OrderItemDetail[]
+}
+
+export interface PaginatedOrders {
+  orders: OrderDetail[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
 }
