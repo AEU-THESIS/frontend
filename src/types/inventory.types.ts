@@ -5,19 +5,16 @@ export interface InventoryItem {
   id: number
   shopId: number
   name: string
-  sku: string | null
   unitOfMeasure: string
   quantity: number
   minAlertThreshold: number
   imageUrl: string | null
   status: InventoryStatus
-  createdAt: string
   updatedAt: string
 }
 
 export interface InventoryItemPayload {
   name: string
-  sku?: string | null
   unit_of_measure: string
   quantity: number
   min_alert_threshold: number

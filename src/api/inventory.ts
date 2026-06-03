@@ -19,7 +19,6 @@ const toInventoryFormData = (payload: InventoryItemPayload) => {
   const formData = new FormData()
 
   formData.append('name', parsed.name)
-  if (parsed.sku) formData.append('sku', parsed.sku)
   formData.append('unit_of_measure', parsed.unit_of_measure)
   formData.append('quantity', String(parsed.quantity))
   formData.append('min_alert_threshold', String(parsed.min_alert_threshold))
@@ -29,7 +28,9 @@ const toInventoryFormData = (payload: InventoryItemPayload) => {
 }
 
 const multipartConfig = {
-  headers: {},
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
 }
 
 export const getInventoryItems = async (

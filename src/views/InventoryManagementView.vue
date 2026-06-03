@@ -150,8 +150,26 @@ const normalizeSupplyCounts = () => {
   supplyForm.quantity = toWholeNumber(supplyForm.quantity)
   supplyForm.minAlertThreshold = toWholeNumber(supplyForm.minAlertThreshold)
 }
+const isRemovingStock = computed(() => adjustmentForm.adjustmentType === 'remove')
+const adjustmentMaxAmount = computed(() => {
+  if (!isRemovingStock.value) return Number.POSITIVE_INFINITY
+  return selectedItem.value ? Math.max(0, Math.floor(selectedItem.value.quantity)) : 0
+})
+const isAdjustmentAmountInvalid = computed(() => {
+  if (!selectedItem.value) return true
+  if (adjustmentForm.amount < 1) return true
+  return isRemovingStock.value && adjustmentForm.amount > adjustmentMaxAmount.value
+})
 const setAdjustmentAmount = (value: unknown) => {
-  adjustmentForm.amount = toWholeNumber(value, 1)
+  const amount = toWholeNumber(
+    value,
+    isRemovingStock.value && adjustmentMaxAmount.value === 0 ? 0 : 1
+  )
+  adjustmentForm.amount = Math.min(amount, adjustmentMaxAmount.value)
+}
+const setAdjustmentType = (type: AdjustmentType) => {
+  adjustmentForm.adjustmentType = type
+  setAdjustmentAmount(adjustmentForm.amount)
 }
 
 const statusMeta = {
@@ -233,7 +251,7 @@ const closeSupplyModal = () => {
 const openAdjustmentModal = (item: InventoryItem) => {
   selectedItem.value = item
   adjustmentForm.adjustmentType = 'add'
-  adjustmentForm.amount = 0
+  adjustmentForm.amount = 1
   adjustmentForm.notes = ''
   isAdjustmentModalOpen.value = true
 }
@@ -315,6 +333,11 @@ const saveAdjustment = async () => {
 
   try {
     setAdjustmentAmount(adjustmentForm.amount)
+    if (isAdjustmentAmountInvalid.value) {
+      toast.error(t('inventory.messages.adjustError'))
+      return
+    }
+
     await inventoryStore.adjustItem(selectedItem.value.id, {
       adjustment_type: adjustmentForm.adjustmentType,
       change_amount: adjustmentForm.amount,
@@ -526,9 +549,6 @@ onMounted(() => {
                     </div>
                     <div>
                       <p class="text-[#1A1C1C]">{{ item.name }}</p>
-                      <p v-if="item.sku" class="text-xs font-semibold text-[#A3A3A3]">
-                        {{ item.sku }}
-                      </p>
                     </div>
                   </div>
                 </td>
@@ -988,7 +1008,7 @@ onMounted(() => {
                 :class="
                   adjustmentForm.adjustmentType === 'add' ? 'bg-white text-[#A64E05] shadow-sm' : ''
                 "
-                @click="adjustmentForm.adjustmentType = 'add'"
+                @click="setAdjustmentType('add')"
               >
                 <CirclePlus class="size-3.5" />
                 {{ t('inventory.adjustment.addStock') }}
@@ -1001,7 +1021,7 @@ onMounted(() => {
                     ? 'bg-white text-[#A64E05] shadow-sm'
                     : ''
                 "
-                @click="adjustmentForm.adjustmentType = 'remove'"
+                @click="setAdjustmentType('remove')"
               >
                 <CircleMinus class="size-3.5" />
                 {{ t('inventory.adjustment.removeStock') }}
@@ -1016,6 +1036,9 @@ onMounted(() => {
               variant="tertiary"
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
+              :disabled="
+                adjustmentForm.amount <= (isRemovingStock && adjustmentMaxAmount === 0 ? 0 : 1)
+              "
               @click="setAdjustmentAmount(Number(adjustmentForm.amount) - 1)"
             >
               <Minus class="size-4" />
@@ -1024,8 +1047,10 @@ onMounted(() => {
               v-model="adjustmentForm.amount"
               type="number"
               min="1"
+              :max="Number.isFinite(adjustmentMaxAmount) ? adjustmentMaxAmount : undefined"
               step="1"
               class="h-full border-0 bg-transparent px-0 text-right text-xl font-normal text-[#222222] shadow-none [appearance:textfield] focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              @input="setAdjustmentAmount(adjustmentForm.amount)"
               @blur="setAdjustmentAmount(adjustmentForm.amount)"
             />
             <span class="pl-4 text-sm font-normal text-[#B2B2B2]">
@@ -1035,6 +1060,7 @@ onMounted(() => {
               variant="tertiary"
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
+              :disabled="isRemovingStock && adjustmentForm.amount >= adjustmentMaxAmount"
               @click="setAdjustmentAmount(Number(adjustmentForm.amount) + 1)"
             >
               <Plus class="size-4" />
@@ -1063,7 +1089,7 @@ onMounted(() => {
           </Button>
           <Button
             class="h-[46px] flex-1 rounded-lg bg-[#A64E05] px-6 text-sm font-normal text-white shadow-md shadow-[#A64E05]/25 hover:bg-[#8f4102]"
-            :disabled="isSaving"
+            :disabled="isSaving || isAdjustmentAmountInvalid"
             @click="saveAdjustment"
           >
             <CircleCheck class="size-4" />
