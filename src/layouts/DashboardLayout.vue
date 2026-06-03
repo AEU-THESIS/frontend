@@ -1,11 +1,24 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import CartSidebar from '@/components/cart/CartSidebar.vue'
 import Sidebar from '@/components/layout/Sidebar.vue'
 import TopNavbar from '@/components/layout/TopNavbar.vue'
+import { getShopSettings } from '@/api/shop'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 
 const route = useRoute()
+const shopSettingsStore = useShopSettingsStore()
+
+onMounted(async () => {
+  try {
+    const settings = await getShopSettings()
+    shopSettingsStore.setShopSettings(settings)
+  } catch (error) {
+    console.error('Failed to load shop settings:', error)
+  }
+})
 </script>
 
 <template>

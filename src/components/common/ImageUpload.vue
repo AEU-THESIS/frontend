@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string | null): void
-  (e: 'change', file: File): void
+  (e: 'change', file: File | null): void
   (e: 'error', message: string): void
 }>()
 
@@ -56,7 +56,9 @@ const handleFileChange = (event: Event) => {
   // Local preview
   const reader = new FileReader()
   reader.onload = e => {
-    previewUrl.value = e.target?.result as string
+    const result = e.target?.result as string
+    previewUrl.value = result
+    emit('update:modelValue', result)
   }
   reader.readAsDataURL(file)
 
@@ -73,6 +75,7 @@ const removeImage = (e: Event) => {
   e.stopPropagation()
   previewUrl.value = null
   emit('update:modelValue', null)
+  emit('change', null)
   if (fileInput.value) fileInput.value.value = ''
 }
 </script>
@@ -80,7 +83,7 @@ const removeImage = (e: Event) => {
 <template>
   <div class="space-y-2.5">
     <div
-      class="relative border-2 border-dashed border-[#DDC1B3] rounded-2xl p-6 bg-[#FAFAFA]/50 hover:bg-[#FAFAFA] transition-all group cursor-pointer flex items-center gap-8 min-h-[140px]"
+      class="relative border-2 border-dashed border-primary/30 rounded-2xl p-6 bg-[#FAFAFA]/50 hover:bg-[#FAFAFA] transition-all group cursor-pointer flex items-center gap-8 min-h-[140px]"
       :class="{
         'opacity-60 cursor-not-allowed': disabled || isUploading,
         'border-rose-500 bg-rose-50/30': error,
@@ -98,7 +101,7 @@ const removeImage = (e: Event) => {
 
       <!-- Preview/Placeholder Slot -->
       <div
-        class="relative size-24 shrink-0 overflow-hidden rounded-xl border border-[#DDC1B3] bg-white flex flex-col items-center justify-center gap-1.5 shadow-sm group-hover:border-[#974400] transition-colors"
+        class="relative size-24 shrink-0 overflow-hidden rounded-xl border border-primary/30 bg-white flex flex-col items-center justify-center gap-1.5 shadow-sm group-hover:border-primary transition-colors"
       >
         <template v-if="previewUrl">
           <img :src="getImageUrl(previewUrl)" class="h-full w-full object-cover" />
@@ -109,9 +112,9 @@ const removeImage = (e: Event) => {
           </div>
         </template>
         <template v-else>
-          <Camera class="size-6 text-[#A3A3A3] group-hover:text-[#974400] transition-colors" />
+          <Camera class="size-6 text-muted-foreground group-hover:text-primary transition-colors" />
           <span
-            class="text-[9px] font-black text-[#A3A3A3] uppercase tracking-widest group-hover:text-[#974400]"
+            class="text-[9px] font-black text-muted-foreground uppercase tracking-widest group-hover:text-primary"
           >
             {{ t('imageUpload.upload') }}
           </span>
@@ -122,7 +125,7 @@ const removeImage = (e: Event) => {
           v-if="isUploading"
           class="absolute inset-0 bg-white/80 flex items-center justify-center"
         >
-          <LoaderCircle class="size-6 text-[#974400] animate-spin" />
+          <LoaderCircle class="size-6 text-primary animate-spin" />
         </div>
       </div>
 

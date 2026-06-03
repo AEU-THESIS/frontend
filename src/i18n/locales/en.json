@@ -2,6 +2,30 @@
   "app": {
     "title": "RoutinCafe POS"
   },
+  "login": {
+    "shopLogoAlt": "Shop Logo"
+  },
+  "orders": {
+    "paginationShowing": "Showing {start} to {end} of {total} transactions",
+    "pageOf": "Page {page} of {totalPages}"
+  },
+  "product": {
+    "thumbnailAlt": "Product thumbnail"
+  },
+  "checkout": {
+    "thankYou": "Thank you for your visit!"
+  },
+  "order": {
+    "status": {
+      "connected": "Real-time connected",
+      "disconnected": "Disconnected",
+      "live": "Live",
+      "offline": "Offline"
+    }
+  },
+  "ui": {
+    "thankYou": "Thank you for your visit!"
+  },
   "preferences": {
     "title": "System Preference",
     "language": "Language",
@@ -16,7 +40,7 @@
     "logout": "Logout",
     "email": "Email Address",
     "password": "Password",
-    "title": "Routine Cafe & Bakery",
+    "title": "Routine Café & Bakery",
     "subtitle": "Sign in to your account",
     "emailPlaceholder": "staff{'@'}routine.com",
     "passwordPlaceholder": "********",
@@ -39,9 +63,11 @@
     "station": "Station 01",
     "help": "Help",
     "logout": "Logout",
+    "your_shop": "Your Shop",
+    "shop_logo": "Shop Logo",
     "sections": {
       "home": "Home",
-      "pos": "POS Sale Products",
+      "pos": "POS & Order",
       "inventory": "Inventory",
       "reports": "Reports",
       "settings": "Settings"
@@ -50,7 +76,9 @@
       "dashboard": "Dashboard",
       "pos": "POS",
       "orders": "Orders",
-      "products": "Products",
+      "orderHistory": "Order History",
+      "inventory": "Inventory Management",
+      "products": "Stock",
       "categories": "Categories",
       "inventory": "Inventory",
       "saleReports": "Sale",
@@ -84,6 +112,7 @@
   "cart": {
     "order": "Order",
     "dineIn": "Dine-in",
+    "dine_in": "Dine-in",
     "takeaway": "Takeaway",
     "subtotal": "Subtotal",
     "addDiscount": "Add Discount",
@@ -151,6 +180,10 @@
       "title": "Branch Information",
       "description": "Update your cafe profile displayed across the POS."
     },
+    "orderManagement": {
+      "title": "Enable Order Management Dashboard",
+      "description": "If enabled, orders go through Preparing/Ready flow. If disabled, orders are automatically completed immediately after checkout."
+    },
     "financials": {
       "title": "Financials & Payments",
       "description": "Manage currency, exchange rates, and digital payments.",
@@ -158,7 +191,8 @@
     },
     "receipt": {
       "title": "Receipt Configuration",
-      "description": "Customize what customers see on their printed receipts."
+      "description": "Customize what customers see on their printed receipts.",
+      "brand": "Routine Café & Bakery"
     },
     "fields": {
       "shopName": "Shop Name",
@@ -177,7 +211,7 @@
       "khrCode": "KHR"
     },
     "receiptPreview": {
-      "fallbackShopName": "ROUTINE CAFE & BAKERY",
+      "fallbackShopName": "ROUTINE CAFÉ & BAKERY",
       "total": "TOTAL",
       "inRiel": "In Riel ({rate})",
       "mockupLabel": "Receipt Preview Mockup",
@@ -187,9 +221,118 @@
       }
     }
   },
+  "inventory": {
+    "title": "Inventory Management",
+    "subtitle": "Warehouse A",
+    "searchPlaceholder": "Search supplies...",
+    "summary": {
+      "totalSupplies": "Total Supplies",
+      "stockHealth": "{percentage}%",
+      "lowStock": "Warning: Low Stock",
+      "outOfStock": "Critical: Out of Stock",
+      "newCount": "{count} New",
+      "alertCount": "{count} Alert"
+    },
+    "table": {
+      "allSupplies": "All Supplies",
+      "showing": "Showing {shown} of {total} items",
+      "showingRange": "Showing {start}-{end} of {total} items",
+      "name": "Name",
+      "stockLevel": "Stock Level",
+      "unit": "Unit",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "inStock": "In Stock",
+      "lowStock": "Low Stock",
+      "outOfStock": "Out of Stock"
+    },
+    "filters": {
+      "status": "Status",
+      "unit": "Unit",
+      "allStatuses": "All Statuses",
+      "allUnits": "All Units",
+      "clear": "Clear Filters"
+    },
+    "actions": {
+      "addItem": "Add Item",
+      "refresh": "Refresh",
+      "filters": "Filters",
+      "adjust": "Adjust",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "restock": "Restock",
+      "viewAllWarnings": "View All Warnings",
+      "viewLessWarnings": "View Less Warnings",
+      "viewAllCriticalStock": "View All Critical Stock",
+      "viewLessCriticalStock": "View Less Critical Stock",
+      "close": "Close",
+      "editSupply": "Edit Supply",
+      "addSupply": "Add Supply"
+    },
+    "panels": {
+      "criticalStock": "Critical Stock ({count})",
+      "lowStockWarnings": "Low Stock Warnings ({count})",
+      "noCriticalStock": "No critical stock.",
+      "noLowStock": "No low stock warnings.",
+      "lowStockRatio": "{quantity} / min {threshold} {unit}"
+    },
+    "modal": {
+      "addTitle": "Add New Supply",
+      "editTitle": "Edit Supply",
+      "viewTitle": "Supply Detail"
+    },
+    "deleteConfirm": {
+      "title": "Delete Supply",
+      "message": "Are you sure you want to delete {name}? This action cannot be undone."
+    },
+    "form": {
+      "itemName": "Item Name",
+      "required": " *",
+      "itemNamePlaceholder": "e.g. Double Wall Glassware",
+      "numberOfItems": "Number of Items",
+      "unitOfMeasure": "Unit of Measure",
+      "minAlert": "Min Low Stock Alert",
+      "minAlertPlaceholder": "e.g. 5",
+      "itemImage": "Item Image",
+      "imageRecommendation": "Upload a file or drag and drop PNG, JPG up to 10MB"
+    },
+    "units": {
+      "packs": "Packs",
+      "kg": "kg",
+      "liters": "Liters",
+      "units": "Units"
+    },
+    "adjustment": {
+      "title": "Quick Stock Adjustment",
+      "currentStock": "Current Stock: {quantity} {unit}",
+      "typeAndAmount": "Adjustment Type & Amount",
+      "addStock": "+ Add Stock",
+      "removeStock": "- Remove Stock",
+      "notes": "Notes",
+      "notesPlaceholder": "Add additional details about this adjustment..."
+    },
+    "messages": {
+      "loading": "Loading inventory...",
+      "empty": "No supplies found.",
+      "loadError": "Unable to load inventory.",
+      "nameRequired": "Item name is required.",
+      "createSuccess": "Supply added.",
+      "updateSuccess": "Supply updated.",
+      "saveError": "Unable to save supply.",
+      "deleteSuccess": "Supply removed.",
+      "deleteError": "Unable to remove supply.",
+      "adjustSuccess": "Stock adjusted.",
+      "adjustError": "Unable to adjust stock."
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
@@ -276,8 +419,7 @@
       "name": "Full Name",
       "namePlaceholder": "e.g. Jonathan Smith",
       "email": "Email Address",
-      "emailPlaceholder": "jonathan{'@'}cinnamonpos.com",
-      "emailNotice": "A setup link valid for 8 hours will be sent to this email.",
+      "emailPlaceholder": "staff{'@'}routine.com",
       "password": "Password",
       "passwordPlaceholder": "********",
       "phoneOptional": "Phone Number (Optional)",
@@ -332,56 +474,6 @@
     "errorTooLarge": "File size must be less than {max}MB",
     "upload": "Upload"
   },
-  "inventory": {
-    "title": "Inventory Management",
-    "searchPlaceholder": "Search ingredients...",
-    "all": "All Ingredients",
-    "lowStock": "Low Stock",
-    "outOfStock": "Out of Stock",
-    "good": "In Stock",
-    "stockIn": "Restock (Stock-In)",
-    "stockOut": "Waste / Spoilage (Stock-Out)",
-    "stockCount": "Physical Count (Correction)",
-    "logs": "Audit Trails",
-    "table": {
-      "ingredient": "Ingredient",
-      "currentStock": "Current Stock",
-      "lowThreshold": "Min Threshold",
-      "status": "Status",
-      "lastUpdated": "Last Updated",
-      "actions": "Actions"
-    },
-    "status": {
-      "good": "In Stock",
-      "low": "Low Stock",
-      "out": "Out of Stock"
-    },
-    "modals": {
-      "stockInTitle": "Restock Ingredient",
-      "stockOutTitle": "Log Waste / Spoilage",
-      "stockCountTitle": "Physical Count Correction",
-      "ingredientLabel": "Ingredient",
-      "quantityLabel": "Quantity to Adjust",
-      "actualCountLabel": "Actual Physical Count",
-      "reasonLabel": "Reason / Notes",
-      "reasonPlaceholder": "e.g. Weekly Restock, Broken Cup, etc...",
-      "submitting": "Processing adjustment...",
-      "submit": "Confirm Adjustment",
-      "cancel": "Cancel",
-      "successStockIn": "Successfully restocked ingredient!",
-      "successStockOut": "Successfully recorded waste/deduction!",
-      "successStockCount": "Successfully updated physical count!"
-    },
-    "drawer": {
-      "title": "Ingredient Audit Trail",
-      "type": "Type",
-      "quantity": "Adjustment",
-      "reason": "Reason",
-      "user": "Performed By",
-      "date": "Date & Time",
-      "empty": "No audit records logged for this ingredient."
-    }
-  },
   "dashboard": {
     "title": "Manager Analytics Dashboard",
     "salesOverview": "Sales Overview",
@@ -429,5 +521,69 @@
     "rate_usd_to_khr": "1 USD = {rate} KHR",
     "usd_label": "USD ($)",
     "khr_label": "KHR (៛)"
+  },
+  "orderDashboard": {
+    "title": "Order Management",
+    "station": "Warehouse A",
+    "preparing": "Preparing",
+    "ready": "Ready",
+    "completed": "Completed",
+    "canceled": "Canceled",
+    "unpaid": "UNPAID",
+    "paid": "PAID",
+    "items": "Items",
+    "noIce": "No Ice",
+    "oatMilk": "Oat Milk",
+    "extraShot": "Extra Shot",
+    "orderType": "Order Type",
+    "stationLabel": "Station",
+    "totalItems": "Total Items",
+    "totalPrice": "Total Price",
+    "paymentSummary": "Payment Summary",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "serviceFee": "Service Fee",
+    "total": "Total",
+    "backToOrders": "Back to Orders",
+    "printReceipt": "Print Receipt",
+    "emptyDashboard": "No active orders in this tab",
+    "preparingDesc": "Incoming & preparing orders",
+    "readyDesc": "Ready for pickup / table delivery",
+    "canceledDesc": "Canceled orders today",
+    "completedDesc": "Fulfilled orders today",
+    "changeStatus": "Change Status",
+    "statusUpdated": "Order status updated successfully",
+    "viewDetails": "View Details"
+  },
+  "orderHistory": {
+    "title": "Order History",
+    "subtitle": "Search and filter past order transactions and print receipts.",
+    "searchPlaceholder": "Search orders, items, or customers...",
+    "filterStatus": "Fulfillment Status",
+    "filterPayment": "Payment Status",
+    "datePreset": "Date Preset",
+    "allStatuses": "All Statuses",
+    "allPayments": "All Payments",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last7Days": "Last 7 Days",
+    "customRange": "Custom Range",
+    "table": {
+      "dateTime": "Date & Time",
+      "orderId": "Order ID",
+      "customer": "Customer",
+      "payment": "Payment",
+      "fulfillment": "Fulfillment",
+      "total": "Total Price"
+    },
+    "noHistory": "No historical transactions found matching criteria.",
+    "reprintReceipt": "Reprint Receipt",
+    "actions": {
+      "cancelOrder": "Cancel Order",
+      "completeOrder": "Mark as Completed",
+      "confirmCancel": "Confirm Cancel?"
+    },
+    "startDate": "Start Date",
+    "endDate": "End Date"
   }
 }

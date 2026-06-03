@@ -34,6 +34,7 @@ const form = reactive({
   currencySymbol: '',
   exchangeRate: '',
   receiptFooter: '',
+  isOrderManagementEnabled: false,
 })
 
 const receiptItems = [
@@ -101,6 +102,7 @@ const fillForm = (settings: ShopSettings) => {
     settings.currencySymbol === LEGACY_KHR_CODE ? KHR_SYMBOL : settings.currencySymbol || ''
   form.exchangeRate = getExchangeRateInputValue(settings.exchangeRate)
   form.receiptFooter = settings.receiptFooter || ''
+  form.isOrderManagementEnabled = settings.isOrderManagementEnabled === true
 }
 
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -139,6 +141,7 @@ const saveSettings = async () => {
       currency_symbol: form.currencySymbol.trim() || USD_SYMBOL,
       exchange_rate: getFormExchangeRate(),
       receipt_footer: form.receiptFooter.trim() || null,
+      is_order_management_enabled: form.isOrderManagementEnabled,
     })
 
     fillForm(settings)
@@ -268,6 +271,30 @@ onMounted(loadSettings)
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
             </Label>
+
+            <!-- Enable Order Management Switch -->
+            <div
+              class="md:col-span-2 border-t border-stone-100 dark:border-stone-800 pt-5 mt-2 flex items-center justify-between"
+            >
+              <div>
+                <h3 class="text-sm font-bold text-stone-950 dark:text-stone-50">
+                  {{ t('settings.orderManagement.title') }}
+                </h3>
+                <p class="text-xs font-medium text-stone-500 dark:text-stone-400 mt-0.5">
+                  {{ t('settings.orderManagement.description') }}
+                </p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer select-none">
+                <input
+                  v-model="form.isOrderManagementEnabled"
+                  type="checkbox"
+                  class="sr-only peer"
+                />
+                <div
+                  class="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer dark:bg-stone-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-stone-600 peer-checked:bg-amber-700"
+                ></div>
+              </label>
+            </div>
           </div>
         </Card>
 

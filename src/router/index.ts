@@ -3,6 +3,7 @@ import { APP_ROUTES } from '@/constants/appRoutes'
 import { useAuthStore } from '@/store/useAuthStore'
 import { ROLES } from '@/constants/roles'
 import { toast } from 'vue-sonner'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -22,12 +23,17 @@ const routes: RouteRecordRaw[] = [
       {
         path: APP_ROUTES.ORDERS.path,
         name: APP_ROUTES.ORDERS.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/OrderManagement.vue'),
+      },
+      {
+        path: APP_ROUTES.ORDER_HISTORY.path,
+        name: APP_ROUTES.ORDER_HISTORY.name,
+        component: () => import('@/views/OrderHistoryView.vue'),
       },
       {
         path: APP_ROUTES.INVENTORY.path,
         name: APP_ROUTES.INVENTORY.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/InventoryManagementView.vue'),
         meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {
@@ -94,11 +100,18 @@ const router = createRouter({
 
 router.beforeEach(to => {
   const authStore = useAuthStore()
+  const shopSettingsStore = useShopSettingsStore()
   const requiresAuth = to.meta.requiresAuth !== false
 
   // Redirect users to Login if they try to access a protected route without authentication
   if (requiresAuth && !authStore.isAuthenticated()) {
     return { name: APP_ROUTES.LOGIN.name }
+  }
+
+  // Redirect away from orders if order management is disabled for this shop
+  if (to.name === APP_ROUTES.ORDERS.name && !shopSettingsStore.is_order_management_enabled) {
+    toast.error('Order Management is disabled for this shop.')
+    return { name: APP_ROUTES.HOME.name }
   }
 
   // Check RBAC roles
