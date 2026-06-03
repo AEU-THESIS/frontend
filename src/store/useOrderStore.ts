@@ -198,7 +198,8 @@ export const useOrderStore = defineStore('orders', () => {
     const controller = new AbortController()
     sseController.value = controller
 
-    const sseUrl = `${import.meta.env.VITE_API_URL}/api/orders/stream`
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    const sseUrl = `${baseUrl.replace(/\/$/, '')}/api/orders/stream`
 
     const handleOrderCreated = (data: string) => {
       try {
