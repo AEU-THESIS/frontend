@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Product } from '@/types/product.types'
+import { getImageUrl } from '@/utils/image'
+import NoImage from '@/assets/no-image.jpg'
 
 const props = defineProps<{
   product: Product
@@ -11,7 +13,11 @@ const emit = defineEmits<{
 }>()
 
 const displayPrice = computed(() => {
-  return `$${Number(props.product.price).toFixed(2)}`
+  const productPrice =
+    props.product.price ||
+    props.product.optionSets?.[0]?.optionSet.elements?.[0]?.priceModifier ||
+    0
+  return `$${Number(productPrice).toFixed(2)}`
 })
 
 const handleSelect = () => {
@@ -27,13 +33,12 @@ const handleSelect = () => {
     <!-- Image & Tag -->
     <div class="relative w-full aspect-square bg-stone-100 dark:bg-stone-950 overflow-hidden">
       <img
-        v-if="product.imageUrl"
-        :src="product.imageUrl"
+        :src="product.imageUrl ? getImageUrl(product.imageUrl) : NoImage"
         :alt="product.name"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         loading="lazy"
       />
-      <div
+      <!-- <div
         v-else
         class="w-full h-full flex flex-col items-center justify-center text-stone-300 dark:text-stone-700 select-none"
       >
@@ -41,7 +46,7 @@ const handleSelect = () => {
         <span class="text-[11px] font-semibold uppercase tracking-wider mt-1 opacity-70">
           {{ product.category.name }}
         </span>
-      </div>
+      </div> -->
 
       <div
         v-if="product.optionSets && product.optionSets.length > 0"
