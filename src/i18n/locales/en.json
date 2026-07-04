@@ -607,7 +607,8 @@
       "total": "Total Price",
       "takeaway": "Takeaway",
       "dineIn": "Dine-in",
-      "empty": "No Orders Found"
+      "empty": "No Orders Found",
+      "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports"
     }
   }
 }

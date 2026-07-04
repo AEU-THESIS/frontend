@@ -38,118 +38,150 @@
         </div>
 
         <Card
-          class="overflow-hidden rounded-xl border-none bg-white p-3 text-[#1A1C1C] shadow-sm flex flex-wrap items-center justify-between gap-3 h-auto md:h-[54px]"
+          class="overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm flex flex-col"
         >
-          <div class="flex flex-wrap items-center gap-4">
-            <div class="flex items-center gap-2">
-              <label
-                class="text-[11px] font-bold uppercase text-[#A3A3A3] tracking-wider whitespace-nowrap"
-              >
-                {{ t('reports.date') }}
-              </label>
-              <input
-                v-model="reportStore.selectedDate"
-                type="date"
-                :max="todayIsoDate"
-                class="w-40 h-9 bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-lg px-3 text-xs font-semibold focus:outline-none focus:border-[#b05a18]/50 cursor-pointer"
-                @change="reportStore.fetchDailyOverview"
-              />
-            </div>
-
-            <div class="flex items-center gap-2">
-              <label
-                class="text-[11px] font-bold uppercase text-[#A3A3A3] tracking-wider whitespace-nowrap"
-              >
-                {{ t('reports.paymentMethods') }}
-              </label>
-              <select
-                v-model="reportStore.selectedPaymentMethod"
-                class="w-36 h-9 bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-lg px-3 text-xs font-semibold focus:outline-none focus:border-[#b05a18]/50 cursor-pointer"
-                @change="reportStore.fetchDailyOverview"
-              >
-                <option value="all">{{ t('reports.filters.all') }}</option>
-                <option value="cash">{{ t('reports.filters.cash') }}</option>
-                <option value="khqr">{{ t('reports.filters.khqr') }}</option>
-              </select>
-            </div>
-          </div>
-        </Card>
-        <div
-          v-if="reportStore.isLoading"
-          class="rounded-xl bg-white p-10 text-center text-sm text-[#A3A3A3] shadow-sm"
-        >
-          {{ t('reports.loading') }}
-        </div>
-
-        <div
-          v-else-if="reportStore.error"
-          class="rounded-xl bg-white p-10 text-center text-sm text-red-500 shadow-sm"
-        >
-          {{ reportStore.error }}
-        </div>
-
-        <Card
-          v-else
-          class="overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm"
-        >
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[820px] text-left">
-              <thead>
-                <tr class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3]">
-                  <th class="px-6 py-4">{{ t('reports.table.time') }}</th>
-                  <th class="px-6 py-4">{{ t('reports.table.orderId') }}</th>
-                  <th class="px-6 py-4">{{ t('reports.table.type') }}</th>
-                  <th class="px-6 py-4 text-center">{{ t('reports.table.payment') }}</th>
-                  <th class="px-6 py-4 text-center">{{ t('reports.table.method') }}</th>
-                  <th class="px-6 py-4 text-center">{{ t('reports.table.total') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="reportStore.chronologicalOrders.length === 0">
-                  <td colspan="6" class="p-10 text-center text-sm text-[#A3A3A3]">
-                    {{ t('reports.table.empty') }}
-                  </td>
-                </tr>
-                <tr
-                  v-for="order in reportStore.chronologicalOrders"
-                  v-else
-                  :key="order.id"
-                  class="border-t border-[#F2F2F2] text-sm"
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 p-4 h-auto md:h-[56px] border-b border-[#F2F2F2]"
+          >
+            <div class="flex flex-wrap items-center gap-4">
+              <div class="flex items-center gap-2">
+                <label
+                  class="text-[11px] font-bold uppercase text-[#A3A3A3] tracking-wider whitespace-nowrap"
                 >
-                  <td class="px-6 py-4 text-[#6B6B6B]">{{ formatTime(order.createdAt) }}</td>
-                  <td class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</td>
-                  <td class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</td>
-                  <td class="px-6 py-4 text-center">
-                    <span
-                      class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
-                      :class="
-                        order.paymentStatus === 'paid'
-                          ? 'bg-[#F0FDF4] text-[#22C55E]'
-                          : 'bg-[#FDF2F0] text-[#E26D5C]'
-                      "
-                    >
-                      {{ order.paymentStatus }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 text-center uppercase text-[#6B6B6B]">
-                    {{ order.paymentMethod }}
-                  </td>
-                  <td class="px-6 py-4 text-center font-bold">
-                    {{ formatUsd(order.totalAmount) }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  {{ t('reports.date') }}
+                </label>
+                <input
+                  v-model="reportStore.selectedDate"
+                  type="date"
+                  :max="todayIsoDate"
+                  class="w-40 h-9 bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-lg px-3 text-xs font-semibold focus:outline-none focus:border-[#b05a18]/50 cursor-pointer"
+                  @change="reportStore.fetchDailyOverview"
+                />
+              </div>
+
+              <div class="flex items-center gap-2">
+                <label
+                  class="text-[11px] font-bold uppercase text-[#A3A3A3] tracking-wider whitespace-nowrap"
+                >
+                  {{ t('reports.paymentMethods') }}
+                </label>
+                <select
+                  v-model="reportStore.selectedPaymentMethod"
+                  class="w-36 h-9 bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-lg px-3 text-xs font-semibold focus:outline-none focus:border-[#b05a18]/50 cursor-pointer"
+                  @change="reportStore.fetchDailyOverview"
+                >
+                  <option value="all">{{ t('reports.filters.all') }}</option>
+                  <option value="cash">{{ t('reports.filters.cash') }}</option>
+                  <option value="khqr">{{ t('reports.filters.khqr') }}</option>
+                </select>
+              </div>
+            </div>
           </div>
+
+          <div v-if="reportStore.isLoading" class="p-10 text-center text-sm text-[#A3A3A3]">
+            {{ t('reports.loading') }}
+          </div>
+
+          <div v-else-if="reportStore.error" class="p-10 text-center text-sm text-red-500">
+            {{ reportStore.error }}
+          </div>
+
+          <template v-else>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[820px] text-left">
+                <thead>
+                  <tr class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3]">
+                    <th class="px-6 py-4">{{ t('reports.table.time') }}</th>
+                    <th class="px-6 py-4">{{ t('reports.table.orderId') }}</th>
+                    <th class="px-6 py-4">{{ t('reports.table.type') }}</th>
+                    <th class="px-6 py-4 text-center">{{ t('reports.table.payment') }}</th>
+                    <th class="px-6 py-4 text-center">{{ t('reports.table.method') }}</th>
+                    <th class="px-6 py-4 text-center">{{ t('reports.table.total') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="reportStore.chronologicalOrders.length === 0">
+                    <td colspan="6" class="p-10 text-center text-sm text-[#A3A3A3]">
+                      {{ t('reports.table.empty') }}
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="order in paginatedOrders"
+                    v-else
+                    :key="order.id"
+                    class="border-t border-[#F2F2F2] text-sm"
+                  >
+                    <td class="px-6 py-4 text-[#6B6B6B]">{{ formatTime(order.createdAt) }}</td>
+                    <td class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</td>
+                    <td class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</td>
+                    <td class="px-6 py-4 text-center">
+                      <span
+                        class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
+                        :class="
+                          order.paymentStatus === 'paid'
+                            ? 'bg-[#F0FDF4] text-[#22C55E]'
+                            : 'bg-[#FDF2F0] text-[#E26D5C]'
+                        "
+                      >
+                        {{ order.paymentStatus }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-center uppercase text-[#6B6B6B]">
+                      {{ order.paymentMethod }}
+                    </td>
+                    <td class="px-6 py-4 text-center font-bold">
+                      {{ formatUsd(order.totalAmount) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              v-if="reportStore.chronologicalOrders.length > 0"
+              class="flex items-center justify-between border-t border-[#F2F2F2] px-6 py-4 text-xs font-semibold text-[#A3A3A3]"
+            >
+              <div>
+                {{
+                  t('reports.table.pagination', {
+                    startIndex,
+                    endIndex,
+                    chronologicalOrders: reportStore.chronologicalOrders.length,
+                  })
+                }}
+              </div>
+
+              <div class="flex items-center gap-4 text-stone-900 dark:text-stone-100">
+                <button
+                  :disabled="currentPage === 1"
+                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
+                  @click="prevPage"
+                >
+                  <ChevronLeft class="h-4 w-4 text-stone-400" />
+                </button>
+
+                <span class="text-xs font-bold"> Page {{ currentPage }} of {{ totalPages }} </span>
+
+                <button
+                  :disabled="currentPage === totalPages"
+                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
+                  @click="nextPage"
+                >
+                  <ChevronRight class="h-4 w-4 text-stone-400" />
+                </button>
+              </div>
+            </div>
+          </template>
         </Card>
       </div>
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { computed, onMounted } from 'vue'
-import { DollarSign, Wallet, QrCode } from 'lucide-vue-next'
+import { ref, computed, onMounted, watch } from 'vue'
+import { DollarSign, Wallet, QrCode, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import StaffStatCard from '@/components/staff/StaffStatCard.vue'
 import { useReportStore } from '@/store/useReportStore'
 
@@ -159,6 +191,39 @@ const reportStore = useReportStore()
 const today = new Date()
 const todayIsoDate = today.toISOString().slice(0, 10)
 const formatUsd = (amount: number | string) => `$${Number(amount).toFixed(2)}`
+
+const ITEMS_PER_PAGE = 5
+const currentPage = ref(1)
+
+const totalPages = computed(
+  () => Math.ceil(reportStore.chronologicalOrders.length / ITEMS_PER_PAGE) || 1
+)
+
+const paginatedOrders = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
+  const end = start + ITEMS_PER_PAGE
+  return reportStore.chronologicalOrders.slice(start, end)
+})
+
+const startIndex = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
+const endIndex = computed(() =>
+  Math.min(currentPage.value * ITEMS_PER_PAGE, reportStore.chronologicalOrders.length)
+)
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) currentPage.value--
+}
+
+watch(
+  () => [reportStore.selectedDate, reportStore.selectedPaymentMethod],
+  () => {
+    currentPage.value = 1
+  }
+)
 
 /**
  * "exchange rate $1 = 4100khr" — combined USD/KHR display per the acceptance criteria.
