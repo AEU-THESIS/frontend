@@ -585,5 +585,29 @@
     },
     "startDate": "Start Date",
     "endDate": "End Date"
+  },
+  "reports": {
+    "total_revenue_today": "Total Revenue Today",
+    "cash_drawer_expected": "Cash Drawer Expected",
+    "khqr_expected": "KHQR Expected",
+    "showing_for": "Today's Report Lists",
+    "paymentMethods": "Payment Methods",
+    "date": "Date Reports",
+    "filters": {
+      "all": "All",
+      "cash": "Case",
+      "khqr": "KHQR"
+    },
+    "table": {
+      "time": "Timestamp",
+      "orderId": "Order ID",
+      "type": "Customer Type",
+      "payment": "Payment Status",
+      "method": "Method",
+      "total": "Total Price",
+      "takeaway": "Takeaway",
+      "dineIn": "Dine-in",
+      "empty": "No Orders Found"
+    }
   }
 }

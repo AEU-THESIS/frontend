@@ -45,7 +45,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: APP_ROUTES.SALE_REPORTS.path,
         name: APP_ROUTES.SALE_REPORTS.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/SaleReportSummaryView.vue'),
         meta: { roles: [ROLES.ADMIN] },
       },
       {

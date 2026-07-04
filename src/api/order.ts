@@ -4,6 +4,9 @@ import type {
   OrderResult,
   OrderDetail,
   PaginatedOrders,
+  OrdersResponse,
+  OrderRow,
+  TodayOrdersFilters,
 } from '@/types/order.types'
 import {
   createOrderSchema,
@@ -41,4 +44,20 @@ export const updateOrderStatus = async (id: number, status: string): Promise<Ord
   const parsedStatus = fulfillmentStatusSchema.parse(status)
   const res = await http.put<OrderDetail>(`/api/orders/${id}/status`, { status: parsedStatus })
   return res.data
+}
+
+export const getTodayOrders = async (filters: TodayOrdersFilters = {}): Promise<OrderRow[]> => {
+  const day = filters.date ?? new Date().toISOString().slice(0, 10)
+
+  const res = await http.get('api/orders', {
+    params: {
+      startDate: day,
+      endDate: day,
+      paymentStatus: 'paid',
+      ...(filters.paymentMethod ? { paymentMethod: filters.paymentMethod } : {}),
+      limit: 200,
+    },
+  })
+  const data: OrdersResponse = res.data
+  return data.orders
 }
