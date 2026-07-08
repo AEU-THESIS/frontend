@@ -1,21 +1,70 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --animate-overlay-show: overlayShow 200ms ease;
+  --animate-overlay-hide: overlayHide 200ms ease forwards;
+  --animate-content-show: contentShow 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-content-hide: contentHide 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes overlayShow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlayHide {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes contentShow {
+  from {
+    opacity: 0;
+    scale: 0.92;
+    translate: -50% -48%;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    translate: -50% -50%;
+  }
+}
+
+@keyframes contentHide {
+  from {
+    opacity: 1;
+    scale: 1;
+    translate: -50% -50%;
+  }
+  to {
+    opacity: 0;
+    scale: 0.94;
+    translate: -50% -48%;
+  }
+}
+
 @theme inline {
-  --font-headline: "Manrope", sans-serif;
-  --font-display: "Manrope", sans-serif;
-  --font-body: "Plus Jakarta Sans", sans-serif;
-  --font-label: "Plus Jakarta Sans", sans-serif;
+  --font-headline: 'Manrope', sans-serif;
+  --font-display: 'Manrope', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-label: 'Plus Jakarta Sans', sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-headline: "Manrope", sans-serif;
-  --font-body: "Plus Jakarta Sans", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -245,7 +294,11 @@
 
 @layer base {
   .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
   }
 
   * {
@@ -257,11 +310,11 @@
   }
 
   .material-symbols-outlined {
-    font-family: "Material Symbols Outlined";
+    font-family: 'Material Symbols Outlined';
     font-variation-settings:
-      "FILL" 0,
-      "wght" 400,
-      "GRAD" 0,
-      "opsz" 24;
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
   }
 }

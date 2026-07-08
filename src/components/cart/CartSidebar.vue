@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
+import { getImageUrl } from '@/utils/image'
 
 import type { CartItemOption } from '@/types/order.types'
 
@@ -67,7 +68,7 @@ const handlePayCash = () => {
             v-if="item.imageUrl"
             class="w-full h-full object-cover"
             :alt="item.productName"
-            :src="item.imageUrl"
+            :src="getImageUrl(item.imageUrl)"
           />
           <span v-else class="material-symbols-outlined text-2xl">local_cafe</span>
         </div>

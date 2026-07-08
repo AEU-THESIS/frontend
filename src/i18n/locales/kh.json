@@ -566,5 +566,195 @@
     },
     "startDate": "ថ្ងៃចាប់ផ្តើម",
     "endDate": "ថ្ងៃបញ្ចប់"
+  },
+  "menuManagement": {
+    "title": "ការគ្រប់គ្រងម៉ឺនុយ",
+    "subtitle": "គ្រប់គ្រងកាតាឡុក ធាតុនៃហាង ការកំណត់តម្លៃ និងកម្រិតស្តុក។",
+    "filters": "តម្រងលទ្ធផល",
+    "newItem": "បន្ថែមទំនិញថ្មី",
+    "filterPanel": {
+      "itemName": "ឈ្មោះមុខទំនិញ",
+      "category": "ប្រភេទ",
+      "status": "ស្ថានភាព",
+      "search": "ស្វែងរកទំនិញ...",
+      "clearAll": "សម្អាតទាំងអស់",
+      "applyFilters": "អនុវត្តតម្រង"
+    },
+    "statusOptions": {
+      "active": "សកម្ម",
+      "inactive": "អសកម្ម"
+    },
+    "dialog": {
+      "addTitle": "បន្ថែមធាតុម៉ឺនុយ",
+      "addDescription": "បញ្ចូលព័ត៌មានលម្អិតនៃធាតុម៉ឺនុយថ្មីរបស់អ្នក។",
+      "editTitle": "កែសម្រួលធាតុម៉ឺនុយ",
+      "editDescription": "ធ្វើឱ្យទាន់សម័យនូវព័ត៌មានលម្អិតនៃធាតុម៉ឺនុយរបស់អ្នក។",
+      "detailsTitle": "ព័ត៌មានលម្អិតផលិតផល",
+      "detailsDescription": "មើល និងកែសម្រួលព័ត៌មានលម្អិតនៃផលិតផលនេះ។"
+    },
+    "messages": {
+      "deleteConfirm": "តើអ្នកប្រាកដថាចង់លុប \"{name}\" មែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "deleteError": "បរាជ័យក្នុងការលុបផលិតផល:",
+      "toggleError": "បរាជ័យក្នុងការប្តូរភាពលេចធ្លាក់របស់ផលិតផល:"
+    },
+    "productTable": {
+      "tableHeaders": {
+        "itemName": "ឈ្មោះមុខទំនិញ",
+        "category": "ចំណាត់ថ្នាក់",
+        "price": "តម្លៃ",
+        "onSale": "មានលក់",
+        "actions": "សកម្មភាព"
+      },
+      "skuLabel": "SKU:",
+      "dropdownMenu": {
+        "edit": "កែសម្រួល",
+        "view": "មើល",
+        "delete": "លុប"
+      },
+      "pagination": {
+        "showing": "បង្ហាញ {from}–{to} នៃ {total} ទំនិញ",
+        "firstPage": "ទំព័ររូមដំបូង",
+        "previousPage": "ទំព័ររៀងមុន",
+        "nextPage": "ទំព័របន្ទាប់",
+        "lastPage": "ទំព័ររៀងចុងក្រោយ"
+      },
+      "emptyState": {
+        "title": "មិនរកឃើញវត្ថុ",
+        "description": "មិនមានវត្ថុដែលត្រូវបង្ហាញក្នុងពេលនេះទេ។"
+      }
+    },
+    "productForm": {
+      "sections": {
+        "basicInfo": "ព័ត៌មានមូលដ្ឋាន",
+        "sizesAndPrices": "ទំហំនិងតម្លៃ",
+        "optionsAndVariations": "ជម្រើស និងលក្ខណៈបម្រែបម្រួល",
+        "details": "ព័ត៌មានលម្អិត"
+      },
+      "labels": {
+        "itemName": "ឈ្មោះមុខទំនិញ",
+        "category": "ចំណាត់ថ្នាក់",
+        "itemType": "ប្រភេទទំនិញ",
+        "price": "តម្លៃ",
+        "pricingMode": "របៀបកំណត់តម្លៃ",
+        "productImage": "រូបភាពផលិតផល"
+      },
+      "itemType": {
+        "drink": "ភេសជ្ជៈ",
+        "food": "ម្ហូបអាហារ"
+      },
+      "pricingMode": [
+        {
+          "value": "fixed",
+          "label": "តម្លៃថេរ",
+          "hint": "តម្លៃតែមួយសម្រាប់ទាំងអស់ — ឧ. សម្ពាធកាហ្វេ។"
+        },
+        {
+          "value": "bySize",
+          "label": "តម្លៃតាមទំហំ",
+          "hint": "តម្លៃខុសគ្នាក្នុងទំហំនីមួយៗ — ឧ. ឡាតេ។"
+        }
+      ],
+      "sizesSection": {
+        "title": "ទំហំនិងតម្លៃ",
+        "sizeLabel": "ទំហំ",
+        "priceLabel": "តម្លៃ",
+        "sizeePlaceholder": "ឧ. តូច មធ្យម ធំ",
+        "addButton": "បន្ថែមទំហំផ្សេងទៀត",
+        "removeButtonLabel": "ដកចេញទំហំ"
+      },
+      "optionsSection": {
+        "title": "ជម្រើស និងលក្ខណៈបម្រែបម្រួល",
+        "subtitle": "(ស្ម័គ្រច្ឆន្ទ)",
+        "description": "ដាក់ជម្រើសដែលពាក់ព័ន្ធគ្នាក្នុងក្រុមតែមួយ ឧ. \"ប្រភេទទឹកដោះគោ\" ឬ \"ការតុបតែង\"។",
+        "addGroupButton": "បន្ថែមក្រុម",
+        "emptyStateIcon": "tune",
+        "emptyStateTitle": "មិនមានក្រុមជម្រើសនៅឡើយទេ",
+        "emptyStateDescription": "ចុច \"បន្ថែមក្រុម\" ដើម្បីឱ្យអតិថិជនបង្កើតកម្មាល់ផលិតផលនេះ។",
+        "groupNamePlaceholder": "ឈ្មោះក្រុម ឧ. ប្រភេទទឹកដោះគោ",
+        "removeGroupButtonLabel": "ដកចេញក្រុមជម្រើស",
+        "dragToReorder": "អូសដើម្បីរៀងលំដាប់ឡើងវិញ",
+        "optionLabel": "ស្លាកជម្រើស",
+        "priceModifier": "ការកែប្រែតម្លៃ",
+        "choicePlaceholder": "ឧ. ទឹកដោះគោឡូដ",
+        "addChoiceButton": "បន្ថែមជម្រើស",
+        "removeChoiceButtonLabel": "ដកចេញជម្រើស"
+      },
+      "buttons": {
+        "reset": "កែសម្រួលឡើងវិញ",
+        "save": "រក្សាទុកវត្ថុ",
+        "saving": "កំពុងបង្កើត..."
+      },
+      "placeholders": {
+        "selectCategory": "ជ្រើសរើសចំណាត់ថ្នាក់"
+      },
+      "skuLabel": "SKU:",
+      "productValidation": {
+        "size": {
+          "required": "ទំហំគឺត្រូវបានទាមទារ",
+          "priceInvalid": "តម្លៃត្រូវតែជាលេខដែលមានសុពលភាព"
+        },
+        "choice": {
+          "labelRequired": "ស្លាកជម្រើសគឺត្រូវបានទាមទារ",
+          "priceModifierInvalid": "ការកែប្រែតម្លៃត្រូវតែជាលេខដែលមានសុពលភាព"
+        },
+        "optionGroup": {
+          "nameRequired": "ឈ្មោះក្រុមគឺត្រូវបានទាមទារ",
+          "choicesRequired": "ពេលហោះហើរយ៉ាងហោចណាស់មួយគឺត្រូវបានទាមទារ"
+        },
+        "product": {
+          "nameRequired": "ឈ្មោះផលិតផលគឺត្រូវបានទាមទារ",
+          "nameTooLong": "ឈ្មោះវែងពេក",
+          "categoryRequired": "ចំណាត់ថ្នាក់គឺត្រូវបានទាមទារ",
+          "priceRequired": "តម្លៃគឺត្រូវបានទាមទារ",
+          "pricePositive": "តម្លៃត្រូវតែធំជាង ០",
+          "priceRequiredAndPositive": "តម្លៃគឺត្រូវបានទាមទារ & តម្លៃត្រូវតែធំជាង ០",
+          "sizesRequired": "ទំហំយ៉ាងហោចណាស់មួយគឺត្រូវបានទាមទារ",
+          "sizePricePositive": "តម្លៃទំហំត្រូវតែធំជាង ០"
+        }
+      }
+    }
+  },
+  "category": {
+    "categoryManagement": "ការគ្រប់គ្រងប្រភេទទំនិញ",
+    "categorySubtitle": "គ្រប់គ្រងកាតាឡុកប្រភេទទំនិញ ការកំណត់តម្លៃ និងកម្រិតស្តុករបស់ហាងអ្នក។",
+    "newCategory": "បង្កើតប្រភេទទំនិញថ្មី",
+    "searchPlaceholder": "ស្វែងរក...",
+    "categoryName": "ឈ្មោះប្រភេទទំនិញ",
+    "itemsCount": "ចំនួនទំនិញ",
+    "status": "ស្ថានភាព",
+    "actions": "សកម្មភាព",
+    "items": "មុខទំនិញ",
+    "active": "សកម្ម",
+    "inactive": "អសកម្ម",
+    "edit": "កែប្រែ",
+    "view": "មើល",
+    "delete": "លុប",
+    "showing": "បង្ហាញ {from}–{to} នៃ {total} ទំនិញ",
+    "to": "ដល់",
+    "of": "នៃ",
+    "noCategoriesFound": "រកមិនឃើញប្រភេទទំនិញទេ",
+    "noCategoriesSubtitle": "មិនមានប្រភេទទំនិញត្រូវបង្ហាញនៅពេលនេះទេ។",
+    "editCategory": "កែប្រែប្រភេទទំនិញ",
+    "addCategory": "បន្ថែមប្រភេទទំនិញថ្មី",
+    "editDescription": "ធ្វើបច្ចុប្បន្នភាពព័ត៌មានលម្អិតអំពីប្រភេទទំនិញខាងក្រោម។",
+    "addDescription": "បំពេញព័ត៌មានលម្អិតខាងក្រោមដើម្បីបង្កើតប្រភេទទំនិញថ្មី។",
+    "deleteCategory": "លុបប្រភេទទំនិញ",
+    "deleteConfirmation": "តើអ្នកពិតជាចង់លុបប្រភេទទំនិញនេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានឡើយ។",
+    "deleteWarning": "អ្នកហៀបនឹងលុបប្រភេទទំនិញ៖",
+    "cancel": "បោះបង់",
+    "toastSuccess": "បានលុបប្រភេទទំនិញដោយជោគជ័យ",
+    "toastError": "មិនអាចលុបប្រភេទទំនិញបានទេ",
+    "form": {
+      "categoryNameLabel": "ឈ្មោះប្រភេទទំនិញ",
+      "categoryPlaceholder": "ឧ. កាហ្វេ, នំផ្អែម, តែ",
+      "categoryStatusLabel": "ស្ថានភាពប្រភេទទំនិញ",
+      "saveCategory": "រក្សាទុកប្រភេទទំនិញ",
+      "updateCategory": "ធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញ",
+      "nameRequiredError": "សូមបំពេញឈ្មោះប្រភេទទំនិញ",
+      "toastUpdateSuccess": "បានធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញដោយជោគជ័យ",
+      "toastCreateSuccess": "បានបង្កើតប្រភេទទំនិញដោយជោគជ័យ",
+      "toastUpdateError": "មិនអាចធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញបានទេ",
+      "toastCreateError": "មិនអាចបង្កើតប្រភេទទំនិញបានទេ"
+    }
   }
 }

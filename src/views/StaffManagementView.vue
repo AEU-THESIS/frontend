@@ -14,13 +14,7 @@ import {
 import { useI18n } from 'vue-i18n'
 import { ROLES } from '@/constants/roles'
 import { useStaffManagement } from '@/composables/useStaffManagement'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { AppSelect } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
 import StaffDetailModal from '@/components/staff/StaffDetailModal.vue'
 import StaffFormModal from '@/components/staff/StaffFormModal.vue'
@@ -138,7 +132,7 @@ const getRoleBadgeClass = (role: string | null) => {
                   >{{ t('common.search') }}:</span
                 >
                 <div class="relative min-w-[140px]">
-                  <Select v-model="roleFilter">
+                  <!-- <Select v-model="roleFilter">
                     <SelectTrigger
                       class="h-12 w-full border-none bg-[#FAFAFA] dark:bg-stone-800/50 px-5 text-sm font-bold text-[#1A1C1C] dark:text-stone-100 focus:ring-0"
                     >
@@ -150,7 +144,12 @@ const getRoleBadgeClass = (role: string | null) => {
                         {{ role.name }}
                       </SelectItem>
                     </SelectContent>
-                  </Select>
+                  </Select> -->
+                  <app-select
+                    v-model="roleFilter"
+                    :options="roles.map(r => ({ value: r.id, label: r.name }))"
+                    :placeholder="t('staff.allRoles')"
+                  />
                 </div>
               </div>
             </div>
@@ -386,9 +385,11 @@ const getRoleBadgeClass = (role: string | null) => {
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e5e7eb;
   border-radius: 10px;
@@ -398,6 +399,7 @@ const getRoleBadgeClass = (role: string | null) => {
 .fade-leave-active {
   transition: opacity 0.3s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -406,13 +408,16 @@ const getRoleBadgeClass = (role: string | null) => {
 .scale-enter-active {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .scale-leave-active {
   transition: all 0.2s ease-in;
 }
+
 .scale-enter-from {
   opacity: 0;
   transform: scale(0.95) translateY(10px);
 }
+
 .scale-leave-to {
   opacity: 0;
   transform: scale(0.98) translateY(5px);
@@ -421,6 +426,7 @@ const getRoleBadgeClass = (role: string | null) => {
 table {
   border-spacing: 0;
 }
+
 th {
   z-index: 1;
 }
