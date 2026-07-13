@@ -77,6 +77,13 @@ const navSections = computed(() => {
       ],
     },
     {
+      titleKey: 'sidebar.sections.marketing',
+      roles: [ROLES.ADMIN, ROLES.MANAGER],
+      items: [
+        { nameKey: 'sidebar.items.promotions', route: APP_ROUTES.PROMOTIONS, icon: 'campaign' },
+      ],
+    },
+    {
       titleKey: 'sidebar.sections.reports',
       roles: [ROLES.ADMIN],
       items: [

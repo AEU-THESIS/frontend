@@ -70,21 +70,22 @@
       "pos": "POS & Order",
       "inventory": "Inventory",
       "reports": "Reports",
-      "settings": "Settings"
+      "settings": "Settings",
+      "marketing": "Marketing"
     },
     "items": {
       "dashboard": "Dashboard",
       "pos": "POS",
       "orders": "Orders",
       "orderHistory": "Order History",
-      "inventory": "Inventory Management",
+      "inventory": "Inventory",
       "products": "Stock",
       "categories": "Categories",
-      "inventory": "Inventory",
       "saleReports": "Sale",
       "analytics": "Analytics",
       "staff": "Staff",
-      "config": "Shop Settings"
+      "config": "Shop Settings",
+      "promotions": "Promotions"
     }
   },
   "navbar": {
@@ -774,6 +775,93 @@
       "toastCreateSuccess": "Category created successfully",
       "toastUpdateError": "Failed to update category",
       "toastCreateError": "Failed to create category"
+    }
+  },
+  "promotions": {
+    "title": "Promotions Management",
+    "subtitle": "Create and monitor your seasonal marketing campaigns",
+    "searchPlaceholder": "Search promotions...",
+    "addPromotion": "Add Promotion",
+    "loading": "Loading promotions...",
+    "empty": "No promotions found",
+    "pagination": "Showing {start} to {end} of {total} promotions",
+    "confirmDelete": "Delete promotion \"{name}\"? This cannot be undone.",
+    "stats": {
+      "active": "Active Promotions",
+      "redeemed": "Total Redeemed",
+      "upcoming": "Upcoming Offers"
+    },
+    "table": {
+      "name": "Promotion Name",
+      "type": "Type",
+      "value": "Value",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "status": "Status",
+      "actions": "Actions",
+      "code": "Code"
+    },
+    "types": {
+      "PERCENTAGE": "Percentage",
+      "FIXED_AMOUNT": "Fixed Amount",
+      "BOGO": "Buy 1 Get 1"
+    },
+    "value": {
+      "percentage": "{value}% Off",
+      "fixed": "{value} Off",
+      "freeItem": "Free Item"
+    },
+    "form": {
+      "addTitle": "Add New Promotion",
+      "editTitle": "Edit Promotion",
+      "name": "Promotion Name",
+      "namePlaceholder": "e.g. Weekend Pastry Discount",
+      "code": "Promo Code (optional)",
+      "codePlaceholder": "e.g. WEEKEND15",
+      "type": "Type",
+      "value": "Value",
+      "bogoHint": "Buy 1 Get 1 does not require a value.",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "conditionsTitle": "Conditions & Scope",
+      "scopeAll": "All Menu Items",
+      "scopeAllHint": "Apply the promotion to every product.",
+      "scopeSpecific": "Specific Selection",
+      "scopeSpecificHint": "Apply to selected categories or items.",
+      "chooseItems": "Select Categories & Items",
+      "editSelection": "{count} selected — edit",
+      "activeLabel": "Active",
+      "activeHint": "Make this promotion available immediately.",
+      "saveChanges": "Save Changes",
+      "create": "Create Promotion",
+      "errors": {
+        "nameRequired": "Name is required",
+        "valueInvalid": "Enter a valid value",
+        "percentageMax": "Percentage cannot exceed 100",
+        "dateOrder": "End date must be after the start date",
+        "scopeRequired": "Select at least one category or item"
+      }
+    },
+    "selector": {
+      "title": "Select Items",
+      "subtitle": "Choose products to apply the promotion to",
+      "searchPlaceholder": "Search items by name",
+      "itemsTab": "Items",
+      "categoriesTab": "Categories",
+      "selectAll": "Select All Items",
+      "itemsAvailable": "{count} items available",
+      "noItems": "No items found",
+      "noCategories": "No categories found",
+      "selectedCount": "{count} items selected",
+      "addSelected": "Add Selected Items"
+    },
+    "toast": {
+      "loadFailed": "Failed to load promotions",
+      "created": "Promotion created",
+      "updated": "Promotion updated",
+      "saveFailed": "Failed to save promotion",
+      "deleted": "Promotion deleted",
+      "deleteFailed": "Failed to delete promotion"
     }
   }
 }

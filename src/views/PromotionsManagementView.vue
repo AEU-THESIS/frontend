@@ -1,0 +1,414 @@
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
+import {
+  Megaphone,
+  Ticket,
+  CalendarClock,
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  LoaderCircle,
+} from 'lucide-vue-next'
+import { Card } from '@/components/ui/card'
+import { usePromotionStore } from '@/store/usePromotionStore'
+import { getCategories, getProducts } from '@/api/product'
+import type { Category, Product } from '@/types/product.types'
+import type { DiscountType, Promotion, PromotionPayload } from '@/types/promotion.types'
+import PromotionStatCard from '@/components/promotions/PromotionStatCard.vue'
+import PromotionFormModal from '@/components/promotions/PromotionFormModal.vue'
+
+const { t } = useI18n()
+const store = usePromotionStore()
+
+const currencySymbol = '$'
+const categories = ref<Category[]>([])
+const products = ref<Product[]>([])
+
+const isFormOpen = ref(false)
+const editing = ref<Promotion | null>(null)
+const isSubmitting = ref(false)
+const searchInput = ref('')
+
+onMounted(async () => {
+  try {
+    await Promise.all([
+      store.fetchPromotions(),
+      getCategories().then(data => (categories.value = data)),
+      getProducts().then(data => (products.value = data)),
+    ])
+  } catch {
+    toast.error(t('promotions.toast.loadFailed'))
+  }
+})
+
+const handleSearch = () => store.setSearch(searchInput.value)
+
+const openAdd = () => {
+  editing.value = null
+  isFormOpen.value = true
+}
+
+const openEdit = (promotion: Promotion) => {
+  editing.value = promotion
+  isFormOpen.value = true
+}
+
+const closeForm = () => {
+  isFormOpen.value = false
+  editing.value = null
+}
+
+const getErrorMessage = (err: unknown, fallback: string) => {
+  const axiosErr = err as { response?: { data?: { message?: string } } }
+  return axiosErr?.response?.data?.message || fallback
+}
+
+const handleSubmit = async (payload: PromotionPayload) => {
+  isSubmitting.value = true
+  try {
+    if (editing.value) {
+      await store.update(editing.value.id, payload)
+      toast.success(t('promotions.toast.updated'))
+    } else {
+      await store.create(payload)
+      toast.success(t('promotions.toast.created'))
+    }
+    closeForm()
+  } catch (err) {
+    toast.error(getErrorMessage(err, t('promotions.toast.saveFailed')))
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const handleToggle = async (promotion: Promotion) => {
+  try {
+    await store.toggleStatus(promotion)
+  } catch (err) {
+    toast.error(getErrorMessage(err, t('promotions.toast.saveFailed')))
+  }
+}
+
+const handleDelete = async (promotion: Promotion) => {
+  if (!window.confirm(t('promotions.confirmDelete', { name: promotion.name }))) return
+  try {
+    await store.remove(promotion.id)
+    toast.success(t('promotions.toast.deleted'))
+  } catch (err) {
+    toast.error(getErrorMessage(err, t('promotions.toast.deleteFailed')))
+  }
+}
+
+const typeLabel = (type: DiscountType) => t(`promotions.types.${type}`)
+
+const typeBadgeClass = (type: DiscountType) => {
+  switch (type) {
+    case 'PERCENTAGE':
+      return 'bg-[#E0F2FE] text-[#0369A1]'
+    case 'FIXED_AMOUNT':
+      return 'bg-[#F0FDF4] text-[#15803D]'
+    case 'BOGO':
+      return 'bg-[#FEF3C7] text-[#92400E]'
+    default:
+      return 'bg-[#F3F4F6] text-[#374151]'
+  }
+}
+
+const valueLabel = (promotion: Promotion) => {
+  switch (promotion.discountType) {
+    case 'PERCENTAGE':
+      return t('promotions.value.percentage', { value: promotion.discountValue })
+    case 'FIXED_AMOUNT':
+      return t('promotions.value.fixed', {
+        value: `${currencySymbol}${promotion.discountValue.toFixed(2)}`,
+      })
+    case 'BOGO':
+      return t('promotions.value.freeItem')
+    default:
+      return String(promotion.discountValue)
+  }
+}
+
+const formatDate = (value: string | null) => {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  })
+}
+
+const pageStart = computed(() =>
+  store.pagination.total === 0 ? 0 : (store.pagination.page - 1) * store.pagination.limit + 1
+)
+const pageEnd = computed(() =>
+  Math.min(store.pagination.page * store.pagination.limit, store.pagination.total)
+)
+</script>
+
+<template>
+  <div class="flex h-full flex-col overflow-hidden bg-[#F9FAFB] font-body dark:bg-stone-900">
+    <div class="custom-scrollbar flex-1 overflow-y-auto px-10 py-10">
+      <div class="mx-auto w-full max-w-[1400px] space-y-8">
+        <!-- Header -->
+        <div>
+          <h1 class="text-3xl font-bold text-[#1A1C1C] dark:text-stone-50">
+            {{ t('promotions.title') }}
+          </h1>
+          <p class="mt-1 text-sm text-[#737373] dark:text-stone-400">
+            {{ t('promotions.subtitle') }}
+          </p>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <PromotionStatCard
+            :label="t('promotions.stats.active')"
+            :value="store.summary.activePromotions"
+            :icon="Megaphone"
+            bg-color-class="bg-[#FDF2F0]"
+            icon-color-class="text-[#E26D5C]"
+          />
+          <PromotionStatCard
+            :label="t('promotions.stats.redeemed')"
+            :value="store.summary.totalRedeemed.toLocaleString()"
+            :icon="Ticket"
+            bg-color-class="bg-[#F1F5F9]"
+            icon-color-class="text-[#334155]"
+          />
+          <PromotionStatCard
+            :label="t('promotions.stats.upcoming')"
+            :value="store.summary.upcomingOffers"
+            :icon="CalendarClock"
+            bg-color-class="bg-[#111827]"
+            icon-color-class="text-white"
+          />
+        </div>
+
+        <!-- Main card -->
+        <Card
+          class="overflow-hidden rounded-2xl border border-transparent bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900/50"
+        >
+          <!-- Toolbar -->
+          <div class="flex flex-col justify-between gap-6 p-8 md:flex-row md:items-center">
+            <div class="relative w-full max-w-sm">
+              <Search class="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
+              <Input
+                v-model="searchInput"
+                :placeholder="t('promotions.searchPlaceholder')"
+                class="h-12 rounded-xl border-none bg-[#FAFAFA] pl-11 pr-4 text-sm font-medium dark:bg-stone-800/50"
+                @input="handleSearch"
+              />
+            </div>
+
+            <Button
+              class="h-12 gap-2 rounded-xl bg-[#D2691E] px-8 font-bold text-white hover:bg-[#B35919]"
+              @click="openAdd"
+            >
+              <Plus class="size-5" />
+              {{ t('promotions.addPromotion') }}
+            </Button>
+          </div>
+
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr
+                  class="border-b border-slate-50 text-[11px] font-bold uppercase tracking-wider text-[#A3A3A3] dark:border-stone-800"
+                >
+                  <th class="px-8 py-4">{{ t('promotions.table.name') }}</th>
+                  <th class="px-8 py-4">{{ t('promotions.table.type') }}</th>
+                  <th class="px-8 py-4">{{ t('promotions.table.value') }}</th>
+                  <th class="px-8 py-4">{{ t('promotions.table.startDate') }}</th>
+                  <th class="px-8 py-4">{{ t('promotions.table.endDate') }}</th>
+                  <th class="px-8 py-4 text-center">{{ t('promotions.table.status') }}</th>
+                  <th class="px-8 py-4 text-right">{{ t('promotions.table.actions') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 dark:divide-stone-800">
+                <tr v-if="store.isLoading">
+                  <td colspan="7" class="px-8 py-20 text-center text-slate-400">
+                    <LoaderCircle class="mx-auto mb-2 size-8 animate-spin text-primary/40" />
+                    <p class="text-xs font-bold uppercase tracking-widest">
+                      {{ t('promotions.loading') }}
+                    </p>
+                  </td>
+                </tr>
+
+                <tr v-else-if="store.promotions.length === 0">
+                  <td colspan="7" class="px-8 py-20 text-center text-slate-300">
+                    <p class="text-sm font-bold">{{ t('promotions.empty') }}</p>
+                  </td>
+                </tr>
+
+                <tr
+                  v-for="promotion in store.promotions"
+                  :key="promotion.id"
+                  class="group transition-colors hover:bg-slate-50/50 dark:hover:bg-stone-800/30"
+                >
+                  <td class="px-8 py-5">
+                    <p class="text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
+                      {{ promotion.name }}
+                    </p>
+                    <p
+                      v-if="promotion.code"
+                      class="mt-0.5 text-[11px] font-bold uppercase text-[#A3A3A3]"
+                    >
+                      {{ t('promotions.table.code') }}: {{ promotion.code }}
+                    </p>
+                  </td>
+                  <td class="px-8 py-5">
+                    <span
+                      class="inline-flex rounded-md px-3 py-1 text-[10px] font-bold uppercase tracking-wide"
+                      :class="typeBadgeClass(promotion.discountType)"
+                    >
+                      {{ typeLabel(promotion.discountType) }}
+                    </span>
+                  </td>
+                  <td class="px-8 py-5">
+                    <span class="text-[14px] font-bold text-[#D2691E]">
+                      {{ valueLabel(promotion) }}
+                    </span>
+                  </td>
+                  <td class="px-8 py-5 text-[13px] font-medium text-[#737373] dark:text-stone-400">
+                    {{ formatDate(promotion.startDate) }}
+                  </td>
+                  <td class="px-8 py-5 text-[13px] font-medium text-[#737373] dark:text-stone-400">
+                    {{ formatDate(promotion.endDate) }}
+                  </td>
+                  <td class="px-8 py-5">
+                    <div class="flex justify-center">
+                      <button
+                        type="button"
+                        class="relative h-7 w-12 shrink-0 rounded-full transition-colors"
+                        :class="
+                          promotion.isActive ? 'bg-[#D2691E]' : 'bg-stone-300 dark:bg-stone-600'
+                        "
+                        role="switch"
+                        :aria-checked="promotion.isActive"
+                        :aria-label="t('promotions.table.status')"
+                        @click="handleToggle(promotion)"
+                      >
+                        <span
+                          class="absolute top-1 size-5 rounded-full bg-white transition-all"
+                          :class="promotion.isActive ? 'left-6' : 'left-1'"
+                        />
+                      </button>
+                    </div>
+                  </td>
+                  <td class="px-8 py-5 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="size-8 text-slate-400 hover:bg-slate-100 dark:hover:bg-stone-800"
+                        :aria-label="t('common.edit')"
+                        @click="openEdit(promotion)"
+                      >
+                        <Pencil class="size-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="size-8 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                        :aria-label="t('common.delete')"
+                        @click="handleDelete(promotion)"
+                      >
+                        <Trash2 class="size-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div
+            class="flex flex-col items-center justify-between gap-4 border-t border-slate-50 p-8 dark:border-stone-800 md:flex-row"
+          >
+            <p class="text-sm font-bold text-slate-400">
+              {{
+                t('promotions.pagination', {
+                  start: pageStart,
+                  end: pageEnd,
+                  total: store.pagination.total,
+                })
+              }}
+            </p>
+
+            <div class="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                class="size-10 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 dark:border-stone-700 dark:bg-stone-800"
+                :disabled="store.pagination.page === 1"
+                @click="store.setPage(store.pagination.page - 1)"
+              >
+                <ChevronLeft class="size-5" />
+              </Button>
+
+              <Button
+                v-for="p in store.pagination.totalPages"
+                :key="p"
+                variant="outline"
+                class="size-10 rounded-lg font-bold"
+                :class="
+                  store.pagination.page === p
+                    ? 'bg-[#D2691E] text-white hover:bg-[#B35919]'
+                    : 'bg-white text-[#737373] dark:bg-stone-800 dark:text-stone-300'
+                "
+                @click="store.setPage(p)"
+              >
+                {{ p }}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="icon"
+                class="size-10 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 dark:border-stone-700 dark:bg-stone-800"
+                :disabled="store.pagination.page === store.pagination.totalPages"
+                @click="store.setPage(store.pagination.page + 1)"
+              >
+                <ChevronRight class="size-5" />
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+
+    <PromotionFormModal
+      :is-open="isFormOpen"
+      :editing="editing"
+      :categories="categories"
+      :products="products"
+      :is-submitting="isSubmitting"
+      :currency-symbol="currencySymbol"
+      @close="closeForm"
+      @submit="handleSubmit"
+    />
+  </div>
+</template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+table {
+  border-spacing: 0;
+}
+</style>

@@ -70,21 +70,22 @@
       "pos": "ផលិតផលលក់ POS",
       "inventory": "សារពើភ័ណ្ឌ",
       "reports": "របាយការណ៍",
-      "settings": "ការកំណត់"
+      "settings": "ការកំណត់",
+      "marketing": "ទីផ្សារ"
     },
     "items": {
       "dashboard": "ផ្ទាំងគ្រប់គ្រង",
       "pos": "POS",
       "orders": "ការបញ្ជាទិញ",
       "orderHistory": "ប្រវត្តិនៃការបញ្ជាទិញ",
-      "inventory": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
+      "inventory": "សារពើភ័ណ្ឌ",
       "products": "ស្តុក",
       "categories": "ប្រភេទ",
-      "inventory": "សារពើភ័ណ្ឌ",
       "saleReports": "របាយការណ៍លក់",
       "analytics": "វិភាគ",
       "staff": "បុគ្គលិក",
-      "config": "ការកំណត់"
+      "config": "ការកំណត់",
+      "promotions": "ប្រូម៉ូសិន"
     }
   },
   "navbar": {
@@ -755,6 +756,93 @@
       "toastCreateSuccess": "បានបង្កើតប្រភេទទំនិញដោយជោគជ័យ",
       "toastUpdateError": "មិនអាចធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញបានទេ",
       "toastCreateError": "មិនអាចបង្កើតប្រភេទទំនិញបានទេ"
+    }
+  },
+  "promotions": {
+    "title": "ការគ្រប់គ្រងប្រូម៉ូសិន",
+    "subtitle": "បង្កើត និងតាមដានយុទ្ធនាការទីផ្សាររបស់អ្នក",
+    "searchPlaceholder": "ស្វែងរកប្រូម៉ូសិន...",
+    "addPromotion": "បន្ថែមប្រូម៉ូសិន",
+    "loading": "កំពុងផ្ទុកប្រូម៉ូសិន...",
+    "empty": "រកមិនឃើញប្រូម៉ូសិន",
+    "pagination": "បង្ហាញ {start} ដល់ {end} នៃ {total} ប្រូម៉ូសិន",
+    "confirmDelete": "លុបប្រូម៉ូសិន \"{name}\"? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "stats": {
+      "active": "ប្រូម៉ូសិនកំពុងដំណើរការ",
+      "redeemed": "បានប្រើសរុប",
+      "upcoming": "ការផ្តល់ជូននាពេលខាងមុខ"
+    },
+    "table": {
+      "name": "ឈ្មោះប្រូម៉ូសិន",
+      "type": "ប្រភេទ",
+      "value": "តម្លៃ",
+      "startDate": "ថ្ងៃចាប់ផ្តើម",
+      "endDate": "ថ្ងៃបញ្ចប់",
+      "status": "ស្ថានភាព",
+      "actions": "សកម្មភាព",
+      "code": "កូដ"
+    },
+    "types": {
+      "PERCENTAGE": "ភាគរយ",
+      "FIXED_AMOUNT": "ចំនួនថេរ",
+      "BOGO": "ទិញ ១ បាន ១"
+    },
+    "value": {
+      "percentage": "បញ្ចុះ {value}%",
+      "fixed": "បញ្ចុះ {value}",
+      "freeItem": "ទំនិញឥតគិតថ្លៃ"
+    },
+    "form": {
+      "addTitle": "បន្ថែមប្រូម៉ូសិនថ្មី",
+      "editTitle": "កែសម្រួលប្រូម៉ូសិន",
+      "name": "ឈ្មោះប្រូម៉ូសិន",
+      "namePlaceholder": "ឧ. បញ្ចុះតម្លៃនំចុងសប្តាហ៍",
+      "code": "កូដប្រូម៉ូ (ស្រេចចិត្ត)",
+      "codePlaceholder": "ឧ. WEEKEND15",
+      "type": "ប្រភេទ",
+      "value": "តម្លៃ",
+      "bogoHint": "ទិញ ១ បាន ១ មិនត្រូវការតម្លៃទេ។",
+      "startDate": "ថ្ងៃចាប់ផ្តើម",
+      "endDate": "ថ្ងៃបញ្ចប់",
+      "conditionsTitle": "លក្ខខណ្ឌ និងវិសាលភាព",
+      "scopeAll": "ម៉ឺនុយទាំងអស់",
+      "scopeAllHint": "អនុវត្តលើផលិតផលទាំងអស់។",
+      "scopeSpecific": "ជ្រើសរើសជាក់លាក់",
+      "scopeSpecificHint": "អនុវត្តលើប្រភេទ ឬទំនិញដែលបានជ្រើស។",
+      "chooseItems": "ជ្រើសរើសប្រភេទ និងទំនិញ",
+      "editSelection": "បានជ្រើស {count} — កែសម្រួល",
+      "activeLabel": "សកម្ម",
+      "activeHint": "ធ្វើឱ្យប្រូម៉ូសិននេះអាចប្រើបានភ្លាមៗ។",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "create": "បង្កើតប្រូម៉ូសិន",
+      "errors": {
+        "nameRequired": "តម្រូវឱ្យមានឈ្មោះ",
+        "valueInvalid": "បញ្ចូលតម្លៃត្រឹមត្រូវ",
+        "percentageMax": "ភាគរយមិនអាចលើស ១០០ ទេ",
+        "dateOrder": "ថ្ងៃបញ្ចប់ត្រូវនៅក្រោយថ្ងៃចាប់ផ្តើម",
+        "scopeRequired": "ជ្រើសរើសយ៉ាងហោចណាស់ប្រភេទ ឬទំនិញមួយ"
+      }
+    },
+    "selector": {
+      "title": "ជ្រើសរើសទំនិញ",
+      "subtitle": "ជ្រើសរើសផលិតផលដើម្បីអនុវត្តប្រូម៉ូសិន",
+      "searchPlaceholder": "ស្វែងរកទំនិញតាមឈ្មោះ",
+      "itemsTab": "ទំនិញ",
+      "categoriesTab": "ប្រភេទ",
+      "selectAll": "ជ្រើសរើសទំនិញទាំងអស់",
+      "itemsAvailable": "មានទំនិញ {count}",
+      "noItems": "រកមិនឃើញទំនិញ",
+      "noCategories": "រកមិនឃើញប្រភេទ",
+      "selectedCount": "បានជ្រើស {count}",
+      "addSelected": "បន្ថែមទំនិញដែលបានជ្រើស"
+    },
+    "toast": {
+      "loadFailed": "ផ្ទុកប្រូម៉ូសិនបរាជ័យ",
+      "created": "បានបង្កើតប្រូម៉ូសិន",
+      "updated": "បានធ្វើបច្ចុប្បន្នភាពប្រូម៉ូសិន",
+      "saveFailed": "រក្សាទុកប្រូម៉ូសិនបរាជ័យ",
+      "deleted": "បានលុបប្រូម៉ូសិន",
+      "deleteFailed": "លុបប្រូម៉ូសិនបរាជ័យ"
     }
   }
 }
