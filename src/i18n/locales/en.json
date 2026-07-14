@@ -154,7 +154,8 @@
     "checkoutFailed": "Failed to complete transaction",
     "orderCreatedSuccess": "Order #{num} created successfully!",
     "paymentDetails": "Payment Details",
-    "loadingCatalog": "Loading POS Catalog..."
+    "loadingCatalog": "Loading POS Catalog...",
+    "discount": "Discounts"
   },
   "maintenance": {
     "title": "Under Maintenance",

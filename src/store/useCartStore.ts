@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { placeOrder } from '@/api/order'
+import { getActivePromotions } from '@/api/promotion'
+import { bestPromotion, type CartLineForCalc } from '@/lib/promotionDiscount'
+import type { Promotion } from '@/types/promotion.types'
 import type {
   CartItem,
   CartItemOption,
@@ -19,14 +22,39 @@ export const useCartStore = defineStore('cart', () => {
   const exchangeRate = ref(4100) // Snapshot exchange rate (defaults to 4100)
   const isSubmitting = ref(false)
   const isCashModalOpen = ref(false)
+  const activePromotions = ref<Promotion[]>([])
 
   // Getters
+  // Gross subtotal (before any promotion discount).
   const cartTotal = computed(() => {
     return items.value.reduce((sum, item) => sum + item.itemTotal, 0)
   })
 
+  const cartLines = computed<CartLineForCalc[]>(() =>
+    items.value.map(item => ({
+      productId: item.productId,
+      categoryId: item.categoryId,
+      subtotal: item.itemTotal,
+    }))
+  )
+
+  // The single best-matching active promotion for the current cart (or null).
+  const appliedResult = computed(() => bestPromotion(activePromotions.value, cartLines.value))
+  const appliedPromotion = computed(() => appliedResult.value?.promotion ?? null)
+  const discountTotal = computed(() => appliedResult.value?.discount ?? 0)
+
+  // Net total actually charged (subtotal − discount). EPSILON-aligned with the
+  // backend round2 helper for exact parity.
+  const netTotal = computed(
+    () => Math.round((cartTotal.value - discountTotal.value + Number.EPSILON) * 100) / 100
+  )
+
   const cartTotalInRiel = computed(() => {
     return Math.ceil(cartTotal.value * exchangeRate.value)
+  })
+
+  const netTotalInRiel = computed(() => {
+    return Math.ceil(netTotal.value * exchangeRate.value)
   })
 
   const itemsCount = computed(() => {
@@ -36,6 +64,7 @@ export const useCartStore = defineStore('cart', () => {
   // Actions
   const addToCart = (
     productId: number,
+    categoryId: number,
     productName: string,
     imageUrl: string | null,
     basePrice: number,
@@ -68,6 +97,7 @@ export const useCartStore = defineStore('cart', () => {
       items.value.push({
         cartId: generateCartId(),
         productId,
+        categoryId,
         productName,
         imageUrl,
         basePrice,
@@ -103,6 +133,16 @@ export const useCartStore = defineStore('cart', () => {
     orderType.value = type
   }
 
+  // Load today's active promotions so the cart can show/apply discounts. The
+  // backend independently re-validates and recomputes them at checkout.
+  const fetchActivePromotions = async () => {
+    try {
+      activePromotions.value = await getActivePromotions()
+    } catch {
+      activePromotions.value = []
+    }
+  }
+
   const checkout = async (paymentCurrency: PaymentCurrency, receivedAmount: number) => {
     isSubmitting.value = true
     try {
@@ -112,7 +152,8 @@ export const useCartStore = defineStore('cart', () => {
         paymentCurrency,
         receivedAmount,
         exchangeRateSnapshot: exchangeRate.value,
-        totalAmount: cartTotal.value,
+        // Net total; the server ignores this and recomputes authoritatively.
+        totalAmount: netTotal.value,
         items: items.value.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -136,14 +177,20 @@ export const useCartStore = defineStore('cart', () => {
     exchangeRate,
     isSubmitting,
     isCashModalOpen,
+    activePromotions,
     cartTotal,
     cartTotalInRiel,
+    appliedPromotion,
+    discountTotal,
+    netTotal,
+    netTotalInRiel,
     itemsCount,
     addToCart,
     updateQuantity,
     removeFromCart,
     clearCart,
     setOrderType,
+    fetchActivePromotions,
     checkout,
   }
 })

@@ -21,6 +21,12 @@ export const getPromotions = async (
   return { ...res.data, data: res.data.data.map(normalize) }
 }
 
+// Active promotions for the POS cart (accessible to cashiers).
+export const getActivePromotions = async (): Promise<Promotion[]> => {
+  const res = await http.get<Promotion[]>('/api/promotions/active')
+  return res.data.map(normalize)
+}
+
 export const createPromotion = async (payload: PromotionPayload): Promise<Promotion> => {
   const res = await http.post<Promotion>('/api/promotions', payload)
   return normalize(res.data)

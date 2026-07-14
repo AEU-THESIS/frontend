@@ -10,6 +10,7 @@ export interface CartItemOption {
 export interface CartItem {
   cartId: string // UUID — unique per cart entry
   productId: number
+  categoryId: number // used to match category-scoped promotions
   productName: string
   imageUrl: string | null
   basePrice: number

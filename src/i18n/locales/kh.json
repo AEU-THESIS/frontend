@@ -154,7 +154,8 @@
     "checkoutFailed": "បរាជ័យក្នុងការបញ្ចប់ប្រតិបត្តិការ",
     "orderCreatedSuccess": "ការបញ្ជាទិញ #{num} ត្រូវបានបង្កើតដោយជោគជ័យ!",
     "paymentDetails": "ព័ត៌មានលម្អិតនៃការទូទាត់",
-    "loadingCatalog": "កំពុងផ្ទុកទិន្នន័យ POS..."
+    "loadingCatalog": "កំពុងផ្ទុកទិន្នន័យ POS...",
+    "discount": "បញ្ចុះតម្លៃ"
   },
   "maintenance": {
     "title": "កំពុងថែទាំប្រព័ន្ធ",

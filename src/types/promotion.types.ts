@@ -8,6 +8,7 @@ export interface Promotion {
   discountType: DiscountType
   discountValue: number
   scope: PromotionScope
+  timesRedeemed?: number
   isActive: boolean
   startDate: string | null
   endDate: string | null

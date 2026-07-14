@@ -12,8 +12,12 @@ const formatOptions = (options: CartItemOption[]) => {
   return options.map(o => o.optionName).join(', ')
 }
 
-const handlePayCash = () => {
+const handlePayCash = async () => {
   if (cartStore.items.length === 0) return
+  // Refresh active promotions right before payment so the amount collected reflects
+  // any promo that was toggled off / expired since the POS was opened (the backend
+  // recomputes authoritatively at checkout regardless).
+  await cartStore.fetchActivePromotions()
   cartStore.isCashModalOpen = true
 }
 </script>
@@ -133,6 +137,24 @@ const handlePayCash = () => {
         <span>${{ cartStore.cartTotal.toFixed(2) }}</span>
       </div>
 
+      <!-- Discounts line — only shown when an active promotion applies -->
+      <div
+        v-if="cartStore.discountTotal > 0"
+        class="flex justify-between items-center text-sm font-bold text-emerald-600 dark:text-emerald-500"
+      >
+        <span class="flex items-center gap-1.5 min-w-0">
+          <span class="material-symbols-outlined text-base">sell</span>
+          <span>{{ t('cart.discount') }}</span>
+          <span
+            v-if="cartStore.appliedPromotion?.name"
+            class="truncate max-w-[110px] text-[11px] font-medium opacity-70"
+          >
+            · {{ cartStore.appliedPromotion.name }}
+          </span>
+        </span>
+        <span>−${{ cartStore.discountTotal.toFixed(2) }}</span>
+      </div>
+
       <div class="h-px bg-stone-200/60 dark:bg-stone-800/60 w-full my-1"></div>
 
       <div class="flex justify-between items-end mb-2">
@@ -145,7 +167,7 @@ const handlePayCash = () => {
           <span
             class="text-4xl font-headline font-extrabold text-stone-900 dark:text-stone-50 leading-none tracking-tighter"
           >
-            ${{ cartStore.cartTotal.toFixed(2) }}
+            ${{ cartStore.netTotal.toFixed(2) }}
           </span>
         </div>
         <div class="text-right">
@@ -157,7 +179,7 @@ const handlePayCash = () => {
           <span
             class="text-xl font-headline font-extrabold text-amber-700 dark:text-amber-500 leading-none"
           >
-            {{ cartStore.cartTotalInRiel.toLocaleString() }}
+            {{ cartStore.netTotalInRiel.toLocaleString() }}
           </span>
         </div>
       </div>

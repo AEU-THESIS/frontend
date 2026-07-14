@@ -100,6 +100,7 @@ const handleAddToCart = () => {
 
   cartStore.addToCart(
     props.product.id,
+    props.product.categoryId,
     props.product.name,
     props.product.imageUrl,
     Number(props.product.price),

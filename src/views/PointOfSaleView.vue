@@ -34,7 +34,11 @@ const checkoutResult = ref<CheckoutSuccessData | null>(null)
 
 onMounted(async () => {
   try {
-    await Promise.all([productStore.fetchCategories(), productStore.fetchProducts()])
+    await Promise.all([
+      productStore.fetchCategories(),
+      productStore.fetchProducts(),
+      cartStore.fetchActivePromotions(),
+    ])
   } catch {
     toast.error(t('cart.fetchFailed'))
   }
@@ -55,7 +59,15 @@ const handleProductSelect = (product: Product) => {
     isModifiersModalOpen.value = true
   } else {
     // Directly add simple products with no custom modifiers
-    cartStore.addToCart(product.id, product.name, product.imageUrl, Number(product.price), 1, [])
+    cartStore.addToCart(
+      product.id,
+      product.categoryId,
+      product.name,
+      product.imageUrl,
+      Number(product.price),
+      1,
+      []
+    )
     toast.success(t('cart.addedToCart', { name: product.name }))
   }
 }
