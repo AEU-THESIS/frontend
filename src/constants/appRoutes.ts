@@ -6,7 +6,6 @@ export const APP_ROUTES = {
   INVENTORY: { path: '/inventory', name: 'Inventory' },
   CATEGORIES: { path: '/categories', name: 'Categories' },
   SALE_REPORTS: { path: '/sale-reports', name: 'SaleReports' },
-  ANALYTICS: { path: '/analytics', name: 'Analytics' },
   PROMOTIONS: { path: '/promotions', name: 'Promotions' },
   STAFF: { path: '/staff', name: 'Staff' },
   SETTINGS: { path: '/settings', name: 'Settings' },

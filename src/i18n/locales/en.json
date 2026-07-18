@@ -786,6 +786,88 @@
       "toastCreateError": "Failed to create category"
     }
   },
+  "analytics": {
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "title": "Executive Analytics",
+    "premium": "Premium",
+    "exportReport": "Export Report",
+    "viewAll": "View All",
+    "viewInventory": "View Inventory",
+    "bestSelling": "Top 5 Best-Selling Items",
+    "lowestSelling": "Bottom 5 Lowest-Selling Items",
+    "noItemData": "No sales data for this period.",
+    "loadError": "Failed to load selling items.",
+    "lowStockAlerts": "Low Stock Alerts",
+    "insightOfTheWeek": "Insight of the Week",
+    "insightBody": "\"Artisan Latte\" sales are up by 15% after moving it to the top of the morning digital board.",
+    "range": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "globalFilter": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "thisMonth": "This Month",
+      "thisYear": "This Year",
+      "custom": "Custom Range",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply"
+    },
+    "kpi": {
+      "netSales": "Net Sales",
+      "totalOrders": "Total Orders",
+      "avgTicket": "Avg. Ticket",
+      "activeStaff": "Active Staff",
+      "vsLastPeriod": "vs last period",
+      "currentlyClockedIn": "Currently clocked in"
+    },
+    "chart": {
+      "netSalesOverview": "Net Sales Overview",
+      "subtitle": "Compare performance across your selected time granularity."
+    },
+    "granularity": {
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "period": {
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "thisYear": "This Year",
+      "dateRange": "Date Range"
+    },
+    "table": {
+      "item": "Item",
+      "category": "Category",
+      "unitsSold": "Units Sold",
+      "status": "Status",
+      "remaining": "Remaining"
+    },
+    "stock": {
+      "critical": "Critical",
+      "lowStock": "Low Stock",
+      "unitsLeft": "{count} units left",
+      "allStocked": "All ingredients are well stocked."
+    }
+  },
   "promotions": {
     "title": "Promotions Management",
     "subtitle": "Create and monitor your seasonal marketing campaigns",
