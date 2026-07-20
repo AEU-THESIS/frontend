@@ -35,14 +35,22 @@ const isSubmitting = ref(false)
 const searchInput = ref('')
 
 onMounted(async () => {
+  // Core page data: only a genuine promotions-load failure should surface an error.
+  // An empty list is a normal, successful state — not an error.
   try {
-    await Promise.all([
-      store.fetchPromotions(),
-      getCategories().then(data => (categories.value = data)),
-      getProducts().then(data => (products.value = data)),
-    ])
+    await store.fetchPromotions()
   } catch {
     toast.error(t('promotions.toast.loadFailed'))
+  }
+
+  // Secondary data used only by the Add/Edit item selector. A failure here must
+  // not block the page or be reported as a promotions-load failure.
+  try {
+    const [cats, prods] = await Promise.all([getCategories(), getProducts({})])
+    categories.value = cats
+    products.value = prods.products
+  } catch {
+    // Non-fatal: the scope selector will simply have nothing to choose from.
   }
 })
 

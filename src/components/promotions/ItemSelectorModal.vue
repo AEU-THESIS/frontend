@@ -91,7 +91,8 @@ const confirm = () => {
   })
 }
 
-const formatPrice = (price: number) => `${props.currencySymbol || '$'}${price.toFixed(2)}`
+const formatPrice = (price: number | null) =>
+  price == null ? '—' : `${props.currencySymbol || '$'}${price.toFixed(2)}`
 </script>
 
 <template>
