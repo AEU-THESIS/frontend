@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { placeOrder } from '@/api/order'
 import { getActivePromotions } from '@/api/promotion'
-import { bestPromotion, type CartLineForCalc } from '@/lib/promotionDiscount'
+import { cartDiscounts, type CartLineForCalc } from '@/lib/promotionDiscount'
 import type { Promotion } from '@/types/promotion.types'
 import type {
   CartItem,
@@ -34,20 +34,64 @@ export const useCartStore = defineStore('cart', () => {
     items.value.map(item => ({
       productId: item.productId,
       categoryId: item.categoryId,
+      quantity: item.quantity,
+      // itemTotal = unitPrice * quantity, so unitPrice = itemTotal / quantity.
+      unitPrice: item.quantity > 0 ? item.itemTotal / item.quantity : item.itemTotal,
       subtotal: item.itemTotal,
     }))
   )
 
-  // The single best-matching active promotion for the current cart (or null).
-  const appliedResult = computed(() => bestPromotion(activePromotions.value, cartLines.value))
-  const appliedPromotion = computed(() => appliedResult.value?.promotion ?? null)
-  const discountTotal = computed(() => appliedResult.value?.discount ?? 0)
+  // Every promotion that applies to the current cart (they stack across items) and
+  // the summed discount.
+  const appliedResult = computed(() => cartDiscounts(activePromotions.value, cartLines.value))
+  const appliedPromotions = computed(() => appliedResult.value.applied)
+  const discountTotal = computed(() => appliedResult.value.total)
 
   // Net total actually charged (subtotal − discount). EPSILON-aligned with the
   // backend round2 helper for exact parity.
   const netTotal = computed(
     () => Math.round((cartTotal.value - discountTotal.value + Number.EPSILON) * 100) / 100
   )
+
+  // The active promotion that covers a given product (by product id, its category,
+  // or an ALL-scope promo), or null. Used to surface a promo badge on POS cards so
+  // the cashier can see at a glance which items carry a discount. If several apply,
+  // the most recently created one wins (list is ordered createdAt desc).
+  const promotionForProduct = (productId: number, categoryId: number): Promotion | null =>
+    activePromotions.value.find(
+      p =>
+        p.scope === 'ALL' || p.productIds.includes(productId) || p.categoryIds.includes(categoryId)
+    ) ?? null
+
+  const lineInScope = (promo: Promotion, item: CartItem): boolean =>
+    promo.scope === 'ALL' ||
+    promo.productIds.includes(item.productId) ||
+    promo.categoryIds.includes(item.categoryId)
+
+  // How many free units each applied BOGO promo grants to each cart line. Mirrors
+  // the discount engine: per BOGO promo, expand its in-scope units, make the
+  // cheapest half free, then attribute those free units back to their cart line so
+  // the sidebar can show a "N free" tag.
+  const bogoFreeByCartId = computed<Record<string, number>>(() => {
+    const map: Record<string, number> = {}
+    for (const { promotion } of appliedPromotions.value) {
+      if (promotion.discountType !== 'BOGO') continue
+
+      const units = items.value
+        .filter(item => lineInScope(promotion, item))
+        .flatMap(item => {
+          const unitPrice = item.quantity > 0 ? item.itemTotal / item.quantity : item.itemTotal
+          return Array.from({ length: item.quantity }, () => ({ cartId: item.cartId, unitPrice }))
+        })
+        .sort((a, b) => a.unitPrice - b.unitPrice)
+
+      const freeCount = Math.floor(units.length / 2)
+      for (const { cartId } of units.slice(0, freeCount)) {
+        map[cartId] = (map[cartId] ?? 0) + 1
+      }
+    }
+    return map
+  })
 
   const cartTotalInRiel = computed(() => {
     return Math.ceil(cartTotal.value * exchangeRate.value)
@@ -180,7 +224,7 @@ export const useCartStore = defineStore('cart', () => {
     activePromotions,
     cartTotal,
     cartTotalInRiel,
-    appliedPromotion,
+    appliedPromotions,
     discountTotal,
     netTotal,
     netTotalInRiel,
@@ -191,6 +235,8 @@ export const useCartStore = defineStore('cart', () => {
     clearCart,
     setOrderType,
     fetchActivePromotions,
+    promotionForProduct,
+    bogoFreeByCartId,
     checkout,
   }
 })

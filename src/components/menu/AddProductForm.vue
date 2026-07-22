@@ -49,18 +49,20 @@ const ITEM_TYPE_OPTIONS = computed(() => [
 
 // ── Shared class strings ───────────────────────────────────────────────────
 const CLS = {
-  label: 'text-[11px] font-black text-[#564338] uppercase tracking-widest ml-0.5 block',
+  label:
+    'text-[11px] font-black text-[#564338] dark:text-stone-100 uppercase tracking-widest ml-0.5 block',
   Input:
-    'w-full px-4 py-3 bg-[#f3f3f4] rounded-xl text-[14px] border-none outline-none focus:ring-2 focus:ring-[#D2691E]/30',
+    'w-full px-4 py-3 bg-[#f3f3f4] dark:bg-stone-800 dark:text-stone-100 rounded-xl text-[14px] border-none outline-none focus:ring-2 focus:ring-[#D2691E]/30',
   InputSm:
-    'w-full px-4 py-3 bg-[#f3f3f4] rounded-xl text-[13px] border-none outline-none focus:ring-2 focus:ring-[#D2691E]/30',
-  prefix: 'absolute left-4 -translate-y-1/2 text-zinc-400 text-sm pointer-events-none',
+    'w-full px-4 py-3 bg-[#f3f3f4] dark:bg-stone-800 dark:text-stone-100 rounded-xl text-[13px] border-none outline-none focus:ring-2 focus:ring-[#D2691E]/30',
+  prefix:
+    'absolute left-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-sm pointer-events-none',
   addBtn:
     'flex items-center gap-1.5 text-[#D2691E] text-sm font-semibold hover:opacity-75 transition-opacity px-1',
   actionBtn:
     'flex items-center gap-2 px-3 py-2 rounded-xl bg-[#D2691E]/10 text-[#D2691E] text-sm font-semibold hover:bg-[#D2691E]/20 transition-colors shrink-0',
   iconDanger:
-    'flex items-center justify-center rounded-xl text-red-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed',
+    'flex items-center justify-center rounded-xl text-red-400 dark:text-red-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed',
 } as const
 
 // ── Factories ──────────────────────────────────────────────────────────────
@@ -386,7 +388,7 @@ watch(
             type="text"
             :placeholder="t('menuManagement.productForm.labels.itemName')"
             :class="[
-              'text-[#000000] h-11 rounded-xl bg-[#FAFAFA] font-bold',
+              'text-[#000000] dark:text-stone-100 h-11 rounded-xl bg-[#FAFAFA] dark:bg-stone-800 font-bold',
               getError('name') ? 'ring-2 ring-destructive/20 bg-destructive/5' : '',
             ]"
             :aria-invalid="Boolean(getError('name'))"
@@ -429,13 +431,16 @@ watch(
               <RadioGroupItem
                 :id="opt.id"
                 :value="opt.value"
-                class="w-[1.125rem] h-[1.125rem] rounded-full border border-zinc-300 bg-white shadow-sm outline-none focus:ring-2 focus:ring-[#D2691E]/30 data-[state=checked]:border-[#D2691E] data-[state=checked]:bg-[#D2691E] transition-colors cursor-pointer"
+                class="w-[1.125rem] h-[1.125rem] rounded-full border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-stone-800 shadow-sm outline-none focus:ring-2 focus:ring-[#D2691E]/30 data-[state=checked]:border-[#D2691E] data-[state=checked]:bg-[#D2691E] transition-colors cursor-pointer"
               >
                 <RadioGroupIndicator
                   class="flex items-center justify-center w-full h-full after:content-[''] after:block after:w-2 after:h-2 after:rounded-full after:bg-white"
                 />
               </RadioGroupItem>
-              <label :for="opt.id" class="text-sm text-stone-700 leading-none cursor-pointer">
+              <label
+                :for="opt.id"
+                class="text-sm text-stone-700 dark:text-stone-300 leading-none cursor-pointer"
+              >
                 {{ opt.label }}
               </label>
             </div>
@@ -459,7 +464,7 @@ watch(
               step="0.01"
               placeholder="0.00"
               :class="[
-                'text-[#000000] h-11 rounded-xl bg-[#FAFAFA] font-bold pl-8 top-1/2',
+                'text-[#000000] dark:text-stone-100 h-11 rounded-xl bg-[#FAFAFA] dark:bg-stone-800 font-bold pl-8 top-1/2',
                 getError('price') ? 'ring-2 ring-destructive/20 bg-destructive/5' : '',
               ]"
               :aria-invalid="Boolean(getError('price'))"
@@ -489,25 +494,29 @@ watch(
               'flex-1 px-4 py-3 rounded-xl border text-left transition-all duration-150',
               form.priceMode === opt.value
                 ? 'border-[#D2691E] bg-[#D2691E]/5 ring-2 ring-[#D2691E]/20'
-                : 'border-zinc-200 bg-[#f3f3f4] hover:border-zinc-300',
+                : 'border-zinc-200 dark:border-zinc-700 bg-[#f3f3f4] dark:bg-stone-800 hover:border-zinc-300 dark:hover:border-zinc-600',
             ]"
             @click="form.priceMode = opt.value"
           >
             <span
               :class="[
                 'block text-sm font-semibold',
-                form.priceMode === opt.value ? 'text-[#D2691E]' : 'text-zinc-700',
+                form.priceMode === opt.value
+                  ? 'text-[#D2691E]'
+                  : 'text-zinc-700 dark:text-zinc-300',
               ]"
             >
               {{ opt.label }}
             </span>
-            <span class="block text-xs text-zinc-400 mt-0.5">{{ opt.hint }}</span>
+            <span class="block text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{{
+              opt.hint
+            }}</span>
           </button>
         </div>
       </div>
     </section>
 
-    <hr class="border-zinc-200" />
+    <hr class="border-zinc-200 dark:border-zinc-700" />
 
     <!-- ── Section: Sizes & Prices ────────────────────────────────────── -->
     <section v-if="showSizes()" class="space-y-4">
@@ -516,14 +525,16 @@ watch(
       <!-- Column labels -->
       <div class="grid grid-cols-12 gap-4 px-1">
         <div class="col-span-6">
-          <span class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{{
-            t('menuManagement.productForm.sizesSection.sizeLabel')
-          }}</span>
+          <span
+            class="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest"
+            >{{ t('menuManagement.productForm.sizesSection.sizeLabel') }}</span
+          >
         </div>
         <div class="col-span-4">
-          <span class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{{
-            t('menuManagement.productForm.sizesSection.priceLabel')
-          }}</span>
+          <span
+            class="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest"
+            >{{ t('menuManagement.productForm.sizesSection.priceLabel') }}</span
+          >
         </div>
       </div>
 
@@ -539,7 +550,7 @@ watch(
               type="text"
               :placeholder="t('menuManagement.productForm.sizesSection.sizeePlaceholder')"
               :class="[
-                'text-[#000000] h-11 rounded-xl bg-[#FAFAFA] font-bold',
+                'text-[#000000] dark:text-stone-100 h-11 rounded-xl bg-[#FAFAFA] dark:bg-stone-800 font-bold',
                 getError(`sizes.${index}.size`)
                   ? 'ring-2 ring-destructive/20 bg-destructive/5'
                   : '',
@@ -564,7 +575,7 @@ watch(
               step="0.01"
               placeholder="0.00"
               :class="[
-                'text-[#000000] h-11 rounded-xl bg-[#FAFAFA] font-bold pl-8',
+                'text-[#000000] dark:text-stone-100 h-11 rounded-xl bg-[#FAFAFA] dark:bg-stone-800 font-bold pl-8',
                 getError(`sizes.${index}.price`)
                   ? 'ring-2 ring-destructive/20 bg-destructive/5'
                   : '',
@@ -605,13 +616,16 @@ watch(
     <section v-if="showOptionGroups()" class="space-y-4">
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h2 class="text-[11px] font-black text-[#564338] uppercase tracking-widest">
+          <h2
+            class="text-[11px] font-black text-[#564338] dark:text-stone-100 uppercase tracking-widest"
+          >
             {{ t('menuManagement.productForm.optionsSection.title') }}
-            <span class="normal-case font-normal tracking-normal text-zinc-400 ml-1">{{
-              t('menuManagement.productForm.optionsSection.subtitle')
-            }}</span>
+            <span
+              class="normal-case font-normal tracking-normal text-zinc-400 dark:text-zinc-500 ml-1"
+              >{{ t('menuManagement.productForm.optionsSection.subtitle') }}</span
+            >
           </h2>
-          <p class="text-xs text-zinc-400 mt-1">
+          <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
             {{ t('menuManagement.productForm.optionsSection.description') }}
           </p>
         </div>
@@ -624,15 +638,15 @@ watch(
       <!-- Empty state -->
       <div
         v-if="form.optionGroups.length === 0"
-        class="rounded-2xl border-2 border-dashed border-zinc-200 p-8 flex flex-col items-center justify-center text-center gap-2"
+        class="rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 p-8 flex flex-col items-center justify-center text-center gap-2"
       >
-        <span class="material-symbols-outlined text-zinc-300 text-[32px]">{{
+        <span class="material-symbols-outlined text-zinc-300 dark:text-zinc-600 text-[32px]">{{
           t('menuManagement.productForm.optionsSection.emptyStateIcon')
         }}</span>
-        <p class="text-sm font-medium text-zinc-400">
+        <p class="text-sm font-medium text-zinc-400 dark:text-zinc-500">
           {{ t('menuManagement.productForm.optionsSection.emptyStateTitle') }}
         </p>
-        <p class="text-xs text-zinc-300">
+        <p class="text-xs text-zinc-300 dark:text-zinc-600">
           {{ t('menuManagement.productForm.optionsSection.emptyStateDescription') }}
         </p>
       </div>
@@ -644,11 +658,11 @@ watch(
           :key="group.id"
           :draggable="drag.canDrag"
           :class="[
-            'rounded-2xl border bg-white shadow-sm overflow-hidden transition-all duration-150',
+            'rounded-2xl border bg-white dark:bg-stone-900 shadow-sm overflow-hidden transition-all duration-150',
             drag.fromId === group.id ? 'opacity-40 scale-[0.99]' : 'opacity-100',
             drag.overId === group.id && drag.fromId !== group.id
               ? 'border-[#D2691E]/50 ring-2 ring-[#D2691E]/20'
-              : 'border-zinc-200',
+              : 'border-zinc-200 dark:border-zinc-700',
           ]"
           @dragstart="onDragStart($event, group.id)"
           @dragover="onDragOver($event, group.id)"
@@ -656,9 +670,11 @@ watch(
           @dragend="onDragEnd"
         >
           <!-- Card header -->
-          <div class="flex items-center gap-2 px-4 py-3 bg-zinc-50 border-b border-zinc-100">
+          <div
+            class="flex items-center gap-2 px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-100 dark:border-zinc-800"
+          >
             <span
-              class="material-symbols-outlined text-[20px] text-zinc-300 hover:text-zinc-500 cursor-grab active:cursor-grabbing transition-colors select-none shrink-0"
+              class="material-symbols-outlined text-[20px] text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing transition-colors select-none shrink-0"
               :title="t('menuManagement.productForm.optionsSection.dragToReorder')"
               @mousedown="onHandleMouseDown"
               >drag_indicator</span
@@ -670,7 +686,7 @@ watch(
                 type="text"
                 :placeholder="t('menuManagement.productForm.optionsSection.groupNamePlaceholder')"
                 :class="[
-                  'min-w-0 text-[#000000] h-11 rounded-xl bg-[#FAFAFA] font-bold px-3 py-1.5 text-[13px]',
+                  'min-w-0 text-[#000000] dark:text-stone-100 h-11 rounded-xl bg-[#FAFAFA] dark:bg-stone-800 font-bold px-3 py-1.5 text-[13px]',
                   getError(`optionGroups.${groupIndex}.name`)
                     ? 'ring-2 ring-destructive/20 bg-destructive/5'
                     : '',
@@ -700,14 +716,16 @@ watch(
           <div class="px-4 pt-3 pb-4 space-y-2">
             <div class="grid grid-cols-12 gap-3 px-1 pb-1">
               <div class="col-span-6">
-                <span class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{{
-                  t('menuManagement.productForm.optionsSection.optionLabel')
-                }}</span>
+                <span
+                  class="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest"
+                  >{{ t('menuManagement.productForm.optionsSection.optionLabel') }}</span
+                >
               </div>
               <div class="col-span-4">
-                <span class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{{
-                  t('menuManagement.productForm.optionsSection.priceModifier')
-                }}</span>
+                <span
+                  class="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest"
+                  >{{ t('menuManagement.productForm.optionsSection.priceModifier') }}</span
+                >
               </div>
             </div>
 
@@ -723,7 +741,7 @@ watch(
                     type="text"
                     :placeholder="t('menuManagement.productForm.optionsSection.choicePlaceholder')"
                     :class="[
-                      'text-[#000000] h-11 rounded-xl bg-[#FAFAFA] font-bold',
+                      'text-[#000000] dark:text-stone-100 h-11 rounded-xl bg-[#FAFAFA] dark:bg-stone-800 font-bold',
                       getError(`optionGroups.${groupIndex}.choices.${choiceIndex}.label`)
                         ? 'ring-2 ring-destructive/20 bg-destructive/5'
                         : '',
@@ -742,7 +760,7 @@ watch(
                 </div>
                 <div class="col-span-4 relative">
                   <span
-                    class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 text-xs pointer-events-none"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"
                     >+$</span
                   >
                   <Input
@@ -751,7 +769,7 @@ watch(
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    class="text-[#000000] h-11 rounded-xl bg-[#FAFAFA] font-bold pl-8"
+                    class="text-[#000000] dark:text-stone-100 h-11 rounded-xl bg-[#FAFAFA] dark:bg-stone-800 font-bold pl-8"
                   />
                 </div>
                 <div class="col-span-2 flex justify-center">
@@ -784,7 +802,9 @@ watch(
     <!-- ── Section: Details ───────────────────────────────────────────── -->
     <section class="space-y-5">
       <div class="space-y-2.5 pb-2">
-        <Label class="text-[11px] font-black text-[#564338] uppercase tracking-widest ml-0.5">
+        <Label
+          class="text-[11px] font-black text-[#564338] dark:text-stone-100 uppercase tracking-widest ml-0.5"
+        >
           {{ t('menuManagement.productForm.labels.productImage') }}
         </Label>
         <ImageUpload
@@ -809,7 +829,7 @@ watch(
       <button
         type="button"
         :disabled="isSubmitting"
-        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:bg-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         @click="handleReset"
       >
         {{ t('menuManagement.productForm.buttons.reset') }}

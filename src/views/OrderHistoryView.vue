@@ -652,14 +652,47 @@ onUnmounted(() => {
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.subtotal') }}</span>
                 <span class="text-stone-800 dark:text-stone-200">{{
-                  shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount))
+                  shopSettingsStore.formatAmount(
+                    Number(selectedOrder.totalAmount) + Number(selectedOrder.discountAmount || 0)
+                  )
                 }}</span>
               </div>
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.discount') }}</span>
-                <span class="text-stone-800 dark:text-stone-200">{{
-                  shopSettingsStore.formatAmount(0)
-                }}</span>
+                <span
+                  :class="
+                    Number(selectedOrder.discountAmount) > 0
+                      ? 'text-emerald-600 dark:text-emerald-500'
+                      : 'text-stone-800 dark:text-stone-200'
+                  "
+                >
+                  {{ Number(selectedOrder.discountAmount) > 0 ? '−' : ''
+                  }}{{ shopSettingsStore.formatAmount(Number(selectedOrder.discountAmount || 0)) }}
+                </span>
+              </div>
+              <!-- Per-promotion breakdown (promotions stack across items) -->
+              <div
+                v-for="ap in selectedOrder.appliedPromotions"
+                :key="ap.promotionId"
+                class="flex justify-between pl-4 text-[11px] font-medium text-stone-400 dark:text-stone-500"
+              >
+                <span class="truncate max-w-[170px]">· {{ ap.promotion.name }}</span>
+                <span>−{{ shopSettingsStore.formatAmount(Number(ap.discountAmount)) }}</span>
+              </div>
+              <!-- Fallback for older orders saved before the breakdown existed -->
+              <div
+                v-if="
+                  (!selectedOrder.appliedPromotions ||
+                    selectedOrder.appliedPromotions.length === 0) &&
+                  selectedOrder.promotion?.name &&
+                  Number(selectedOrder.discountAmount) > 0
+                "
+                class="flex justify-between pl-4 text-[11px] font-medium text-stone-400 dark:text-stone-500"
+              >
+                <span class="truncate max-w-[170px]">· {{ selectedOrder.promotion.name }}</span>
+                <span
+                  >−{{ shopSettingsStore.formatAmount(Number(selectedOrder.discountAmount)) }}</span
+                >
               </div>
               <div class="flex justify-between">
                 <span>{{ t('orderDashboard.serviceFee') }}</span>

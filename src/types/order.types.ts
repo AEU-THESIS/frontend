@@ -50,6 +50,27 @@ export interface OrderResult {
   fulfillmentStatus: string
 }
 
+// Lightweight promotion summary attached to an order for display in history.
+export interface OrderPromotion {
+  id: number
+  name: string
+  code: string | null
+  discountType: string
+  discountValue: number | string
+}
+
+// One row of an order's per-promotion discount breakdown (promotions stack).
+export interface AppliedOrderPromotion {
+  promotionId: number
+  discountAmount: number | string
+  promotion: {
+    id: number
+    name: string
+    code: string | null
+    discountType: string
+  }
+}
+
 export interface OrderItemOptionDetail {
   id: number
   orderItemId: number
@@ -81,6 +102,11 @@ export interface OrderDetail extends OrderResult {
   userId: number | null
   tableSessionId: number | null
   promotionId: number | null
+  // Amount the applied promotion took off. totalAmount is the net (post-discount)
+  // charged; the pre-discount subtotal is totalAmount + discountAmount.
+  discountAmount: number | string
+  promotion?: OrderPromotion | null
+  appliedPromotions?: AppliedOrderPromotion[]
   orderType: OrderType
   customerName: string | null
   customerPhone: string | null

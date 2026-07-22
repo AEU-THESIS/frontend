@@ -108,6 +108,11 @@
       "avocadoToast": "Avocado Toast",
       "matchaLatte": "Matcha Latte"
     },
+    "promo": {
+      "percentOff": "{value}% OFF",
+      "amountOff": "{value} OFF",
+      "bogo": "Buy 1 Get 1"
+    },
     "noProducts": "No items found in this category"
   },
   "cart": {
@@ -149,6 +154,9 @@
     "printReceipt": "Print Receipt",
     "fetchFailed": "Failed to load POS catalog",
     "addedToCart": "{name} added to cart!",
+    "addedBogo": "{name} added — 2nd is free (Buy 1 Get 1)",
+    "bogoFree": "{count} free (Buy 1 Get 1)",
+    "bogoHint": "Add 1 more — 2nd is free",
     "addToCart": "Add to Cart",
     "insufficientPayment": "Payment received is less than total amount due",
     "checkoutFailed": "Failed to complete transaction",
@@ -807,6 +815,12 @@
       "FIXED_AMOUNT": "Fixed Amount",
       "BOGO": "Buy 1 Get 1"
     },
+    "state": {
+      "active": "Active",
+      "scheduled": "Scheduled",
+      "expired": "Expired",
+      "inactive": "Inactive"
+    },
     "value": {
       "percentage": "{value}% Off",
       "fixed": "{value} Off",
@@ -853,7 +867,9 @@
       "itemsAvailable": "{count} items available",
       "noItems": "No items found",
       "noCategories": "No categories found",
-      "selectedCount": "{count} items selected",
+      "selectedCount": "{count} selected",
+      "breakdown": "{items} items, {categories} categories",
+      "inOtherPromotion": "In another promotion",
       "addSelected": "Add Selected Items"
     },
     "toast": {

@@ -18,6 +18,14 @@ const { t } = useI18n()
 const cartStore = useCartStore()
 
 const quantity = ref(1)
+
+// Whether an active "Buy 1 Get 1" promotion covers this product.
+const isBogo = computed(
+  () =>
+    !!props.product &&
+    cartStore.promotionForProduct(props.product.id, props.product.categoryId)?.discountType ===
+      'BOGO'
+)
 const selectedElements = ref<
   Record<number, { elementId: number; label: string; priceModifier: number; groupName: string }>
 >({})
@@ -25,7 +33,9 @@ const selectedElements = ref<
 // Helper to reset selection and pre-select defaults
 const resetSelection = () => {
   if (!props.product) return
-  quantity.value = 1
+  // Start a "Buy 1 Get 1" item at 2 (one paid + one free) so it behaves like the
+  // one-tap add on simple items. The barista can still adjust down to 1.
+  quantity.value = isBogo.value ? 2 : 1
   selectedElements.value = {}
 
   // Pre-select first/default elements for each option set
@@ -64,12 +74,17 @@ const selectElement = (optionSetId: number, element: OptionSetElement, groupName
   }
 }
 
+// Buy-1-Get-1 items only make sense in pairs, so step the quantity by 2 (min 2);
+// everything else steps by 1 (min 1).
+const qtyStep = computed(() => (isBogo.value ? 2 : 1))
+const minQty = computed(() => (isBogo.value ? 2 : 1))
+
 const incrementQty = () => {
-  if (quantity.value < 99) quantity.value++
+  quantity.value = Math.min(99, quantity.value + qtyStep.value)
 }
 
 const decrementQty = () => {
-  if (quantity.value > 1) quantity.value--
+  quantity.value = Math.max(minQty.value, quantity.value - qtyStep.value)
 }
 
 const activeModifiersTotal = computed(() => {
@@ -81,9 +96,15 @@ const itemUnitPrice = computed(() => {
   return Number(props.product.price) + activeModifiersTotal.value
 })
 
-const itemTotalPrice = computed(() => {
-  return itemUnitPrice.value * quantity.value
-})
+// Gross (pre-discount) line total.
+const itemGrossTotal = computed(() => itemUnitPrice.value * quantity.value)
+
+// Free units and the resulting net total for a BOGO item (every 2nd unit free).
+const freeUnits = computed(() => (isBogo.value ? Math.floor(quantity.value / 2) : 0))
+const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
+const itemNetTotal = computed(() =>
+  round2(itemGrossTotal.value - freeUnits.value * itemUnitPrice.value)
+)
 
 const handleAddToCart = () => {
   if (!props.product) return
@@ -225,6 +246,26 @@ const handleAddToCart = () => {
             </Button>
           </div>
         </div>
+
+        <!-- Buy-1-Get-1 feedback for the chosen quantity -->
+        <div
+          v-if="isBogo"
+          class="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold"
+          :class="
+            Math.floor(quantity / 2) > 0
+              ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-500'
+              : 'bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-500'
+          "
+        >
+          <span class="material-symbols-outlined text-[15px] leading-none">
+            {{ Math.floor(quantity / 2) > 0 ? 'redeem' : 'add_circle' }}
+          </span>
+          {{
+            Math.floor(quantity / 2) > 0
+              ? t('cart.bogoFree', { count: Math.floor(quantity / 2) })
+              : t('cart.bogoHint')
+          }}
+        </div>
       </div>
 
       <!-- Footer & Recalculated Summary -->
@@ -236,8 +277,16 @@ const handleAddToCart = () => {
             class="text-[11px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-0.5"
             >{{ t('cart.totalAmount') }}</span
           >
-          <span class="text-2xl font-headline font-extrabold text-stone-900 dark:text-stone-50">
-            ${{ itemTotalPrice.toFixed(2) }}
+          <span class="flex items-baseline gap-2">
+            <span
+              v-if="freeUnits > 0"
+              class="text-sm font-bold text-stone-400 line-through dark:text-stone-500"
+            >
+              ${{ itemGrossTotal.toFixed(2) }}
+            </span>
+            <span class="text-2xl font-headline font-extrabold text-stone-900 dark:text-stone-50">
+              ${{ itemNetTotal.toFixed(2) }}
+            </span>
           </span>
         </div>
         <Button

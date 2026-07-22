@@ -92,29 +92,31 @@ async function handleSubmit() {
 <template>
   <form class="w-full space-y-4 font-sans" @submit.prevent="handleSubmit">
     <!-- Item Name -->
-    <div class="bg-white rounded-2xl px-5 py-5 shadow-sm border border-stone-100">
-      <label class="block text-sm font-semibold text-stone-800 mb-3">{{
+    <div
+      class="bg-white dark:bg-stone-900 rounded-2xl px-5 py-5 shadow-sm border border-stone-100 dark:border-stone-800"
+    >
+      <label class="block text-sm font-semibold text-stone-800 dark:text-stone-100 mb-3">{{
         $t('category.form.categoryNameLabel')
       }}</label>
       <input
         v-model="form.name"
         type="text"
         :placeholder="$t('category.form.categoryPlaceholder')"
-        class="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:border-[#C26A1A] focus:ring-2 focus:ring-[#C26A1A]/10 transition"
+        class="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-sm text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:border-[#C26A1A] focus:ring-2 focus:ring-[#C26A1A]/10 transition"
       />
     </div>
 
     <!-- Item Status -->
     <div
-      class="bg-stone-100/80 rounded-2xl px-5 py-4 shadow-sm border border-stone-100 flex items-center justify-between"
+      class="bg-stone-100/80 dark:bg-stone-800/50 rounded-2xl px-5 py-4 shadow-sm border border-stone-100 dark:border-stone-800 flex items-center justify-between"
     >
       <div>
-        <p class="text-sm font-semibold text-stone-800">
+        <p class="text-sm font-semibold text-stone-800 dark:text-stone-100">
           {{ $t('category.form.categoryStatusLabel') }}
         </p>
         <p
           class="text-xs font-semibold mt-0.5 transition-colors"
-          :class="form.isActive ? 'text-[#C26A1A]' : 'text-stone-400'"
+          :class="form.isActive ? 'text-[#C26A1A]' : 'text-stone-400 dark:text-stone-500'"
         >
           {{ form.isActive ? $t('category.active') : $t('category.inactive') }}
         </p>
@@ -122,7 +124,7 @@ async function handleSubmit() {
 
       <SwitchRoot
         v-model="form.isActive"
-        class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C26A1A] focus-visible:ring-offset-2 data-[state=checked]:bg-[#C26A1A] data-[state=unchecked]:bg-slate-300"
+        class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C26A1A] focus-visible:ring-offset-2 data-[state=checked]:bg-[#C26A1A] data-[state=unchecked]:bg-slate-300 dark:data-[state=unchecked]:bg-stone-700"
       >
         <SwitchThumb
           class="block size-5 self-center rounded-full bg-white shadow transition-transform duration-200 ease-in-out data-[state=checked]:translate-x-6 data-[state=unchecked]:translate-x-1"
@@ -134,7 +136,7 @@ async function handleSubmit() {
     <div class="flex items-center justify-end gap-3 pt-2">
       <button
         type="button"
-        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-stone-500 hover:bg-stone-100 transition-colors"
+        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
         @click="emit('close')"
       >
         {{ $t('category.cancel') }}

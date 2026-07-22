@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
 import { getImageUrl } from '@/utils/image'
 
-import type { CartItemOption } from '@/types/order.types'
+import type { CartItem, CartItemOption } from '@/types/order.types'
 
 const { t } = useI18n()
 const cartStore = useCartStore()
@@ -11,6 +11,21 @@ const cartStore = useCartStore()
 const formatOptions = (options: CartItemOption[]) => {
   return options.map(o => o.optionName).join(', ')
 }
+
+// Free units this line gets from an active Buy-1-Get-1 promotion.
+const freeQtyFor = (item: CartItem) => cartStore.bogoFreeByCartId[item.cartId] ?? 0
+
+// Whether this line is covered by an active BOGO promo but has no free unit yet
+// (a lone item) — used to nudge the barista to add one more for the free one.
+const bogoHintFor = (item: CartItem) => {
+  const promo = cartStore.promotionForProduct(item.productId, item.categoryId)
+  return promo?.discountType === 'BOGO' && freeQtyFor(item) === 0
+}
+
+// BOGO items step in pairs (2 → 4 → 6); everything else by 1. Decrementing a pair
+// down from 2 hits 0 and removes the line.
+const stepFor = (item: CartItem) =>
+  cartStore.promotionForProduct(item.productId, item.categoryId)?.discountType === 'BOGO' ? 2 : 1
 
 const handlePayCash = async () => {
   if (cartStore.items.length === 0) return
@@ -88,6 +103,21 @@ const handlePayCash = async () => {
           >
             {{ formatOptions(item.selectedOptions) }}
           </p>
+          <!-- Buy-1-Get-1 status for this line -->
+          <p
+            v-if="freeQtyFor(item) > 0"
+            class="mt-0.5 flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-emerald-600 dark:text-emerald-500"
+          >
+            <span class="material-symbols-outlined text-[13px] leading-none">redeem</span>
+            {{ t('cart.bogoFree', { count: freeQtyFor(item) }) }}
+          </p>
+          <p
+            v-else-if="bogoHintFor(item)"
+            class="mt-0.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-500"
+          >
+            <span class="material-symbols-outlined text-[13px] leading-none">add_circle</span>
+            {{ t('cart.bogoHint') }}
+          </p>
         </div>
 
         <!-- Quantity Adjuster -->
@@ -98,7 +128,7 @@ const handlePayCash = async () => {
             type="button"
             variant="icon"
             class="w-7 h-7 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-50 flex items-center justify-center active:scale-90 p-0"
-            @click="cartStore.updateQuantity(item.cartId, item.quantity - 1)"
+            @click="cartStore.updateQuantity(item.cartId, item.quantity - stepFor(item))"
           >
             <span class="material-symbols-outlined text-[13px] font-bold">remove</span>
           </Button>
@@ -111,7 +141,7 @@ const handlePayCash = async () => {
             type="button"
             variant="icon"
             class="w-7 h-7 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-50 flex items-center justify-center active:scale-90 p-0"
-            @click="cartStore.updateQuantity(item.cartId, item.quantity + 1)"
+            @click="cartStore.updateQuantity(item.cartId, item.quantity + stepFor(item))"
           >
             <span class="material-symbols-outlined text-[13px] font-bold">add</span>
           </Button>
@@ -137,22 +167,25 @@ const handlePayCash = async () => {
         <span>${{ cartStore.cartTotal.toFixed(2) }}</span>
       </div>
 
-      <!-- Discounts line — only shown when an active promotion applies -->
-      <div
-        v-if="cartStore.discountTotal > 0"
-        class="flex justify-between items-center text-sm font-bold text-emerald-600 dark:text-emerald-500"
-      >
-        <span class="flex items-center gap-1.5 min-w-0">
-          <span class="material-symbols-outlined text-base">sell</span>
-          <span>{{ t('cart.discount') }}</span>
-          <span
-            v-if="cartStore.appliedPromotion?.name"
-            class="truncate max-w-[110px] text-[11px] font-medium opacity-70"
-          >
-            · {{ cartStore.appliedPromotion.name }}
+      <!-- Discounts — total plus a per-promotion breakdown when several stack -->
+      <div v-if="cartStore.discountTotal > 0" class="flex flex-col gap-1.5">
+        <div
+          class="flex justify-between items-center text-sm font-bold text-emerald-600 dark:text-emerald-500"
+        >
+          <span class="flex items-center gap-1.5 min-w-0">
+            <span class="material-symbols-outlined text-base">sell</span>
+            <span>{{ t('cart.discount') }}</span>
           </span>
-        </span>
-        <span>−${{ cartStore.discountTotal.toFixed(2) }}</span>
+          <span>−${{ cartStore.discountTotal.toFixed(2) }}</span>
+        </div>
+        <div
+          v-for="applied in cartStore.appliedPromotions"
+          :key="applied.promotion.id"
+          class="flex justify-between items-center pl-5 text-[11px] font-medium text-stone-400 dark:text-stone-500"
+        >
+          <span class="truncate max-w-[150px]">· {{ applied.promotion.name }}</span>
+          <span>−${{ applied.discount.toFixed(2) }}</span>
+        </div>
       </div>
 
       <div class="h-px bg-stone-200/60 dark:bg-stone-800/60 w-full my-1"></div>

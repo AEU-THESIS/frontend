@@ -10,6 +10,10 @@ const props = defineProps<{
   products: Product[]
   selectedCategoryIds: number[]
   selectedProductIds: number[]
+  // Ids already claimed by another promotion — shown disabled so an item can only
+  // ever belong to one promotion at a time.
+  disabledCategoryIds?: number[]
+  disabledProductIds?: number[]
   currencySymbol?: string
 }>()
 
@@ -52,15 +56,28 @@ const filteredCategories = computed(() => {
   return props.categories.filter(c => c.name.toLowerCase().includes(q))
 })
 
-const allProductsSelected = computed(
-  () =>
-    filteredProducts.value.length > 0 &&
-    filteredProducts.value.every(p => selectedProducts.value.has(p.id))
+const disabledProducts = computed(() => new Set(props.disabledProductIds ?? []))
+const disabledCategories = computed(() => new Set(props.disabledCategoryIds ?? []))
+
+// Only products/categories that aren't locked to another promotion can be bulk-selected.
+const selectableProducts = computed(() =>
+  filteredProducts.value.filter(p => !disabledProducts.value.has(p.id))
 )
 
-const totalSelected = computed(() => selectedProducts.value.size + selectedCategories.value.size)
+const allProductsSelected = computed(
+  () =>
+    selectableProducts.value.length > 0 &&
+    selectableProducts.value.every(p => selectedProducts.value.has(p.id))
+)
+
+// Per-tab counts so the footer total is never a mystery: if it reads "2 selected"
+// while the Items tab shows one checkbox, the Categories tab badge shows the other.
+const selectedProductsCount = computed(() => selectedProducts.value.size)
+const selectedCategoriesCount = computed(() => selectedCategories.value.size)
+const totalSelected = computed(() => selectedProductsCount.value + selectedCategoriesCount.value)
 
 const toggleProduct = (id: number) => {
+  if (disabledProducts.value.has(id)) return
   const next = new Set(selectedProducts.value)
   if (next.has(id)) next.delete(id)
   else next.add(id)
@@ -68,6 +85,7 @@ const toggleProduct = (id: number) => {
 }
 
 const toggleCategory = (id: number) => {
+  if (disabledCategories.value.has(id)) return
   const next = new Set(selectedCategories.value)
   if (next.has(id)) next.delete(id)
   else next.add(id)
@@ -76,10 +94,10 @@ const toggleCategory = (id: number) => {
 
 const toggleSelectAllProducts = () => {
   const next = new Set(selectedProducts.value)
-  if (allProductsSelected.value) {
-    filteredProducts.value.forEach(p => next.delete(p.id))
-  } else {
-    filteredProducts.value.forEach(p => next.add(p.id))
+  const selectAll = !allProductsSelected.value
+  for (const p of selectableProducts.value) {
+    if (selectAll) next.add(p.id)
+    else next.delete(p.id)
   }
   selectedProducts.value = next
 }
@@ -143,7 +161,7 @@ const formatPrice = (price: number | null) =>
               <button
                 v-for="tab in ['items', 'categories'] as const"
                 :key="tab"
-                class="rounded-full px-4 py-1.5 text-sm font-bold transition-colors"
+                class="flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold transition-colors"
                 :class="
                   activeTab === tab
                     ? 'bg-[#D2691E] text-white'
@@ -156,6 +174,13 @@ const formatPrice = (price: number | null) =>
                     ? t('promotions.selector.itemsTab')
                     : t('promotions.selector.categoriesTab')
                 }}
+                <span
+                  v-if="(tab === 'items' ? selectedProductsCount : selectedCategoriesCount) > 0"
+                  class="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold"
+                  :class="activeTab === tab ? 'bg-white/25 text-white' : 'bg-[#D2691E] text-white'"
+                >
+                  {{ tab === 'items' ? selectedProductsCount : selectedCategoriesCount }}
+                </span>
               </button>
             </div>
 
@@ -198,7 +223,12 @@ const formatPrice = (price: number | null) =>
                 <label
                   v-for="product in filteredProducts"
                   :key="product.id"
-                  class="flex cursor-pointer items-center gap-4 border-b border-stone-50 py-3 dark:border-stone-800/60"
+                  class="flex items-center gap-4 border-b border-stone-50 py-3 dark:border-stone-800/60"
+                  :class="
+                    disabledProducts.has(product.id)
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer'
+                  "
                 >
                   <span
                     class="flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors"
@@ -214,13 +244,20 @@ const formatPrice = (price: number | null) =>
                     type="checkbox"
                     class="sr-only"
                     :checked="selectedProducts.has(product.id)"
+                    :disabled="disabledProducts.has(product.id)"
                     @change="toggleProduct(product.id)"
                   />
                   <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-bold text-[#1A1C1C] dark:text-stone-100">
                       {{ product.name }}
                     </p>
-                    <p class="text-xs font-medium text-[#A3A3A3]">
+                    <p
+                      v-if="disabledProducts.has(product.id)"
+                      class="text-[11px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-500"
+                    >
+                      {{ t('promotions.selector.inOtherPromotion') }}
+                    </p>
+                    <p v-else class="text-xs font-medium text-[#A3A3A3]">
                       {{ product.category?.name }}
                     </p>
                   </div>
@@ -242,7 +279,12 @@ const formatPrice = (price: number | null) =>
                 <label
                   v-for="category in filteredCategories"
                   :key="category.id"
-                  class="flex cursor-pointer items-center gap-4 border-b border-stone-50 py-3.5 dark:border-stone-800/60"
+                  class="flex items-center gap-4 border-b border-stone-50 py-3.5 dark:border-stone-800/60"
+                  :class="
+                    disabledCategories.has(category.id)
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer'
+                  "
                 >
                   <span
                     class="flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors"
@@ -258,11 +300,20 @@ const formatPrice = (price: number | null) =>
                     type="checkbox"
                     class="sr-only"
                     :checked="selectedCategories.has(category.id)"
+                    :disabled="disabledCategories.has(category.id)"
                     @change="toggleCategory(category.id)"
                   />
-                  <p class="text-sm font-bold text-[#1A1C1C] dark:text-stone-100">
-                    {{ category.name }}
-                  </p>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-bold text-[#1A1C1C] dark:text-stone-100">
+                      {{ category.name }}
+                    </p>
+                    <p
+                      v-if="disabledCategories.has(category.id)"
+                      class="text-[11px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-500"
+                    >
+                      {{ t('promotions.selector.inOtherPromotion') }}
+                    </p>
+                  </div>
                 </label>
               </template>
             </div>
@@ -273,6 +324,17 @@ const formatPrice = (price: number | null) =>
             >
               <p class="text-sm font-bold text-[#D2691E]">
                 {{ t('promotions.selector.selectedCount', { count: totalSelected }) }}
+                <span
+                  v-if="selectedProductsCount > 0 && selectedCategoriesCount > 0"
+                  class="text-xs font-medium text-[#A3A3A3]"
+                >
+                  ({{
+                    t('promotions.selector.breakdown', {
+                      items: selectedProductsCount,
+                      categories: selectedCategoriesCount,
+                    })
+                  }})
+                </span>
               </p>
               <div class="flex items-center gap-3">
                 <Button variant="outline" class="rounded-xl px-6" @click="emit('close')">

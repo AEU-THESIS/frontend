@@ -23,6 +23,10 @@ const props = defineProps<{
   editing: Promotion | null
   categories: Category[]
   products: Product[]
+  // Ids already claimed by OTHER promotions (excludes the one being edited) so the
+  // item selector can lock them — an item may belong to one promotion at a time.
+  claimedCategoryIds?: number[]
+  claimedProductIds?: number[]
   isSubmitting: boolean
   currencySymbol?: string
 }>()
@@ -401,6 +405,8 @@ const submit = () => {
       :products="products"
       :selected-category-ids="categoryIds"
       :selected-product-ids="productIds"
+      :disabled-category-ids="claimedCategoryIds"
+      :disabled-product-ids="claimedProductIds"
       :currency-symbol="currencySymbol"
       @close="isSelectorOpen = false"
       @confirm="applySelection"

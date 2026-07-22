@@ -17,6 +17,7 @@ import {
 import { Card } from '@/components/ui/card'
 import { usePromotionStore } from '@/store/usePromotionStore'
 import { getCategories, getProducts } from '@/api/product'
+import { getPromotions } from '@/api/promotion'
 import type { Category, Product } from '@/types/product.types'
 import type { DiscountType, Promotion, PromotionPayload } from '@/types/promotion.types'
 import PromotionStatCard from '@/components/promotions/PromotionStatCard.vue'
@@ -28,11 +29,32 @@ const store = usePromotionStore()
 const currencySymbol = '$'
 const categories = ref<Category[]>([])
 const products = ref<Product[]>([])
+// Every promotion in the shop (not just the current page) so we can tell which
+// items/categories are already claimed by another promotion.
+const allPromotions = ref<Promotion[]>([])
 
 const isFormOpen = ref(false)
 const editing = ref<Promotion | null>(null)
 const isSubmitting = ref(false)
 const searchInput = ref('')
+
+const loadClaims = async () => {
+  try {
+    // 100 is the backend's max page size; ample for a single café's promotions.
+    const res = await getPromotions({ page: 1, limit: 100 })
+    allPromotions.value = res.data
+  } catch {
+    allPromotions.value = []
+  }
+}
+
+// Product/category ids locked by OTHER promotions (excludes the one being edited).
+const claimedProductIds = computed(() =>
+  allPromotions.value.filter(p => p.id !== editing.value?.id).flatMap(p => p.productIds)
+)
+const claimedCategoryIds = computed(() =>
+  allPromotions.value.filter(p => p.id !== editing.value?.id).flatMap(p => p.categoryIds)
+)
 
 onMounted(async () => {
   // Core page data: only a genuine promotions-load failure should surface an error.
@@ -46,7 +68,7 @@ onMounted(async () => {
   // Secondary data used only by the Add/Edit item selector. A failure here must
   // not block the page or be reported as a promotions-load failure.
   try {
-    const [cats, prods] = await Promise.all([getCategories(), getProducts({})])
+    const [cats, prods] = await Promise.all([getCategories(), getProducts({}), loadClaims()])
     categories.value = cats
     products.value = prods.products
   } catch {
@@ -86,6 +108,7 @@ const handleSubmit = async (payload: PromotionPayload) => {
       await store.create(payload)
       toast.success(t('promotions.toast.created'))
     }
+    await loadClaims()
     closeForm()
   } catch (err) {
     toast.error(getErrorMessage(err, t('promotions.toast.saveFailed')))
@@ -106,6 +129,7 @@ const handleDelete = async (promotion: Promotion) => {
   if (!window.confirm(t('promotions.confirmDelete', { name: promotion.name }))) return
   try {
     await store.remove(promotion.id)
+    await loadClaims()
     toast.success(t('promotions.toast.deleted'))
   } catch (err) {
     toast.error(getErrorMessage(err, t('promotions.toast.deleteFailed')))
@@ -151,6 +175,40 @@ const formatDate = (value: string | null) => {
   })
 }
 
+// Real lifecycle state of a promotion, combining the on/off flag with its date
+// window. The toggle alone can't tell "enabled" from "actually running": a promo
+// left on past its end date is expired (and no longer applies on the POS).
+type PromotionState = 'inactive' | 'scheduled' | 'expired' | 'active'
+
+// Compare by calendar day (promotions carry date-only start/end).
+const todayDateString = () => {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
+const promotionState = (promotion: Promotion): PromotionState => {
+  if (!promotion.isActive) return 'inactive'
+  const today = todayDateString()
+  if (promotion.startDate && promotion.startDate.slice(0, 10) > today) return 'scheduled'
+  if (promotion.endDate && promotion.endDate.slice(0, 10) < today) return 'expired'
+  return 'active'
+}
+
+const stateBadgeClass = (state: PromotionState) => {
+  switch (state) {
+    case 'active':
+      return 'bg-[#F0FDF4] text-[#15803D]'
+    case 'scheduled':
+      return 'bg-[#E0F2FE] text-[#0369A1]'
+    case 'expired':
+      return 'bg-[#FEF2F2] text-[#B91C1C]'
+    default:
+      return 'bg-[#F3F4F6] text-[#6B7280]'
+  }
+}
+
 const pageStart = computed(() =>
   store.pagination.total === 0 ? 0 : (store.pagination.page - 1) * store.pagination.limit + 1
 )
@@ -162,7 +220,7 @@ const pageEnd = computed(() =>
 <template>
   <div class="flex h-full flex-col overflow-hidden bg-[#F9FAFB] font-body dark:bg-stone-900">
     <div class="custom-scrollbar flex-1 overflow-y-auto px-10 py-10">
-      <div class="mx-auto w-full max-w-[1400px] space-y-8">
+      <div class="w-full space-y-8">
         <!-- Header -->
         <div>
           <h1 class="text-3xl font-bold text-[#1A1C1C] dark:text-stone-50">
@@ -287,11 +345,24 @@ const pageEnd = computed(() =>
                   <td class="px-8 py-5 text-[13px] font-medium text-[#737373] dark:text-stone-400">
                     {{ formatDate(promotion.startDate) }}
                   </td>
-                  <td class="px-8 py-5 text-[13px] font-medium text-[#737373] dark:text-stone-400">
+                  <td
+                    class="px-8 py-5 text-[13px] font-medium"
+                    :class="
+                      promotionState(promotion) === 'expired'
+                        ? 'font-bold text-[#B91C1C]'
+                        : 'text-[#737373] dark:text-stone-400'
+                    "
+                  >
                     {{ formatDate(promotion.endDate) }}
                   </td>
                   <td class="px-8 py-5">
-                    <div class="flex justify-center">
+                    <div class="flex flex-col items-center gap-1.5">
+                      <span
+                        class="inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
+                        :class="stateBadgeClass(promotionState(promotion))"
+                      >
+                        {{ t(`promotions.state.${promotionState(promotion)}`) }}
+                      </span>
                       <button
                         type="button"
                         class="relative h-7 w-12 shrink-0 rounded-full transition-colors"
@@ -397,6 +468,8 @@ const pageEnd = computed(() =>
       :editing="editing"
       :categories="categories"
       :products="products"
+      :claimed-category-ids="claimedCategoryIds"
+      :claimed-product-ids="claimedProductIds"
       :is-submitting="isSubmitting"
       :currency-symbol="currencySymbol"
       @close="closeForm"
