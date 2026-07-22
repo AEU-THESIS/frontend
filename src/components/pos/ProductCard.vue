@@ -1,23 +1,59 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Product } from '@/types/product.types'
+import type { Promotion } from '@/types/promotion.types'
 import { getImageUrl } from '@/utils/image'
 import NoImage from '@/assets/no-image.jpg'
 
 const props = defineProps<{
   product: Product
+  // The active promotion that covers this product, if any (drives the promo badge
+  // and — for a percentage promo — the struck-through discounted price).
+  promotion?: Promotion | null
 }>()
 
 const emit = defineEmits<{
   (e: 'select', product: Product): void
 }>()
 
-const displayPrice = computed(() => {
-  const productPrice =
-    props.product.price ||
-    props.product.optionSets?.[0]?.optionSet.elements?.[0]?.priceModifier ||
-    0
-  return `$${Number(productPrice).toFixed(2)}`
+const { t } = useI18n()
+
+// The numeric base price shown on the card (fixed price, else the cheapest size).
+const basePrice = computed(
+  () =>
+    Number(
+      props.product.price ||
+        props.product.optionSets?.[0]?.optionSet.elements?.[0]?.priceModifier ||
+        0
+    ) || 0
+)
+
+const displayPrice = computed(() => `$${basePrice.value.toFixed(2)}`)
+
+// A percentage promo maps cleanly to a per-unit discounted price. Fixed-amount and
+// BOGO apply to the order/scope, not a single unit, so those only show a badge.
+const discountedPrice = computed(() => {
+  const promo = props.promotion
+  if (!promo || promo.discountType !== 'PERCENTAGE') return null
+  const value = basePrice.value * (1 - promo.discountValue / 100)
+  return `$${(Math.round(value * 100) / 100).toFixed(2)}`
+})
+
+// Short label shown on the promo badge.
+const promoBadge = computed(() => {
+  const promo = props.promotion
+  if (!promo) return null
+  switch (promo.discountType) {
+    case 'PERCENTAGE':
+      return t('home.promo.percentOff', { value: promo.discountValue })
+    case 'FIXED_AMOUNT':
+      return t('home.promo.amountOff', { value: `$${promo.discountValue.toFixed(2)}` })
+    case 'BOGO':
+      return t('home.promo.bogo')
+    default:
+      return null
+  }
 })
 
 const handleSelect = () => {
@@ -54,6 +90,15 @@ const handleSelect = () => {
       >
         <span class="material-symbols-outlined text-sm">tune</span>
       </div>
+
+      <!-- Promotion badge — flags items covered by an active promotion. -->
+      <div
+        v-if="promoBadge"
+        class="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-emerald-600/95 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-lg backdrop-blur-sm"
+      >
+        <span class="material-symbols-outlined text-[13px] leading-none">sell</span>
+        {{ promoBadge }}
+      </div>
     </div>
 
     <!-- Product Info -->
@@ -68,7 +113,18 @@ const handleSelect = () => {
       </p>
 
       <div class="flex items-center justify-between mt-3 select-none">
+        <span v-if="discountedPrice" class="flex flex-col leading-none">
+          <span class="text-[11px] font-bold text-stone-400 line-through dark:text-stone-500">
+            {{ displayPrice }}
+          </span>
+          <span
+            class="font-headline font-extrabold text-emerald-600 dark:text-emerald-500 text-[17px] tracking-tight"
+          >
+            {{ discountedPrice }}
+          </span>
+        </span>
         <span
+          v-else
           class="font-headline font-extrabold text-stone-900 dark:text-stone-50 text-[17px] tracking-tight"
         >
           {{ displayPrice }}

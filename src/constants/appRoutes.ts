@@ -7,6 +7,7 @@ export const APP_ROUTES = {
   CATEGORIES: { path: '/categories', name: 'Categories' },
   SALE_REPORTS: { path: '/sale-reports', name: 'SaleReports' },
   ANALYTICS: { path: '/analytics', name: 'Analytics' },
+  PROMOTIONS: { path: '/promotions', name: 'Promotions' },
   STAFF: { path: '/staff', name: 'Staff' },
   SETTINGS: { path: '/settings', name: 'Settings' },
   LOGIN: { path: '/login', name: 'Login' },

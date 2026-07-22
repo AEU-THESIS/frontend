@@ -34,7 +34,11 @@ const checkoutResult = ref<CheckoutSuccessData | null>(null)
 
 onMounted(async () => {
   try {
-    await Promise.all([productStore.fetchCategories(), productStore.fetchProducts()])
+    await Promise.all([
+      productStore.fetchCategories(),
+      productStore.fetchProducts(),
+      cartStore.fetchActivePromotions(),
+    ])
   } catch {
     toast.error(t('cart.fetchFailed'))
   }
@@ -54,9 +58,25 @@ const handleProductSelect = (product: Product) => {
     selectedProductForOptions.value = product
     isModifiersModalOpen.value = true
   } else {
-    // Directly add simple products with no custom modifiers
-    cartStore.addToCart(product.id, product.name, product.imageUrl, Number(product.price), 1, [])
-    toast.success(t('cart.addedToCart', { name: product.name }))
+    // For a "Buy 1 Get 1" item, add the pair in one tap (one paid + one free) so the
+    // barista immediately sees they should make two and charge for one. The backend
+    // recomputes the discount authoritatively at checkout.
+    const promo = cartStore.promotionForProduct(product.id, product.categoryId)
+    const isBogo = promo?.discountType === 'BOGO'
+    cartStore.addToCart(
+      product.id,
+      product.categoryId,
+      product.name,
+      product.imageUrl,
+      Number(product.price),
+      isBogo ? 2 : 1,
+      []
+    )
+    toast.success(
+      isBogo
+        ? t('cart.addedBogo', { name: product.name })
+        : t('cart.addedToCart', { name: product.name })
+    )
   }
 }
 
@@ -181,6 +201,7 @@ const handleSuccessModalClose = () => {
           v-for="prod in productStore.products"
           :key="prod.id"
           :product="prod"
+          :promotion="cartStore.promotionForProduct(prod.id, prod.categoryId)"
           @select="handleProductSelect"
         />
       </div>

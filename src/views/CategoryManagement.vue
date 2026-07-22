@@ -152,12 +152,12 @@ const openAddDialog = () => {
       <div class="flex-[2] min-w-[240px] flex flex-col gap-1">
         <div class="relative">
           <span
-            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-[20px]"
+            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 text-[20px]"
             >search</span
           >
           <input
             v-model="filters.name"
-            class="w-100 pl-10 pr-4 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:ring-2 focus:ring-primary transition-all shadow-sm"
+            class="w-100 pl-10 pr-4 py-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-sm focus:ring-2 focus:ring-primary transition-all shadow-sm"
             :placeholder="$t('category.searchPlaceholder')"
             type="text"
           />
@@ -166,40 +166,52 @@ const openAddDialog = () => {
     </div>
 
     <!-- Table  -->
-    <div class="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+    <div
+      class="bg-white dark:bg-stone-900 rounded-xl shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden"
+    >
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[640px]">
           <thead>
-            <tr class="bg-stone-50 border-b border-stone-100">
-              <th class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 whitespace-nowrap">
+            <tr
+              class="bg-stone-50 dark:bg-stone-800 border-b border-stone-100 dark:border-stone-800"
+            >
+              <th
+                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
+              >
                 {{ $t('category.categoryName') }}
               </th>
-              <th class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 whitespace-nowrap">
+              <th
+                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
+              >
                 {{ $t('category.itemsCount') }}
               </th>
-              <th class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 whitespace-nowrap">
+              <th
+                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
+              >
                 {{ $t('category.status') }}
               </th>
               <th
-                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 text-center whitespace-nowrap min-w-max"
+                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 text-center whitespace-nowrap min-w-max"
               >
                 {{ $t('category.actions') }}
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-stone-50">
+          <tbody class="divide-y divide-stone-50 dark:divide-stone-800">
             <!-- Existing Rows -->
             <template v-if="paginatedCategories.length > 0">
               <tr
                 v-for="item in paginatedCategories"
                 :key="item.id"
-                class="hover:bg-stone-50/50 transition-colors"
+                class="hover:bg-stone-50/50 dark:hover:bg-stone-800/50 transition-colors"
               >
                 <!-- Item Details -->
                 <td class="px-3 md:px-6 py-3 md:py-4">
                   <div class="flex items-center gap-2 md:gap-4">
                     <div class="min-w-0">
-                      <p class="text-sm md:text-[16px] font-bold text-stone-900 truncate">
+                      <p
+                        class="text-sm md:text-[16px] font-bold text-stone-900 dark:text-stone-100 truncate"
+                      >
                         {{ item.name }}
                       </p>
                     </div>
@@ -215,7 +227,7 @@ const openAddDialog = () => {
 
                 <!-- Status -->
                 <td class="px-3 md:px-6 py-3 md:py-4">
-                  <p class="text-sm text-stone-900">
+                  <p class="text-sm text-stone-900 dark:text-stone-100">
                     {{ item.isActive ? $t('category.active') : $t('category.inactive') }}
                   </p>
                 </td>
@@ -235,13 +247,13 @@ const openAddDialog = () => {
 
                         <DropdownMenuPortal>
                           <DropdownMenuContent
-                            class="z-50 min-w-[140px] bg-white rounded-lg shadow-lg border border-[#edddd5] p-1 animate-in fade-in-0 zoom-in-95"
+                            class="z-50 min-w-[140px] bg-white dark:bg-stone-900 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
                             :side-offset="4"
                             align="end"
                           >
                             <!-- Edit -->
                             <DropdownMenuItem
-                              class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
+                              class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
                               @click.stop="openEditDialog(item)"
                             >
                               <Pencil class="size-4 shrink-0" />
@@ -250,7 +262,7 @@ const openAddDialog = () => {
 
                             <!-- View -->
                             <DropdownMenuItem
-                              class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
+                              class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
                               @click.stop="() => {}"
                             >
                               <Eye class="size-4 shrink-0" />
@@ -283,16 +295,19 @@ const openAddDialog = () => {
             <tr v-else>
               <td colspan="5" class="px-6 py-16 text-center">
                 <div class="flex flex-col items-center gap-3">
-                  <div class="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-[32px] text-stone-400"
+                  <div
+                    class="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[32px] text-stone-400 dark:text-stone-500"
                       >inventory_2</span
                     >
                   </div>
                   <div>
-                    <p class="text-sm font-bold text-stone-700">
+                    <p class="text-sm font-bold text-stone-700 dark:text-stone-300">
                       {{ $t('category.noCategoriesFound') }}
                     </p>
-                    <p class="text-xs text-stone-400 mt-1">
+                    <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">
                       {{ $t('category.noCategoriesSubtitle') }}
                     </p>
                   </div>
@@ -305,9 +320,9 @@ const openAddDialog = () => {
 
       <!-- Pagination -->
       <div
-        class="px-3 md:px-6 py-3 md:py-4 bg-stone-50/30 flex flex-col md:flex-row gap-2 md:gap-0 justify-between items-center"
+        class="px-3 md:px-6 py-3 md:py-4 bg-stone-50/30 dark:bg-stone-800/50 flex flex-col md:flex-row gap-2 md:gap-0 justify-between items-center"
       >
-        <span class="text-xs text-stone-500 text-[14px]">
+        <span class="text-xs text-stone-500 dark:text-stone-400 text-[14px]">
           {{
             $t('category.showing', {
               from: showingFrom,
@@ -326,13 +341,13 @@ const openAddDialog = () => {
         >
           <PaginationList v-slot="{ items }" class="flex items-center gap-1">
             <PaginationFirst
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-stone-200 text-stone-400 hover:text-stone-600 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <span class="material-symbols-outlined text-[18px]">first_page</span>
             </PaginationFirst>
 
             <PaginationPrev
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-stone-200 text-stone-400 hover:text-stone-600 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <span class="material-symbols-outlined text-[18px]">chevron_left</span>
             </PaginationPrev>
@@ -341,7 +356,7 @@ const openAddDialog = () => {
               <PaginationEllipsis
                 v-if="pageItem.type === 'ellipsis'"
                 :index="index"
-                class="w-8 h-8 flex items-center justify-center text-stone-400 text-xs select-none"
+                class="w-8 h-8 flex items-center justify-center text-stone-400 dark:text-stone-500 text-xs select-none"
               >
                 &#8230;
               </PaginationEllipsis>
@@ -349,20 +364,20 @@ const openAddDialog = () => {
               <PaginationListItem
                 v-else
                 :value="pageItem.value"
-                class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors data-[selected]:bg-[#D2691E] data-[selected]:text-white data-[selected]:border-transparent bg-white border border-stone-200 text-stone-600 hover:bg-stone-100 hover:border-stone-300"
+                class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors data-[selected]:bg-[#D2691E] data-[selected]:text-white data-[selected]:border-transparent bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:border-stone-300 dark:hover:border-stone-600"
               >
                 {{ pageItem.value }}
               </PaginationListItem>
             </template>
 
             <PaginationNext
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-stone-200 text-stone-400 hover:text-stone-600 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <span class="material-symbols-outlined text-[18px]">chevron_right</span>
             </PaginationNext>
 
             <PaginationLast
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-stone-200 text-stone-400 hover:text-stone-600 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <span class="material-symbols-outlined text-[18px]">last_page</span>
             </PaginationLast>
@@ -395,7 +410,7 @@ const openAddDialog = () => {
     :description="$t('category.deleteConfirmation')"
   >
     <div class="w-full space-y-4">
-      <p v-if="selectedCategory" class="text-sm text-stone-600">
+      <p v-if="selectedCategory" class="text-sm text-stone-600 dark:text-stone-300">
         {{ $t('category.deleteWarning') }} <strong>{{ selectedCategory.name }}</strong>
       </p>
     </div>
@@ -403,7 +418,7 @@ const openAddDialog = () => {
       <div class="flex gap-3 justify-end">
         <button
           type="button"
-          class="px-5 py-2.5 rounded-xl text-sm font-semibold text-stone-500 hover:bg-stone-100 transition-colors"
+          class="px-5 py-2.5 rounded-xl text-sm font-semibold text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           @click="isDeleteDialogOpen = false"
         >
           {{ $t('category.cancel') }}

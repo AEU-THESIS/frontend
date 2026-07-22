@@ -175,17 +175,17 @@ const setAdjustmentType = (type: AdjustmentType) => {
 const statusMeta = {
   in_stock: {
     labelKey: 'inventory.status.inStock',
-    class: 'bg-emerald-50 text-emerald-700',
+    class: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400',
     dotClass: 'bg-emerald-500',
   },
   low_stock: {
     labelKey: 'inventory.status.lowStock',
-    class: 'bg-amber-50 text-amber-700',
+    class: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-500',
     dotClass: 'bg-amber-500',
   },
   out_of_stock: {
     labelKey: 'inventory.status.outOfStock',
-    class: 'bg-rose-50 text-rose-700',
+    class: 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400',
     dotClass: 'bg-rose-500',
   },
 }
@@ -196,21 +196,21 @@ const summaryCards = computed(() => [
     value: formatNumber(totalSupplies.value),
     detail: t('inventory.summary.stockHealth', { percentage: stockHealthPercentage.value }),
     icon: Archive,
-    class: 'text-[#974400] bg-[#FFF7ED]',
+    class: 'text-[#974400] bg-[#FFF7ED] dark:bg-amber-950/30',
   },
   {
     label: t('inventory.summary.lowStock'),
     value: formatNumber(lowStockItems.value.length),
     detail: t('inventory.summary.newCount', { count: lowStockItems.value.length }),
     icon: AlertTriangle,
-    class: 'text-amber-600 bg-amber-50',
+    class: 'text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-950/30',
   },
   {
     label: t('inventory.summary.outOfStock'),
     value: formatNumber(outOfStockItems.value.length),
     detail: t('inventory.summary.alertCount', { count: outOfStockItems.value.length }),
     icon: Box,
-    class: 'text-rose-600 bg-rose-50',
+    class: 'text-rose-600 dark:text-rose-500 bg-rose-50 dark:bg-rose-950/30',
   },
 ])
 
@@ -390,13 +390,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto bg-[#F9FAFB] p-8 text-[#1A1C1C]">
+  <div
+    class="h-full overflow-y-auto bg-[#F9FAFB] p-8 text-[#1A1C1C] dark:bg-stone-900 dark:text-stone-100"
+  >
     <div class="flex w-full flex-col gap-5">
       <div class="grid gap-5 md:grid-cols-3">
         <Card
           v-for="card in summaryCards"
           :key="card.label"
-          class="flex-row items-center justify-between rounded-xl border-none bg-white p-6 shadow-sm"
+          class="flex-row items-center justify-between rounded-xl border-none bg-white p-6 shadow-sm dark:border dark:border-stone-800 dark:bg-stone-900"
         >
           <div>
             <div
@@ -405,10 +407,14 @@ onMounted(() => {
             >
               <component :is="card.icon" class="size-5" />
             </div>
-            <p class="text-[11px] font-black uppercase tracking-wide text-[#A3A3A3]">
+            <p
+              class="text-[11px] font-black uppercase tracking-wide text-[#A3A3A3] dark:text-stone-500"
+            >
               {{ card.label }}
             </p>
-            <p class="mt-1 text-2xl font-black text-[#1A1C1C]">{{ card.value }}</p>
+            <p class="mt-1 text-2xl font-black text-[#1A1C1C] dark:text-stone-100">
+              {{ card.value }}
+            </p>
           </div>
           <span class="self-start text-xs font-black" :class="card.class.split(' ')[0]">
             {{ card.detail }}
@@ -419,20 +425,22 @@ onMounted(() => {
       <div class="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
           <div class="relative w-full max-w-[500px]">
-            <Search class="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
+            <Search
+              class="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3] dark:text-stone-500"
+            />
             <Input
               v-model="searchQuery"
               :placeholder="t('inventory.searchPlaceholder')"
-              class="h-11 rounded-xl border border-slate-200 bg-white pl-11 text-sm font-semibold shadow-sm"
+              class="h-11 rounded-xl border border-slate-200 bg-white pl-11 text-sm font-semibold shadow-sm dark:border-stone-700 dark:bg-stone-900"
             />
           </div>
           <Button
             variant="secondary"
-            class="h-11 rounded-xl border bg-white px-5 font-bold hover:bg-slate-50"
+            class="h-11 rounded-xl border bg-white px-5 font-bold hover:bg-slate-50 dark:bg-stone-900 dark:hover:bg-stone-800/50"
             :class="
               isFilterPanelOpen || activeFilterCount > 0
-                ? 'border-[#974400] text-[#974400]'
-                : 'border-slate-200'
+                ? 'border-[#974400] text-[#974400] dark:text-amber-500'
+                : 'border-slate-200 dark:border-stone-700'
             "
             @click="isFilterPanelOpen = !isFilterPanelOpen"
           >
@@ -456,13 +464,15 @@ onMounted(() => {
 
         <Card
           v-if="isFilterPanelOpen"
-          class="absolute left-0 top-[calc(100%+0.5rem)] z-20 w-full max-w-[640px] gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-lg sm:left-[calc(500px+0.75rem)] sm:w-[420px]"
+          class="absolute left-0 top-[calc(100%+0.5rem)] z-20 w-full max-w-[640px] gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-lg dark:border-stone-700 dark:bg-stone-900 sm:left-[calc(500px+0.75rem)] sm:w-[420px]"
         >
           <div class="grid gap-3 sm:grid-cols-2">
-            <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+            >
               {{ t('inventory.filters.status') }}
               <Select v-model="selectedStatus">
-                <SelectTrigger class="h-10 rounded-xl bg-[#FAFAFA] font-bold">
+                <SelectTrigger class="h-10 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -476,10 +486,12 @@ onMounted(() => {
               </Select>
             </Label>
 
-            <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+            >
               {{ t('inventory.filters.unit') }}
               <Select v-model="selectedUnit">
-                <SelectTrigger class="h-10 rounded-xl bg-[#FAFAFA] font-bold">
+                <SelectTrigger class="h-10 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -495,7 +507,7 @@ onMounted(() => {
           <div class="flex justify-end">
             <Button
               variant="tertiary"
-              class="h-8 text-xs font-black text-[#974400]"
+              class="h-8 text-xs font-black text-[#974400] dark:text-amber-500"
               :disabled="activeFilterCount === 0"
               @click="clearFilters"
             >
@@ -505,11 +517,15 @@ onMounted(() => {
         </Card>
       </div>
 
-      <Card class="overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm">
+      <Card
+        class="overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm dark:border dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100"
+      >
         <div class="overflow-x-auto">
           <table class="w-full min-w-[820px] text-left">
             <thead>
-              <tr class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3]">
+              <tr
+                class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] dark:bg-stone-800 dark:text-stone-500"
+              >
                 <th class="px-6 py-4">{{ t('inventory.table.name') }}</th>
                 <th class="px-6 py-4">{{ t('inventory.table.stockLevel') }}</th>
                 <th class="px-6 py-4">{{ t('inventory.table.unit') }}</th>
@@ -519,12 +535,18 @@ onMounted(() => {
             </thead>
             <tbody>
               <tr v-if="isLoading">
-                <td colspan="5" class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3]">
+                <td
+                  colspan="5"
+                  class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
+                >
                   {{ t('inventory.messages.loading') }}
                 </td>
               </tr>
               <tr v-else-if="filteredItems.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3]">
+                <td
+                  colspan="5"
+                  class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
+                >
                   {{ t('inventory.messages.empty') }}
                 </td>
               </tr>
@@ -532,12 +554,12 @@ onMounted(() => {
                 v-for="item in paginatedItems"
                 v-else
                 :key="item.id"
-                class="border-b border-slate-100 text-sm font-bold text-[#1A1C1C] last:border-0"
+                class="border-b border-slate-100 text-sm font-bold text-[#1A1C1C] last:border-0 dark:border-stone-800 dark:text-stone-100"
               >
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
                     <div
-                      class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100"
+                      class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800"
                     >
                       <img
                         v-if="item.imageUrl"
@@ -545,20 +567,26 @@ onMounted(() => {
                         :alt="item.name"
                         class="h-full w-full object-cover"
                       />
-                      <ImagePlus v-else class="size-5 text-stone-400" />
+                      <ImagePlus v-else class="size-5 text-stone-400 dark:text-stone-500" />
                     </div>
                     <div>
-                      <p class="text-[#1A1C1C]">{{ item.name }}</p>
+                      <p class="text-[#1A1C1C] dark:text-stone-100">{{ item.name }}</p>
                     </div>
                   </div>
                 </td>
                 <td
                   class="px-6 py-4"
-                  :class="item.status === 'out_of_stock' ? 'text-rose-600' : 'text-[#1A1C1C]'"
+                  :class="
+                    item.status === 'out_of_stock'
+                      ? 'text-rose-600 dark:text-rose-500'
+                      : 'text-[#1A1C1C] dark:text-stone-100'
+                  "
                 >
                   {{ formatNumber(item.quantity) }}
                 </td>
-                <td class="px-6 py-4 text-[#737373]">{{ item.unitOfMeasure }}</td>
+                <td class="px-6 py-4 text-[#737373] dark:text-stone-400">
+                  {{ item.unitOfMeasure }}
+                </td>
                 <td class="px-6 py-4 text-center">
                   <span
                     class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black"
@@ -588,7 +616,7 @@ onMounted(() => {
                     <Button
                       variant="tertiary"
                       size="icon"
-                      class="size-5 rounded-none text-[#16A34A] hover:bg-transparent hover:no-underline"
+                      class="size-5 rounded-none text-[#16A34A] hover:bg-transparent hover:no-underline dark:text-emerald-500"
                       :title="t('inventory.actions.view')"
                       @click="openSupplyModal('view', item)"
                     >
@@ -597,7 +625,7 @@ onMounted(() => {
                     <Button
                       variant="tertiary"
                       size="icon"
-                      class="size-5 rounded-none text-[#2563EB] hover:bg-transparent hover:no-underline"
+                      class="size-5 rounded-none text-[#2563EB] hover:bg-transparent hover:no-underline dark:text-sky-500"
                       :title="t('inventory.actions.edit')"
                       @click="openSupplyModal('edit', item)"
                     >
@@ -606,7 +634,7 @@ onMounted(() => {
                     <Button
                       variant="tertiary"
                       size="icon"
-                      class="size-5 rounded-none text-[#EF4444] hover:bg-transparent hover:no-underline"
+                      class="size-5 rounded-none text-[#EF4444] hover:bg-transparent hover:no-underline dark:text-red-500 dark:hover:text-red-400"
                       :title="t('inventory.actions.delete')"
                       @click="openDeleteConfirm(item)"
                     >
@@ -620,9 +648,9 @@ onMounted(() => {
         </div>
 
         <footer
-          class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+          class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 dark:border-stone-800 sm:flex-row sm:items-center sm:justify-between"
         >
-          <p class="text-xs font-semibold text-[#737373]">
+          <p class="text-xs font-semibold text-[#737373] dark:text-stone-400">
             {{
               t('inventory.table.showingRange', {
                 start: paginationStart,
@@ -635,7 +663,7 @@ onMounted(() => {
             <Button
               variant="tertiary"
               size="icon"
-              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3]"
+              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3] dark:border-stone-700 dark:text-stone-500"
               :disabled="currentPage === 1"
               @click="currentPage -= 1"
             >
@@ -650,7 +678,7 @@ onMounted(() => {
               :class="
                 page === currentPage
                   ? 'border-[#974400] bg-[#974400] text-white'
-                  : 'border-slate-200 text-[#737373]'
+                  : 'border-slate-200 text-[#737373] dark:border-stone-700 dark:text-stone-400'
               "
               @click="currentPage = page"
             >
@@ -659,7 +687,7 @@ onMounted(() => {
             <Button
               variant="tertiary"
               size="icon"
-              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3]"
+              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3] dark:border-stone-700 dark:text-stone-500"
               :disabled="currentPage === totalPages"
               @click="currentPage += 1"
             >
@@ -671,16 +699,19 @@ onMounted(() => {
 
       <div class="grid gap-5 lg:grid-cols-2">
         <Card
-          class="overflow-hidden rounded-xl border-none bg-white p-0 shadow-md shadow-slate-200/70"
+          class="overflow-hidden rounded-xl border-none bg-white p-0 shadow-md shadow-slate-200/70 dark:border dark:border-stone-800 dark:bg-stone-900"
         >
           <div
-            class="flex items-center gap-2 border-b border-rose-100 bg-rose-50 px-6 py-4 text-sm font-black uppercase tracking-wide text-rose-700"
+            class="flex items-center gap-2 border-b border-rose-100 bg-rose-50 px-6 py-4 text-sm font-black uppercase tracking-wide text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400"
           >
             <CircleAlert class="size-4 fill-rose-700 text-white" />
             {{ t('inventory.panels.criticalStock', { count: outOfStockItems.length }) }}
           </div>
           <div class="min-h-[110px] space-y-4 p-5">
-            <div v-if="outOfStockItems.length === 0" class="text-sm font-bold text-[#A3A3A3]">
+            <div
+              v-if="outOfStockItems.length === 0"
+              class="text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
+            >
               {{ t('inventory.panels.noCriticalStock') }}
             </div>
             <div
@@ -690,7 +721,7 @@ onMounted(() => {
             >
               <div class="flex items-center gap-3">
                 <div
-                  class="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-rose-50"
+                  class="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-rose-50 dark:bg-rose-950/30"
                 >
                   <img
                     v-if="item.imageUrl"
@@ -698,11 +729,13 @@ onMounted(() => {
                     :alt="item.name"
                     class="h-full w-full object-cover"
                   />
-                  <ImagePlus v-else class="size-5 text-rose-400" />
+                  <ImagePlus v-else class="size-5 text-rose-400 dark:text-rose-500" />
                 </div>
                 <div>
-                  <p class="text-sm font-black text-[#1A1C1C]">{{ item.name }}</p>
-                  <p class="text-xs font-semibold text-[#A3A3A3]">
+                  <p class="text-sm font-black text-[#1A1C1C] dark:text-stone-100">
+                    {{ item.name }}
+                  </p>
+                  <p class="text-xs font-semibold text-[#A3A3A3] dark:text-stone-500">
                     {{ t('inventory.status.outOfStock') }}
                   </p>
                 </div>
@@ -718,7 +751,7 @@ onMounted(() => {
             <Button
               v-if="outOfStockItems.length > 2"
               variant="tertiary"
-              class="h-9 w-full rounded-lg bg-[#FAFAFA] text-xs font-black uppercase text-[#1A1C1C] hover:bg-[#F4F4F5] hover:no-underline"
+              class="h-9 w-full rounded-lg bg-[#FAFAFA] text-xs font-black uppercase text-[#1A1C1C] hover:bg-[#F4F4F5] hover:no-underline dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
               @click="showAllCriticalStock = !showAllCriticalStock"
             >
               {{
@@ -731,16 +764,19 @@ onMounted(() => {
         </Card>
 
         <Card
-          class="overflow-hidden rounded-xl border-none bg-white p-0 shadow-md shadow-slate-200/70"
+          class="overflow-hidden rounded-xl border-none bg-white p-0 shadow-md shadow-slate-200/70 dark:border dark:border-stone-800 dark:bg-stone-900"
         >
           <div
-            class="flex items-center gap-2 border-b border-amber-100 bg-amber-50 px-6 py-4 text-sm font-black uppercase tracking-wide text-amber-700"
+            class="flex items-center gap-2 border-b border-amber-100 bg-amber-50 px-6 py-4 text-sm font-black uppercase tracking-wide text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-500"
           >
             <AlertTriangle class="size-4 fill-amber-600 text-white" />
             {{ t('inventory.panels.lowStockWarnings', { count: lowStockItems.length }) }}
           </div>
           <div class="min-h-[110px] space-y-4 p-5">
-            <div v-if="lowStockItems.length === 0" class="text-sm font-bold text-[#A3A3A3]">
+            <div
+              v-if="lowStockItems.length === 0"
+              class="text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
+            >
               {{ t('inventory.panels.noLowStock') }}
             </div>
             <div
@@ -750,7 +786,7 @@ onMounted(() => {
             >
               <div class="flex items-center gap-3">
                 <div
-                  class="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-amber-50"
+                  class="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-amber-50 dark:bg-amber-950/30"
                 >
                   <img
                     v-if="item.imageUrl"
@@ -758,11 +794,13 @@ onMounted(() => {
                     :alt="item.name"
                     class="h-full w-full object-cover"
                   />
-                  <ImagePlus v-else class="size-5 text-amber-400" />
+                  <ImagePlus v-else class="size-5 text-amber-400 dark:text-amber-500" />
                 </div>
                 <div>
-                  <p class="text-sm font-black text-[#1A1C1C]">{{ item.name }}</p>
-                  <p class="text-xs font-black uppercase text-amber-600">
+                  <p class="text-sm font-black text-[#1A1C1C] dark:text-stone-100">
+                    {{ item.name }}
+                  </p>
+                  <p class="text-xs font-black uppercase text-amber-600 dark:text-amber-500">
                     {{
                       t('inventory.panels.lowStockRatio', {
                         quantity: item.quantity,
@@ -777,7 +815,7 @@ onMounted(() => {
             <Button
               v-if="lowStockItems.length > 2"
               variant="tertiary"
-              class="h-9 w-full rounded-lg bg-[#FAFAFA] text-xs font-black uppercase text-[#1A1C1C] hover:bg-[#F4F4F5] hover:no-underline"
+              class="h-9 w-full rounded-lg bg-[#FAFAFA] text-xs font-black uppercase text-[#1A1C1C] hover:bg-[#F4F4F5] hover:no-underline dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
               @click="showAllLowStockWarnings = !showAllLowStockWarnings"
             >
               {{
@@ -795,26 +833,36 @@ onMounted(() => {
       v-if="isSupplyModalOpen"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
     >
-      <Card class="w-full max-w-[520px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0">
-        <header class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-          <h2 class="text-lg font-black text-[#1A1C1C]">{{ getModalTitle() }}</h2>
+      <Card
+        class="w-full max-w-[520px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0 dark:border dark:border-stone-800 dark:bg-stone-900"
+      >
+        <header
+          class="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-stone-800"
+        >
+          <h2 class="text-lg font-black text-[#1A1C1C] dark:text-stone-100">
+            {{ getModalTitle() }}
+          </h2>
           <Button variant="tertiary" size="icon" class="size-8" @click="closeSupplyModal">
             <X class="size-4" />
           </Button>
         </header>
 
         <div class="space-y-4 p-6">
-          <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+          <Label
+            class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+          >
             <span>
               {{ t('inventory.form.itemName') }}
-              <span class="text-rose-600">{{ t('inventory.form.required') }}</span>
+              <span class="text-rose-600 dark:text-rose-500">{{
+                t('inventory.form.required')
+              }}</span>
             </span>
             <Input
               v-model="supplyForm.name"
               :disabled="supplyModalMode === 'view'"
               :placeholder="t('inventory.form.itemNamePlaceholder')"
               :aria-invalid="hasSupplyNameError"
-              class="h-11 rounded-xl bg-[#FAFAFA] font-bold"
+              class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800"
               :class="
                 hasSupplyNameError
                   ? 'border-rose-300 text-rose-700 focus-visible:ring-rose-200'
@@ -823,13 +871,18 @@ onMounted(() => {
               required
               @blur="supplyNameTouched = true"
             />
-            <span v-if="hasSupplyNameError" class="text-xs font-bold text-rose-600">
+            <span
+              v-if="hasSupplyNameError"
+              class="text-xs font-bold text-rose-600 dark:text-rose-500"
+            >
               {{ t('inventory.messages.nameRequired') }}
             </span>
           </Label>
 
           <div class="grid gap-4 sm:grid-cols-2">
-            <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+            >
               {{ t('inventory.form.numberOfItems') }}
               <Input
                 v-model="supplyForm.quantity"
@@ -837,14 +890,16 @@ onMounted(() => {
                 type="number"
                 min="0"
                 step="1"
-                class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold"
+                class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold dark:bg-stone-800"
                 @blur="supplyForm.quantity = toWholeNumber(supplyForm.quantity)"
               />
             </Label>
-            <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+            <Label
+              class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+            >
               {{ t('inventory.form.unitOfMeasure') }}
               <Select v-model="supplyForm.unitOfMeasure" :disabled="supplyModalMode === 'view'">
-                <SelectTrigger class="h-11 rounded-xl bg-[#FAFAFA] font-bold">
+                <SelectTrigger class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -856,7 +911,9 @@ onMounted(() => {
             </Label>
           </div>
 
-          <Label class="flex flex-col items-start gap-2 text-xs font-black text-[#737373]">
+          <Label
+            class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+          >
             {{ t('inventory.form.minAlert') }}
             <Input
               v-model="supplyForm.minAlertThreshold"
@@ -865,7 +922,7 @@ onMounted(() => {
               min="0"
               step="1"
               :placeholder="t('inventory.form.minAlertPlaceholder')"
-              class="h-11 rounded-xl bg-[#FAFAFA] font-bold"
+              class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800"
               @blur="supplyForm.minAlertThreshold = toWholeNumber(supplyForm.minAlertThreshold)"
             />
           </Label>
@@ -881,7 +938,9 @@ onMounted(() => {
           />
         </div>
 
-        <footer class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4">
+        <footer
+          class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4 dark:border-stone-800 dark:bg-stone-800"
+        >
           <Button
             variant="tertiary"
             class="h-11 rounded-xl px-6 font-bold"
@@ -910,9 +969,13 @@ onMounted(() => {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
       @click.self="closeDeleteConfirm"
     >
-      <Card class="w-full max-w-[420px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0">
-        <header class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-          <h2 class="text-lg font-black text-[#1A1C1C]">
+      <Card
+        class="w-full max-w-[420px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0 dark:border dark:border-stone-800 dark:bg-stone-900"
+      >
+        <header
+          class="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-stone-800"
+        >
+          <h2 class="text-lg font-black text-[#1A1C1C] dark:text-stone-100">
             {{ t('inventory.deleteConfirm.title') }}
           </h2>
           <Button variant="tertiary" size="icon" class="size-8" @click="closeDeleteConfirm">
@@ -921,7 +984,7 @@ onMounted(() => {
         </header>
 
         <div class="space-y-3 p-6">
-          <p class="text-sm font-semibold leading-6 text-[#737373]">
+          <p class="text-sm font-semibold leading-6 text-[#737373] dark:text-stone-400">
             {{
               t('inventory.deleteConfirm.message', {
                 name: itemPendingDelete.name,
@@ -930,10 +993,12 @@ onMounted(() => {
           </p>
         </div>
 
-        <footer class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4">
+        <footer
+          class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4 dark:border-stone-800 dark:bg-stone-800"
+        >
           <Button
             variant="tertiary"
-            class="h-11 rounded-xl px-6 font-bold text-[#1A1C1C]"
+            class="h-11 rounded-xl px-6 font-bold text-[#1A1C1C] dark:text-stone-100"
             :disabled="isSaving"
             @click="closeDeleteConfirm"
           >
@@ -955,16 +1020,18 @@ onMounted(() => {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]"
     >
       <Card
-        class="w-full max-w-[414px] gap-0 overflow-hidden rounded-[14px] border-none bg-white p-0 shadow-2xl"
+        class="w-full max-w-[414px] gap-0 overflow-hidden rounded-[14px] border-none bg-white p-0 shadow-2xl dark:border dark:border-stone-800 dark:bg-stone-900"
       >
-        <header class="flex items-center justify-between border-b border-slate-100 px-5 py-[18px]">
-          <h2 class="text-base font-medium text-[#222222]">
+        <header
+          class="flex items-center justify-between border-b border-slate-100 px-5 py-[18px] dark:border-stone-800"
+        >
+          <h2 class="text-base font-medium text-[#222222] dark:text-stone-100">
             {{ t('inventory.adjustment.title') }}
           </h2>
           <Button
             variant="tertiary"
             size="icon"
-            class="size-8 text-[#9A9A9A] hover:text-[#2D241E]"
+            class="size-8 text-[#9A9A9A] hover:text-[#2D241E] dark:text-stone-500 dark:hover:text-stone-300"
             @click="closeAdjustmentModal"
           >
             <X class="size-5" />
@@ -972,9 +1039,9 @@ onMounted(() => {
         </header>
 
         <div class="space-y-5 px-5 py-[22px]">
-          <div class="flex items-center gap-4 rounded-lg bg-[#F4F4F4] p-4">
+          <div class="flex items-center gap-4 rounded-lg bg-[#F4F4F4] p-4 dark:bg-stone-800">
             <div
-              class="flex size-[38px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-white shadow-sm"
+              class="flex size-[38px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-white shadow-sm dark:bg-stone-700"
             >
               <img
                 v-if="selectedItem.imageUrl"
@@ -982,11 +1049,13 @@ onMounted(() => {
                 :alt="selectedItem.name"
                 class="h-full w-full object-cover"
               />
-              <Box v-else class="size-5 text-stone-400" />
+              <Box v-else class="size-5 text-stone-400 dark:text-stone-500" />
             </div>
             <div>
-              <p class="text-sm font-medium leading-5 text-[#2D241E]">{{ selectedItem.name }}</p>
-              <p class="text-xs leading-5 text-[#666666]">
+              <p class="text-sm font-medium leading-5 text-[#2D241E] dark:text-stone-100">
+                {{ selectedItem.name }}
+              </p>
+              <p class="text-xs leading-5 text-[#666666] dark:text-stone-400">
                 {{
                   t('inventory.adjustment.currentStock', {
                     quantity: selectedItem.quantity,
@@ -998,15 +1067,19 @@ onMounted(() => {
           </div>
 
           <div>
-            <p class="mb-3 text-sm font-normal uppercase text-[#8A8A8A]">
+            <p class="mb-3 text-sm font-normal uppercase text-[#8A8A8A] dark:text-stone-500">
               {{ t('inventory.adjustment.typeAndAmount') }}
             </p>
-            <div class="grid h-9 grid-cols-2 overflow-hidden rounded-md bg-[#F3F3F3] p-[3px]">
+            <div
+              class="grid h-9 grid-cols-2 overflow-hidden rounded-md bg-[#F3F3F3] p-[3px] dark:bg-stone-800"
+            >
               <Button
                 variant="tertiary"
-                class="h-full rounded px-3 text-[11px] font-bold uppercase leading-none text-[#5D5D5D] no-underline hover:no-underline"
+                class="h-full rounded px-3 text-[11px] font-bold uppercase leading-none text-[#5D5D5D] no-underline hover:no-underline dark:text-stone-400"
                 :class="
-                  adjustmentForm.adjustmentType === 'add' ? 'bg-white text-[#A64E05] shadow-sm' : ''
+                  adjustmentForm.adjustmentType === 'add'
+                    ? 'bg-white text-[#A64E05] shadow-sm dark:bg-stone-700'
+                    : ''
                 "
                 @click="setAdjustmentType('add')"
               >
@@ -1015,10 +1088,10 @@ onMounted(() => {
               </Button>
               <Button
                 variant="tertiary"
-                class="h-full rounded px-3 text-[11px] font-bold uppercase leading-none text-[#5D5D5D] no-underline hover:no-underline"
+                class="h-full rounded px-3 text-[11px] font-bold uppercase leading-none text-[#5D5D5D] no-underline hover:no-underline dark:text-stone-400"
                 :class="
                   adjustmentForm.adjustmentType === 'remove'
-                    ? 'bg-white text-[#A64E05] shadow-sm'
+                    ? 'bg-white text-[#A64E05] shadow-sm dark:bg-stone-700'
                     : ''
                 "
                 @click="setAdjustmentType('remove')"
@@ -1030,7 +1103,7 @@ onMounted(() => {
           </div>
 
           <div
-            class="grid h-[54px] grid-cols-[46px_minmax(0,1fr)_64px_46px] items-center rounded-xl border border-[#E1E1E1] bg-[#FAFAFA] shadow-sm"
+            class="grid h-[54px] grid-cols-[46px_minmax(0,1fr)_64px_46px] items-center rounded-xl border border-[#E1E1E1] bg-[#FAFAFA] shadow-sm dark:border-stone-700 dark:bg-stone-800"
           >
             <Button
               variant="tertiary"
@@ -1049,11 +1122,11 @@ onMounted(() => {
               min="1"
               :max="Number.isFinite(adjustmentMaxAmount) ? adjustmentMaxAmount : undefined"
               step="1"
-              class="h-full border-0 bg-transparent px-0 text-right text-xl font-normal text-[#222222] shadow-none [appearance:textfield] focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              class="h-full border-0 bg-transparent px-0 text-right text-xl font-normal text-[#222222] shadow-none [appearance:textfield] focus-visible:ring-0 dark:text-stone-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               @input="setAdjustmentAmount(adjustmentForm.amount)"
               @blur="setAdjustmentAmount(adjustmentForm.amount)"
             />
-            <span class="pl-4 text-sm font-normal text-[#B2B2B2]">
+            <span class="pl-4 text-sm font-normal text-[#B2B2B2] dark:text-stone-500">
               {{ selectedItem.unitOfMeasure }}
             </span>
             <Button
@@ -1068,21 +1141,23 @@ onMounted(() => {
           </div>
 
           <Label
-            class="flex flex-col items-start gap-3 text-sm font-normal uppercase text-[#8A8A8A]"
+            class="flex flex-col items-start gap-3 text-sm font-normal uppercase text-[#8A8A8A] dark:text-stone-500"
           >
             {{ t('inventory.adjustment.notes') }}
             <Textarea
               v-model="adjustmentForm.notes"
               :placeholder="t('inventory.adjustment.notesPlaceholder')"
-              class="min-h-[88px] resize-none rounded-xl border-[#E1E1E1] bg-white px-4 py-3 text-base font-normal normal-case text-[#2D241E] shadow-sm placeholder:text-[#7D8796] focus-visible:ring-0"
+              class="min-h-[88px] resize-none rounded-xl border-[#E1E1E1] bg-white px-4 py-3 text-base font-normal normal-case text-[#2D241E] shadow-sm placeholder:text-[#7D8796] focus-visible:ring-0 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
             />
           </Label>
         </div>
 
-        <footer class="flex gap-3 border-t border-slate-100 bg-[#F1F1F1] px-5 py-[18px]">
+        <footer
+          class="flex gap-3 border-t border-slate-100 bg-[#F1F1F1] px-5 py-[18px] dark:border-stone-800 dark:bg-stone-800"
+        >
           <Button
             variant="tertiary"
-            class="h-[46px] flex-1 rounded-lg border border-[#E4E4E4] bg-white px-6 text-sm font-normal text-[#444444] shadow-sm hover:bg-white hover:no-underline"
+            class="h-[46px] flex-1 rounded-lg border border-[#E4E4E4] bg-white px-6 text-sm font-normal text-[#444444] shadow-sm hover:bg-white hover:no-underline dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-900"
             @click="closeAdjustmentModal"
           >
             {{ t('common.cancel') }}

@@ -95,6 +95,8 @@ export const createProductPayloadSchema = z.discriminatedUnion('priceMode', [
   basePayloadSchema.extend({
     priceMode: z.literal(PRICE_MODE.BY_SIZE),
     price: z.number().nullable().optional(),
+    // The form submits size options via `optionSets` (a "Sizes & Prices" group),
+    // so a separate `sizes` field is optional on the payload.
     sizes: z
       .array(
         z.object({
@@ -102,7 +104,7 @@ export const createProductPayloadSchema = z.discriminatedUnion('priceMode', [
           price: z.number().positive(),
         })
       )
-      .min(1),
+      .optional(),
   }),
 ])
 

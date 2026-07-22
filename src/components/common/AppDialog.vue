@@ -45,12 +45,12 @@ defineExpose({ close })
       />
 
       <DialogContent
-        class="fixed left-1/2 top-1/2 z-50 w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white shadow-2xl focus:outline-none flex flex-col max-h-[90vh] data-[state=open]:animate-content-show data-[state=closed]:animate-content-hide"
+        class="fixed left-1/2 top-1/2 z-50 w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white dark:bg-stone-900 shadow-2xl focus:outline-none flex flex-col max-h-[90vh] data-[state=open]:animate-content-show data-[state=closed]:animate-content-hide"
       >
         <!-- Close icon -->
         <DialogClose
           aria-label="Close"
-          class="absolute right-3 top-3 z-10 inline-flex size-7 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-300 transition-colors"
+          class="absolute right-3 top-3 z-10 inline-flex size-7 items-center justify-center rounded-full text-zinc-400 dark:text-stone-500 hover:bg-zinc-100 dark:hover:bg-stone-800 hover:text-zinc-700 dark:hover:text-stone-200 focus:outline-none focus:ring-2 focus:ring-zinc-300 transition-colors"
           @click="close"
         >
           <X class="size-4" />
@@ -58,28 +58,39 @@ defineExpose({ close })
 
         <!-- Header -->
         <div class="px-6 pt-5 pb-4 shrink-0 pr-10">
-          <DialogTitle class="text-base font-semibold text-zinc-900">
+          <DialogTitle class="text-base font-semibold text-zinc-900 dark:text-stone-100">
             {{ title }}
           </DialogTitle>
-          <DialogDescription v-if="description" class="mt-0.5 text-xs text-zinc-500 leading-normal">
+          <DialogDescription
+            v-if="description"
+            class="mt-0.5 text-xs text-zinc-500 dark:text-stone-400 leading-normal"
+          >
             {{ description }}
           </DialogDescription>
         </div>
 
-        <Separator decorative orientation="horizontal" class="h-px bg-zinc-100 shrink-0" />
+        <Separator
+          decorative
+          orientation="horizontal"
+          class="h-px bg-zinc-100 dark:bg-stone-800 shrink-0"
+        />
 
         <!-- Scrollable body -->
         <div class="px-6 py-5 overflow-y-auto flex-1 min-h-0">
           <slot />
         </div>
 
-        <Separator decorative orientation="horizontal" class="h-px bg-zinc-100 shrink-0" />
+        <Separator
+          decorative
+          orientation="horizontal"
+          class="h-px bg-zinc-100 dark:bg-stone-800 shrink-0"
+        />
 
         <!-- Footer -->
         <div class="px-6 py-4 flex justify-end gap-2 shrink-0">
           <slot name="footer">
             <button
-              class="inline-flex h-9 items-center justify-center rounded-lg border border-zinc-200 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:ring-2 focus:ring-zinc-300 focus:outline-none transition-colors"
+              class="inline-flex h-9 items-center justify-center rounded-lg border border-zinc-200 dark:border-stone-700 px-4 text-sm font-medium text-zinc-600 dark:text-stone-300 hover:bg-zinc-50 dark:hover:bg-stone-800 focus:ring-2 focus:ring-zinc-300 focus:outline-none transition-colors"
               @click="close"
             >
               Cancel

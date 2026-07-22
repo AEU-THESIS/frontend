@@ -44,13 +44,16 @@ const resolvedAllOptionLabel = computed(() => props.allOptionLabel ?? t('common.
 
 <template>
   <div :class="label ? 'flex flex-col gap-1' : ''">
-    <label v-if="label" class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50">
+    <label
+      v-if="label"
+      class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+    >
       {{ label }}
     </label>
 
     <SelectRoot v-bind="forwarded">
       <SelectTrigger
-        class="SelectTrigger w-full border-none bg-[#FAFAFA] px-5 text-sm text-[#1A1C1C] focus:ring-0"
+        class="SelectTrigger w-full border-none bg-[#FAFAFA] dark:bg-stone-800 px-5 text-sm text-[#1A1C1C] dark:text-stone-100 focus:ring-0"
       >
         <SelectValue :placeholder="resolvedPlaceholder" />
       </SelectTrigger>

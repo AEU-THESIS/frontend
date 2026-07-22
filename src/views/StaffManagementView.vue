@@ -78,7 +78,7 @@ const getRoleBadgeClass = (role: string | null) => {
 <template>
   <div class="flex h-full flex-col bg-[#F9FAFB] dark:bg-stone-900 font-body overflow-hidden">
     <div class="flex-1 overflow-y-auto custom-scrollbar px-10 py-10">
-      <div class="mx-auto w-full max-w-[1400px] space-y-8">
+      <div class="w-full space-y-8">
         <!-- Stats Cards Row -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           <StaffStatCard
