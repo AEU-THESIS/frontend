@@ -232,7 +232,7 @@ export const useProductStore = defineStore('product', () => {
 
   const updateProduct = async (
     productId: number,
-    payload: CreateProductPayload
+    payload: Partial<CreateProductPayload>
   ): Promise<Product> => {
     isUpdatingProduct.value = true
     lastError.value = null

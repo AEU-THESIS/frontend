@@ -90,7 +90,7 @@ export const deleteCategory = async (categoryId: number): Promise<{ message: str
 
 export const updateProduct = async (
   productId: number,
-  payload: CreateProductPayload
+  payload: Partial<CreateProductPayload>
 ): Promise<Product> => {
   const res = await http.put<Product>(`/api/products/${productId}`, payload)
   return res.data

@@ -17,13 +17,14 @@ import type {
   Choice,
   OptionGroup,
   ItemForm,
+  Product,
 } from '@/types/product.types'
 
 const { t } = useI18n()
 
 // ── Props ──────────────────────────────────────────────────────────────────
 const props = defineProps<{
-  editingProduct?: null
+  editingProduct?: Product | null
 }>()
 
 // ── Constants ──────────────────────────────────────────────────────────

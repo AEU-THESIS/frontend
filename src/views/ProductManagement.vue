@@ -54,7 +54,7 @@ const filteredProducts = computed(() => {
   return productStore.products.map(item => ({
     id: item.id,
     name: item.name,
-    sku: buildSku(item.category.name, item.id),
+    sku: buildSku(item.id),
     category: item.category.name,
     price: resolvePrice(item),
     isAvailable: item.isAvailable, // has customisation options → on sale
@@ -84,7 +84,7 @@ function formatPrice(price: number): string {
   return `$${price.toFixed(2)}`
 }
 
-function buildSku(categoryName: string, id: number): string {
+function buildSku(id: number): string {
   const prefix = 'test'
   return `${prefix}-${String(id).padStart(3, '0')}`
 }

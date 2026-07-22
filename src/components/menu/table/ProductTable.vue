@@ -103,7 +103,7 @@ const fillerRows = computed(() =>
 // ── Handlers ──────────────────────────────────────────────────────────────────
 const handleToggleAvailable = (item: ProductTableItem) => emit('toggle-available', item)
 const handleEditProduct = (item: ProductTableItem) => emit('edit-product', item)
-const handleViewProduct = (item: ProductTableItem) => emit('view-product', item)
+const handleViewProduct = (id: number) => emit('view-product', id)
 // const handleDeleteProduct = (item: ProductTableItem) => emit('delete-product', item)
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
