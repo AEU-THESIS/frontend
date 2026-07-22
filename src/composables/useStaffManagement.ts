@@ -22,7 +22,7 @@ export function useStaffManagement() {
   const editingId = ref<number | null>(null)
   const selectedStaff = ref<StaffMember | null>(null)
   const searchQuery = ref('')
-  const roleFilter = ref('all')
+  const roleFilter = ref<string | number>('all')
   const errors = ref<Record<string, string>>({})
   const selectedImageFile = ref<File | null>(null)
 
@@ -40,7 +40,9 @@ export function useStaffManagement() {
   const staffMembers = computed(() => {
     let list = staffStore.staffList
     if (roleFilter.value && roleFilter.value !== 'all') {
-      list = list.filter(m => m.role === roleFilter.value)
+      const roleId =
+        typeof roleFilter.value === 'string' ? Number(roleFilter.value) : roleFilter.value
+      list = list.filter(m => m.roleId === roleId)
     }
     return list
   })

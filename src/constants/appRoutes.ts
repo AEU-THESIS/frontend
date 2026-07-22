@@ -7,9 +7,12 @@ export const APP_ROUTES = {
   CATEGORIES: { path: '/categories', name: 'Categories' },
   SALE_REPORTS: { path: '/sale-reports', name: 'SaleReports' },
   ANALYTICS: { path: '/analytics', name: 'Analytics' },
+  PROMOTIONS: { path: '/promotions', name: 'Promotions' },
   STAFF: { path: '/staff', name: 'Staff' },
   SETTINGS: { path: '/settings', name: 'Settings' },
   LOGIN: { path: '/login', name: 'Login' },
   FORGOT_PASSWORD: { path: '/forgot-password', name: 'ForgotPassword' },
   RESET_PASSWORD: { path: '/reset-password', name: 'ResetPassword' },
+  MENU: { path: '/menu', name: 'Menu' },
+  PRODUCT: { path: '/product', name: 'Product' },
 } as const

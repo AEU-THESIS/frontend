@@ -73,6 +73,14 @@ const navSections = computed(() => {
       items: [
         { nameKey: 'sidebar.items.inventory', route: APP_ROUTES.INVENTORY, icon: 'inventory_2' },
         { nameKey: 'sidebar.items.categories', route: APP_ROUTES.CATEGORIES, icon: 'category' },
+        { nameKey: 'sidebar.items.products', route: APP_ROUTES.PRODUCT, icon: 'inventory_2' },
+      ],
+    },
+    {
+      titleKey: 'sidebar.sections.marketing',
+      roles: [ROLES.ADMIN, ROLES.MANAGER],
+      items: [
+        { nameKey: 'sidebar.items.promotions', route: APP_ROUTES.PROMOTIONS, icon: 'campaign' },
       ],
     },
     {

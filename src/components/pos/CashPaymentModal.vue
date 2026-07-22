@@ -34,11 +34,11 @@ watch(
   }
 )
 
-// Total due in USD
-const totalUSD = computed(() => cartStore.cartTotal)
+// Total due in USD (net of any promotion discount)
+const totalUSD = computed(() => cartStore.netTotal)
 
-// Total due in KHR
-const totalKHR = computed(() => cartStore.cartTotalInRiel)
+// Total due in KHR (net of any promotion discount)
+const totalKHR = computed(() => cartStore.netTotalInRiel)
 
 // Current total due depending on currency
 const currentTotalDue = computed(() => {
