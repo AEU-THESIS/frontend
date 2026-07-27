@@ -70,21 +70,22 @@
       "pos": "ផលិតផលលក់ POS",
       "inventory": "សារពើភ័ណ្ឌ",
       "reports": "របាយការណ៍",
-      "settings": "ការកំណត់"
+      "settings": "ការកំណត់",
+      "marketing": "ទីផ្សារ"
     },
     "items": {
       "dashboard": "ផ្ទាំងគ្រប់គ្រង",
       "pos": "POS",
       "orders": "ការបញ្ជាទិញ",
       "orderHistory": "ប្រវត្តិនៃការបញ្ជាទិញ",
-      "inventory": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
+      "inventory": "សារពើភ័ណ្ឌ",
       "products": "ស្តុក",
       "categories": "ប្រភេទ",
-      "inventory": "សារពើភ័ណ្ឌ",
       "saleReports": "របាយការណ៍លក់",
       "analytics": "វិភាគ",
       "staff": "បុគ្គលិក",
-      "config": "ការកំណត់"
+      "config": "ការកំណត់",
+      "promotions": "ប្រូម៉ូសិន"
     }
   },
   "navbar": {
@@ -106,6 +107,11 @@
       "croissant": "នំក្រូសង់ប៊័រ",
       "avocadoToast": "នំបុ័ងអូរកាដូ",
       "matchaLatte": "ម៉ាចាឡាតេ"
+    },
+    "promo": {
+      "percentOff": "បញ្ចុះ {value}%",
+      "amountOff": "បញ្ចុះ {value}",
+      "bogo": "ទិញ ១ ថែម ១"
     },
     "noProducts": "មិនមានផលិតផលនៅក្នុងប្រភេទនេះទេ"
   },
@@ -148,12 +154,16 @@
     "printReceipt": "បោះពុម្ពវិក្កយបត្រ",
     "fetchFailed": "បរាជ័យក្នុងការផ្ទុកទិន្នន័យផលិតផល POS",
     "addedToCart": "បានបន្ថែម {name} ទៅក្នុងកន្ត្រក!",
+    "addedBogo": "បានបន្ថែម {name} — ទី២ឥតគិតថ្លៃ (ទិញ ១ ថែម ១)",
+    "bogoFree": "ឥតគិតថ្លៃ {count} (ទិញ ១ ថែម ១)",
+    "bogoHint": "បន្ថែម ១ ទៀត — ទី២ឥតគិតថ្លៃ",
     "addToCart": "បន្ថែមទៅក្នុងកន្ត្រក",
     "insufficientPayment": "ចំនួនទឹកប្រាក់ដែលទទួលបានគឺតិចជាងប្រាក់ត្រូវបង់",
     "checkoutFailed": "បរាជ័យក្នុងការបញ្ចប់ប្រតិបត្តិការ",
     "orderCreatedSuccess": "ការបញ្ជាទិញ #{num} ត្រូវបានបង្កើតដោយជោគជ័យ!",
     "paymentDetails": "ព័ត៌មានលម្អិតនៃការទូទាត់",
-    "loadingCatalog": "កំពុងផ្ទុកទិន្នន័យ POS..."
+    "loadingCatalog": "កំពុងផ្ទុកទិន្នន័យ POS...",
+    "discount": "បញ្ចុះតម្លៃ"
   },
   "maintenance": {
     "title": "កំពុងថែទាំប្រព័ន្ធ",
@@ -566,5 +576,403 @@
     },
     "startDate": "ថ្ងៃចាប់ផ្តើម",
     "endDate": "ថ្ងៃបញ្ចប់"
+  },
+  "menuManagement": {
+    "title": "ការគ្រប់គ្រងម៉ឺនុយ",
+    "subtitle": "គ្រប់គ្រងកាតាឡុក ធាតុនៃហាង ការកំណត់តម្លៃ និងកម្រិតស្តុក។",
+    "filters": "តម្រងលទ្ធផល",
+    "newItem": "បន្ថែមទំនិញថ្មី",
+    "filterPanel": {
+      "itemName": "ឈ្មោះមុខទំនិញ",
+      "category": "ប្រភេទ",
+      "status": "ស្ថានភាព",
+      "search": "ស្វែងរកទំនិញ...",
+      "clearAll": "សម្អាតទាំងអស់",
+      "applyFilters": "អនុវត្តតម្រង"
+    },
+    "statusOptions": {
+      "active": "សកម្ម",
+      "inactive": "អសកម្ម"
+    },
+    "dialog": {
+      "addTitle": "បន្ថែមធាតុម៉ឺនុយ",
+      "addDescription": "បញ្ចូលព័ត៌មានលម្អិតនៃធាតុម៉ឺនុយថ្មីរបស់អ្នក។",
+      "editTitle": "កែសម្រួលធាតុម៉ឺនុយ",
+      "editDescription": "ធ្វើឱ្យទាន់សម័យនូវព័ត៌មានលម្អិតនៃធាតុម៉ឺនុយរបស់អ្នក។",
+      "detailsTitle": "ព័ត៌មានលម្អិតផលិតផល",
+      "detailsDescription": "មើល និងកែសម្រួលព័ត៌មានលម្អិតនៃផលិតផលនេះ។"
+    },
+    "messages": {
+      "deleteConfirm": "តើអ្នកប្រាកដថាចង់លុប \"{name}\" មែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "deleteError": "បរាជ័យក្នុងការលុបផលិតផល:",
+      "toggleError": "បរាជ័យក្នុងការប្តូរភាពលេចធ្លាក់របស់ផលិតផល:"
+    },
+    "productTable": {
+      "tableHeaders": {
+        "itemName": "ឈ្មោះមុខទំនិញ",
+        "category": "ចំណាត់ថ្នាក់",
+        "price": "តម្លៃ",
+        "onSale": "មានលក់",
+        "actions": "សកម្មភាព"
+      },
+      "skuLabel": "SKU:",
+      "dropdownMenu": {
+        "edit": "កែសម្រួល",
+        "view": "មើល",
+        "delete": "លុប"
+      },
+      "pagination": {
+        "showing": "បង្ហាញ {from}–{to} នៃ {total} ទំនិញ",
+        "firstPage": "ទំព័ររូមដំបូង",
+        "previousPage": "ទំព័ររៀងមុន",
+        "nextPage": "ទំព័របន្ទាប់",
+        "lastPage": "ទំព័ររៀងចុងក្រោយ"
+      },
+      "emptyState": {
+        "title": "មិនរកឃើញវត្ថុ",
+        "description": "មិនមានវត្ថុដែលត្រូវបង្ហាញក្នុងពេលនេះទេ។"
+      }
+    },
+    "productForm": {
+      "sections": {
+        "basicInfo": "ព័ត៌មានមូលដ្ឋាន",
+        "sizesAndPrices": "ទំហំនិងតម្លៃ",
+        "optionsAndVariations": "ជម្រើស និងលក្ខណៈបម្រែបម្រួល",
+        "details": "ព័ត៌មានលម្អិត"
+      },
+      "labels": {
+        "itemName": "ឈ្មោះមុខទំនិញ",
+        "category": "ចំណាត់ថ្នាក់",
+        "itemType": "ប្រភេទទំនិញ",
+        "price": "តម្លៃ",
+        "pricingMode": "របៀបកំណត់តម្លៃ",
+        "productImage": "រូបភាពផលិតផល"
+      },
+      "itemType": {
+        "drink": "ភេសជ្ជៈ",
+        "food": "ម្ហូបអាហារ"
+      },
+      "pricingMode": [
+        {
+          "value": "fixed",
+          "label": "តម្លៃថេរ",
+          "hint": "តម្លៃតែមួយសម្រាប់ទាំងអស់ — ឧ. សម្ពាធកាហ្វេ។"
+        },
+        {
+          "value": "bySize",
+          "label": "តម្លៃតាមទំហំ",
+          "hint": "តម្លៃខុសគ្នាក្នុងទំហំនីមួយៗ — ឧ. ឡាតេ។"
+        }
+      ],
+      "sizesSection": {
+        "title": "ទំហំនិងតម្លៃ",
+        "sizeLabel": "ទំហំ",
+        "priceLabel": "តម្លៃ",
+        "sizeePlaceholder": "ឧ. តូច មធ្យម ធំ",
+        "addButton": "បន្ថែមទំហំផ្សេងទៀត",
+        "removeButtonLabel": "ដកចេញទំហំ"
+      },
+      "optionsSection": {
+        "title": "ជម្រើស និងលក្ខណៈបម្រែបម្រួល",
+        "subtitle": "(ស្ម័គ្រច្ឆន្ទ)",
+        "description": "ដាក់ជម្រើសដែលពាក់ព័ន្ធគ្នាក្នុងក្រុមតែមួយ ឧ. \"ប្រភេទទឹកដោះគោ\" ឬ \"ការតុបតែង\"។",
+        "addGroupButton": "បន្ថែមក្រុម",
+        "emptyStateIcon": "tune",
+        "emptyStateTitle": "មិនមានក្រុមជម្រើសនៅឡើយទេ",
+        "emptyStateDescription": "ចុច \"បន្ថែមក្រុម\" ដើម្បីឱ្យអតិថិជនបង្កើតកម្មាល់ផលិតផលនេះ។",
+        "groupNamePlaceholder": "ឈ្មោះក្រុម ឧ. ប្រភេទទឹកដោះគោ",
+        "removeGroupButtonLabel": "ដកចេញក្រុមជម្រើស",
+        "dragToReorder": "អូសដើម្បីរៀងលំដាប់ឡើងវិញ",
+        "optionLabel": "ស្លាកជម្រើស",
+        "priceModifier": "ការកែប្រែតម្លៃ",
+        "choicePlaceholder": "ឧ. ទឹកដោះគោឡូដ",
+        "addChoiceButton": "បន្ថែមជម្រើស",
+        "removeChoiceButtonLabel": "ដកចេញជម្រើស"
+      },
+      "buttons": {
+        "reset": "កែសម្រួលឡើងវិញ",
+        "save": "រក្សាទុកវត្ថុ",
+        "saving": "កំពុងបង្កើត..."
+      },
+      "placeholders": {
+        "selectCategory": "ជ្រើសរើសចំណាត់ថ្នាក់"
+      },
+      "skuLabel": "SKU:",
+      "productValidation": {
+        "size": {
+          "required": "ទំហំគឺត្រូវបានទាមទារ",
+          "priceInvalid": "តម្លៃត្រូវតែជាលេខដែលមានសុពលភាព"
+        },
+        "choice": {
+          "labelRequired": "ស្លាកជម្រើសគឺត្រូវបានទាមទារ",
+          "priceModifierInvalid": "ការកែប្រែតម្លៃត្រូវតែជាលេខដែលមានសុពលភាព"
+        },
+        "optionGroup": {
+          "nameRequired": "ឈ្មោះក្រុមគឺត្រូវបានទាមទារ",
+          "choicesRequired": "ពេលហោះហើរយ៉ាងហោចណាស់មួយគឺត្រូវបានទាមទារ"
+        },
+        "product": {
+          "nameRequired": "ឈ្មោះផលិតផលគឺត្រូវបានទាមទារ",
+          "nameTooLong": "ឈ្មោះវែងពេក",
+          "categoryRequired": "ចំណាត់ថ្នាក់គឺត្រូវបានទាមទារ",
+          "priceRequired": "តម្លៃគឺត្រូវបានទាមទារ",
+          "pricePositive": "តម្លៃត្រូវតែធំជាង ០",
+          "priceRequiredAndPositive": "តម្លៃគឺត្រូវបានទាមទារ & តម្លៃត្រូវតែធំជាង ០",
+          "sizesRequired": "ទំហំយ៉ាងហោចណាស់មួយគឺត្រូវបានទាមទារ",
+          "sizePricePositive": "តម្លៃទំហំត្រូវតែធំជាង ០"
+        }
+      }
+    }
+  },
+  "category": {
+    "categoryManagement": "ការគ្រប់គ្រងប្រភេទទំនិញ",
+    "categorySubtitle": "គ្រប់គ្រងកាតាឡុកប្រភេទទំនិញ ការកំណត់តម្លៃ និងកម្រិតស្តុករបស់ហាងអ្នក។",
+    "newCategory": "បង្កើតប្រភេទទំនិញថ្មី",
+    "searchPlaceholder": "ស្វែងរក...",
+    "categoryName": "ឈ្មោះប្រភេទទំនិញ",
+    "itemsCount": "ចំនួនទំនិញ",
+    "status": "ស្ថានភាព",
+    "actions": "សកម្មភាព",
+    "items": "មុខទំនិញ",
+    "active": "សកម្ម",
+    "inactive": "អសកម្ម",
+    "edit": "កែប្រែ",
+    "view": "មើល",
+    "delete": "លុប",
+    "showing": "បង្ហាញ {from}–{to} នៃ {total} ទំនិញ",
+    "to": "ដល់",
+    "of": "នៃ",
+    "noCategoriesFound": "រកមិនឃើញប្រភេទទំនិញទេ",
+    "noCategoriesSubtitle": "មិនមានប្រភេទទំនិញត្រូវបង្ហាញនៅពេលនេះទេ។",
+    "editCategory": "កែប្រែប្រភេទទំនិញ",
+    "addCategory": "បន្ថែមប្រភេទទំនិញថ្មី",
+    "editDescription": "ធ្វើបច្ចុប្បន្នភាពព័ត៌មានលម្អិតអំពីប្រភេទទំនិញខាងក្រោម។",
+    "addDescription": "បំពេញព័ត៌មានលម្អិតខាងក្រោមដើម្បីបង្កើតប្រភេទទំនិញថ្មី។",
+    "deleteCategory": "លុបប្រភេទទំនិញ",
+    "deleteConfirmation": "តើអ្នកពិតជាចង់លុបប្រភេទទំនិញនេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានឡើយ។",
+    "deleteWarning": "អ្នកហៀបនឹងលុបប្រភេទទំនិញ៖",
+    "cancel": "បោះបង់",
+    "toastSuccess": "បានលុបប្រភេទទំនិញដោយជោគជ័យ",
+    "toastError": "មិនអាចលុបប្រភេទទំនិញបានទេ",
+    "form": {
+      "categoryNameLabel": "ឈ្មោះប្រភេទទំនិញ",
+      "categoryPlaceholder": "ឧ. កាហ្វេ, នំផ្អែម, តែ",
+      "categoryStatusLabel": "ស្ថានភាពប្រភេទទំនិញ",
+      "saveCategory": "រក្សាទុកប្រភេទទំនិញ",
+      "updateCategory": "ធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញ",
+      "nameRequiredError": "សូមបំពេញឈ្មោះប្រភេទទំនិញ",
+      "toastUpdateSuccess": "បានធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញដោយជោគជ័យ",
+      "toastCreateSuccess": "បានបង្កើតប្រភេទទំនិញដោយជោគជ័យ",
+      "toastUpdateError": "មិនអាចធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញបានទេ",
+      "toastCreateError": "មិនអាចបង្កើតប្រភេទទំនិញបានទេ"
+    }
+  },
+  "analytics": {
+    "monthsShort": [
+      "មករា",
+      "កុម្ភៈ",
+      "មីនា",
+      "មេសា",
+      "ឧសភា",
+      "មិថុនា",
+      "កក្កដា",
+      "សីហា",
+      "កញ្ញា",
+      "តុលា",
+      "វិច្ឆិកា",
+      "ធ្នូ"
+    ],
+    "title": "ការវិភាគសម្រាប់អ្នកគ្រប់គ្រង",
+    "premium": "ពិសេស",
+    "exportReport": "ទាញយករបាយការណ៍",
+    "viewAll": "មើលទាំងអស់",
+    "viewInventory": "មើលសារពើភ័ណ្ឌ",
+    "bestSelling": "មុខទំនិញលក់ដាច់បំផុតទាំង ៥",
+    "lowestSelling": "មុខទំនិញលក់តិចបំផុតទាំង ៥",
+    "noItemData": "មិនមានទិន្នន័យលក់សម្រាប់រយៈពេលនេះទេ។",
+    "loadError": "មិនអាចទាញយកទិន្នន័យមុខទំនិញបានទេ។",
+    "lowStockAlerts": "ការជូនដំណឹងអំពីស្តុកទាប",
+    "insightOfTheWeek": "ការវិភាគសំខាន់ប្រចាំសប្តាហ៍",
+    "insightBody": "ការលក់ \"Artisan Latte\" បានកើនឡើង ១៥% បន្ទាប់ពីបានផ្លាស់ទីវាទៅកំពូលនៃផ្ទាំងឌីជីថលពេលព្រឹក។",
+    "range": {
+      "today": "ថ្ងៃនេះ",
+      "yesterday": "ម្សិលមិញ",
+      "last7Days": "៧ ថ្ងៃចុងក្រោយ",
+      "monthly": "ខែនេះ",
+      "yearly": "ឆ្នាំនេះ"
+    },
+    "globalFilter": {
+      "today": "ថ្ងៃនេះ",
+      "yesterday": "ម្សិលមិញ",
+      "last7Days": "៧ ថ្ងៃចុងក្រោយ",
+      "thisMonth": "ខែនេះ",
+      "thisYear": "ឆ្នាំនេះ",
+      "custom": "ជ្រើសរើសកាលបរិច្ឆេទ",
+      "from": "ពី",
+      "to": "ដល់",
+      "apply": "អនុវត្ត"
+    },
+    "kpi": {
+      "netSales": "ការលក់សុទ្ធ",
+      "totalOrders": "ការបញ្ជាទិញសរុប",
+      "avgTicket": "តម្លៃមធ្យមក្នុងមួយវិក្កយបត្រ",
+      "activeStaff": "បុគ្គលិកសកម្ម",
+      "vsLastPeriod": "ធៀបនឹងរយៈពេលមុន",
+      "currentlyClockedIn": "កំពុងបំពេញការងារ"
+    },
+    "chart": {
+      "netSalesOverview": "ទិដ្ឋភាពទូទៅនៃការលក់សុទ្ធ",
+      "subtitle": "ប្រៀបធៀបលទ្ធផលតាមកម្រិតពេលវេលាដែលអ្នកបានជ្រើសរើស។"
+    },
+    "granularity": {
+      "weekly": "សប្តាហ៍",
+      "monthly": "ខែ",
+      "yearly": "ឆ្នាំ"
+    },
+    "period": {
+      "thisWeek": "សប្តាហ៍នេះ",
+      "thisMonth": "ខែនេះ",
+      "thisYear": "ឆ្នាំនេះ",
+      "dateRange": "ចន្លោះកាលបរិច្ឆេទ"
+    },
+    "table": {
+      "item": "មុខទំនិញ",
+      "category": "ប្រភេទ",
+      "unitsSold": "ចំនួនលក់",
+      "status": "ស្ថានភាព",
+      "remaining": "នៅសល់"
+    },
+    "stock": {
+      "critical": "ធ្ងន់ធ្ងរ",
+      "lowStock": "ស្តុកទាប",
+      "unitsLeft": "នៅសល់ {count} ឯកតា",
+      "allStocked": "គ្រឿងផ្សំទាំងអស់មានស្តុកគ្រប់គ្រាន់!"
+    }
+  },
+  "promotions": {
+    "title": "ការគ្រប់គ្រងប្រូម៉ូសិន",
+    "subtitle": "បង្កើត និងតាមដានយុទ្ធនាការទីផ្សាររបស់អ្នក",
+    "searchPlaceholder": "ស្វែងរកប្រូម៉ូសិន...",
+    "addPromotion": "បន្ថែមប្រូម៉ូសិន",
+    "loading": "កំពុងផ្ទុកប្រូម៉ូសិន...",
+    "empty": "រកមិនឃើញប្រូម៉ូសិន",
+    "pagination": "បង្ហាញ {start} ដល់ {end} នៃ {total} ប្រូម៉ូសិន",
+    "confirmDelete": "លុបប្រូម៉ូសិន \"{name}\"? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "stats": {
+      "active": "ប្រូម៉ូសិនកំពុងដំណើរការ",
+      "redeemed": "បានប្រើសរុប",
+      "upcoming": "ការផ្តល់ជូននាពេលខាងមុខ"
+    },
+    "table": {
+      "name": "ឈ្មោះប្រូម៉ូសិន",
+      "type": "ប្រភេទ",
+      "value": "តម្លៃ",
+      "startDate": "ថ្ងៃចាប់ផ្តើម",
+      "endDate": "ថ្ងៃបញ្ចប់",
+      "status": "ស្ថានភាព",
+      "actions": "សកម្មភាព",
+      "code": "កូដ"
+    },
+    "types": {
+      "PERCENTAGE": "ភាគរយ",
+      "FIXED_AMOUNT": "ចំនួនថេរ",
+      "BOGO": "ទិញ ១ បាន ១"
+    },
+    "state": {
+      "active": "កំពុងដំណើរការ",
+      "scheduled": "គ្រោងទុក",
+      "expired": "ផុតកំណត់",
+      "inactive": "អសកម្ម"
+    },
+    "value": {
+      "percentage": "បញ្ចុះ {value}%",
+      "fixed": "បញ្ចុះ {value}",
+      "freeItem": "ទំនិញឥតគិតថ្លៃ"
+    },
+    "form": {
+      "addTitle": "បន្ថែមប្រូម៉ូសិនថ្មី",
+      "editTitle": "កែសម្រួលប្រូម៉ូសិន",
+      "name": "ឈ្មោះប្រូម៉ូសិន",
+      "namePlaceholder": "ឧ. បញ្ចុះតម្លៃនំចុងសប្តាហ៍",
+      "code": "កូដប្រូម៉ូ (ស្រេចចិត្ត)",
+      "codePlaceholder": "ឧ. WEEKEND15",
+      "type": "ប្រភេទ",
+      "value": "តម្លៃ",
+      "bogoHint": "ទិញ ១ បាន ១ មិនត្រូវការតម្លៃទេ។",
+      "startDate": "ថ្ងៃចាប់ផ្តើម",
+      "endDate": "ថ្ងៃបញ្ចប់",
+      "conditionsTitle": "លក្ខខណ្ឌ និងវិសាលភាព",
+      "scopeAll": "ម៉ឺនុយទាំងអស់",
+      "scopeAllHint": "អនុវត្តលើផលិតផលទាំងអស់។",
+      "scopeSpecific": "ជ្រើសរើសជាក់លាក់",
+      "scopeSpecificHint": "អនុវត្តលើប្រភេទ ឬទំនិញដែលបានជ្រើស។",
+      "chooseItems": "ជ្រើសរើសប្រភេទ និងទំនិញ",
+      "editSelection": "បានជ្រើស {count} — កែសម្រួល",
+      "activeLabel": "សកម្ម",
+      "activeHint": "ធ្វើឱ្យប្រូម៉ូសិននេះអាចប្រើបានភ្លាមៗ។",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "create": "បង្កើតប្រូម៉ូសិន",
+      "errors": {
+        "nameRequired": "តម្រូវឱ្យមានឈ្មោះ",
+        "valueInvalid": "បញ្ចូលតម្លៃត្រឹមត្រូវ",
+        "percentageMax": "ភាគរយមិនអាចលើស ១០០ ទេ",
+        "dateOrder": "ថ្ងៃបញ្ចប់ត្រូវនៅក្រោយថ្ងៃចាប់ផ្តើម",
+        "scopeRequired": "ជ្រើសរើសយ៉ាងហោចណាស់ប្រភេទ ឬទំនិញមួយ"
+      }
+    },
+    "selector": {
+      "title": "ជ្រើសរើសទំនិញ",
+      "subtitle": "ជ្រើសរើសផលិតផលដើម្បីអនុវត្តប្រូម៉ូសិន",
+      "searchPlaceholder": "ស្វែងរកទំនិញតាមឈ្មោះ",
+      "itemsTab": "ទំនិញ",
+      "categoriesTab": "ប្រភេទ",
+      "selectAll": "ជ្រើសរើសទំនិញទាំងអស់",
+      "itemsAvailable": "មានទំនិញ {count}",
+      "noItems": "រកមិនឃើញទំនិញ",
+      "noCategories": "រកមិនឃើញប្រភេទ",
+      "selectedCount": "បានជ្រើស {count}",
+      "breakdown": "ទំនិញ {items}, ប្រភេទ {categories}",
+      "inOtherPromotion": "នៅក្នុងប្រូម៉ូសិនផ្សេង",
+      "addSelected": "បន្ថែមទំនិញដែលបានជ្រើស"
+    },
+    "toast": {
+      "loadFailed": "ផ្ទុកប្រូម៉ូសិនបរាជ័យ",
+      "created": "បានបង្កើតប្រូម៉ូសិន",
+      "updated": "បានធ្វើបច្ចុប្បន្នភាពប្រូម៉ូសិន",
+      "saveFailed": "រក្សាទុកប្រូម៉ូសិនបរាជ័យ",
+      "deleted": "បានលុបប្រូម៉ូសិន",
+      "deleteFailed": "លុបប្រូម៉ូសិនបរាជ័យ"
+    }
+  },
+  "reports": {
+    "total_revenue_today": "សរុបប្រាក់ចំណូលថ្ងៃនេះ",
+    "cash_drawer_expected": "ប្រាក់សាច់ដែលរំពឹងទុក",
+    "khqr_expected": "KHQR ដែលរំពឹងទុក",
+    "showing_for": "របាយការណ៍របស់ថ្ងៃនេះ",
+    "paymentMethods": "វិធីសាលបង់ប្រាក់",
+    "date": "កាលបរិច្ឆេទលម្អិត",
+    "filters": {
+      "all": "ទាំងអស់",
+      "cash": "សាច់ប្រាក់",
+      "khqr": "KHQR"
+    },
+    "table": {
+      "time": "ពេលវេលា",
+      "orderId": "លេខលម្អិត",
+      "type": "ប្រភេទអតិថិជន",
+      "payment": "ស្ថានភាពបង់ប្រាក់",
+      "method": "វិធីសាលបង់ប្រាក់",
+      "total": "ថ្លៃសរុប",
+      "takeaway": "យកចេញក្រៅ",
+      "dineIn": "ក្នុងស្ថាប័ន",
+      "empty": "មិនមានលម្អិតដែលរកឃើញ"
+    }
+  },
+  "report": {
+    "errors": {
+      "summaryFailed": "មិនអាចផ្ទុកសង្ខេបលក្ខណ៍ប័ណ្ណបានទេ។",
+      "ordersFailed": "មិនអាចផ្ទុកលម្អិតបានទេ។",
+      "fetchDailyOverviewFailed": "មិនអាចផ្ទុកលម្អិតលម្អិតបានទេ។"
+    }
   }
 }

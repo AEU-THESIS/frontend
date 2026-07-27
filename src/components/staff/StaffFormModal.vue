@@ -13,10 +13,9 @@ interface Props {
   roles: { id: number; name: string }[]
   isSubmitting: boolean
 }
+defineProps<Props>()
 
 const { t } = useI18n()
-
-defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -133,6 +132,13 @@ const handleImageChange = (file: File | null) => {
                       {{ errors.roleId }}
                     </p>
                   </div>
+                  <!-- <div class="col-span-7 space-y-2.5">
+                    <app-select 
+                    v-model="form.roleId"
+                    label="Role" 
+                    placeholder="Select a role…"
+                    :options="roles.map(role => ({ value: String(role.id), label: role.name }))" />
+                  </div> -->
                   <div class="col-span-5 flex items-center justify-start gap-4 h-14 pb-1 ml-4">
                     <div
                       class="relative h-6 w-11 rounded-full transition-all duration-300 cursor-pointer shadow-inner"
@@ -287,6 +293,7 @@ const handleImageChange = (file: File | null) => {
 .fade-leave-active {
   transition: opacity 0.3s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -295,13 +302,16 @@ const handleImageChange = (file: File | null) => {
 .scale-enter-active {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .scale-leave-active {
   transition: all 0.2s ease-in;
 }
+
 .scale-enter-from {
   opacity: 0;
   transform: scale(0.95) translateY(10px);
 }
+
 .scale-leave-to {
   opacity: 0;
   transform: scale(0.98) translateY(5px);
@@ -310,13 +320,16 @@ const handleImageChange = (file: File | null) => {
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e2dfde;
   border-radius: 10px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #ddc1b3;
 }

@@ -5,13 +5,13 @@ import type {
   OrderDetail,
   PaginatedOrders,
   OrdersResponse,
-  OrderRow,
   TodayOrdersFilters,
 } from '@/types/order.types'
 import {
   createOrderSchema,
   fulfillmentStatusSchema,
   getOrdersParamsSchema,
+  todayOrdersFiltersSchema,
 } from '@/validations/orderValidation'
 
 export const placeOrder = async (payload: CreateOrderPayload): Promise<OrderResult> => {
@@ -46,18 +46,20 @@ export const updateOrderStatus = async (id: number, status: string): Promise<Ord
   return res.data
 }
 
-export const getTodayOrders = async (filters: TodayOrdersFilters = {}): Promise<OrderRow[]> => {
-  const day = filters.date ?? new Date().toISOString().slice(0, 10)
+const localIsoDate = (d: Date) => new Intl.DateTimeFormat('en-CA').format(d)
 
-  const res = await http.get('api/orders', {
+export const getTodayOrders = async (filters: TodayOrdersFilters = {}): Promise<OrdersResponse> => {
+  const parsedFilters = todayOrdersFiltersSchema.parse(filters)
+  const day = parsedFilters.date ?? localIsoDate(new Date())
+
+  const res = await http.get<OrdersResponse>('api/orders', {
     params: {
       startDate: day,
       endDate: day,
       paymentStatus: 'paid',
-      ...(filters.paymentMethod ? { paymentMethod: filters.paymentMethod } : {}),
+      ...(parsedFilters.paymentMethod ? { paymentMethod: parsedFilters.paymentMethod } : {}),
       limit: 200,
     },
   })
-  const data: OrdersResponse = res.data
-  return data.orders
+  return res.data
 }

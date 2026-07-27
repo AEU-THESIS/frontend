@@ -83,7 +83,7 @@
           </div>
 
           <div v-else-if="reportStore.error" class="p-10 text-center text-sm text-red-500">
-            {{ reportStore.error }}
+            {{ t(reportStore.error) }}
           </div>
 
           <template v-else>
@@ -189,7 +189,8 @@ const { t } = useI18n()
 const reportStore = useReportStore()
 
 const today = new Date()
-const todayIsoDate = today.toISOString().slice(0, 10)
+const todayIsoDate = new Intl.DateTimeFormat('en-CA').format(today)
+
 const formatUsd = (amount: number | string) => `$${Number(amount).toFixed(2)}`
 
 const ITEMS_PER_PAGE = 5
