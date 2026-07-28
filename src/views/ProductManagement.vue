@@ -216,7 +216,7 @@ onUnmounted(() => {
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuPortal class="bg-black">
+          <DropdownMenuPortal>
             <DropdownMenuContent
               class="z-50 min-w-[140px] bg-white dark:bg-stone-800 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
               :side-offset="4"

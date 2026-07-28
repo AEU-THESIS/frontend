@@ -1,7 +1,17 @@
 <template>
   <div class="flex h-full flex-col bg-[#F9FAFB] dark:bg-stone-900 font-body overflow-hidden">
     <div class="flex-1 overflow-y-auto custom-scrollbar px-10 py-10">
-      <div class="mx-auto w-full max-w-[1400px] space-y-8">
+      <div class="w-full space-y-8">
+        <!-- Header -->
+        <div>
+          <h1 class="text-3xl font-bold text-[#1A1C1C] dark:text-stone-50">
+            {{ t('reports.title') }}
+          </h1>
+          <p class="mt-1 text-sm text-[#737373] dark:text-stone-400">
+            {{ t('reports.subtitle') }}
+          </p>
+        </div>
+
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           <StaffStatCard
             class="h-[90px]"
@@ -183,6 +193,7 @@ import { useI18n } from 'vue-i18n'
 import { ref, computed, onMounted, watch } from 'vue'
 import { DollarSign, Wallet, QrCode, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import StaffStatCard from '@/components/staff/StaffStatCard.vue'
+import { Card } from '@/components/ui/card'
 import { useReportStore } from '@/store/useReportStore'
 
 const { t } = useI18n()
