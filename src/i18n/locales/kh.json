@@ -689,6 +689,15 @@
         "addChoiceButton": "បន្ថែមជម្រើស",
         "removeChoiceButtonLabel": "ដកចេញជម្រើស"
       },
+      "templateEditor": {
+        "title": "កែសម្រួលគំរូ",
+        "subtitle": "ធ្វើបច្ចុប្បន្នភាពក្រុមជម្រើសដែលបានរក្សាទុកនេះសម្រាប់មុខទំនិញនាពេលអនាគត។",
+        "nameLabel": "ឈ្មោះគំរូ",
+        "namePlaceholder": "ឧ. ប្រភេទទឹកដោះគោ",
+        "addChoiceButton": "បន្ថែមជម្រើស",
+        "cancelButton": "បោះបង់",
+        "saveButton": "រក្សាទុកគំរូ"
+      },
       "buttons": {
         "reset": "កែសម្រួលឡើងវិញ",
         "save": "រក្សាទុកវត្ថុ",

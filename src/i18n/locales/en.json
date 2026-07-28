@@ -735,6 +735,15 @@
         "addChoiceButton": "Add choice",
         "removeChoiceButtonLabel": "Remove choice"
       },
+      "templateEditor": {
+        "title": "Edit Template",
+        "subtitle": "Update this saved variation group for future menu items.",
+        "nameLabel": "Template name",
+        "namePlaceholder": "e.g. Milk Type",
+        "addChoiceButton": "Add option",
+        "cancelButton": "Cancel",
+        "saveButton": "Save Template"
+      },
       "buttons": {
         "reset": "Reset",
         "save": "Save Item",
