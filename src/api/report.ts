@@ -1,4 +1,5 @@
 import http from './api'
+import type { DailySummary } from '@/types/order.types'
 import type {
   KpiRange,
   DateRange,
@@ -9,7 +10,24 @@ import type {
   SellingItemsResponse,
   InventoryInsights,
 } from '@/types/report.types'
+import { z } from 'zod'
 
+/**
+ * GET /api/reports/daily-summary?date=YYYY-MM-DD
+ * Aggregate cards for a given calendar date. Defaults to today when omitted.
+ */
+const reportDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD')
+  .optional()
+
+export const getReportToday = async (date?: string): Promise<DailySummary> => {
+  const parsedDate = reportDateSchema.parse(date)
+  const res = await http.get<DailySummary>('api/reports/daily-summary', {
+    params: parsedDate ? { date: parsedDate } : {},
+  })
+  return res.data
+}
 /**
  * Fetches headline KPIs (net sales, total orders, active staff) for a range.
  * Pass `dateRange` when `range` is 'custom' (or to pin an explicit window).
