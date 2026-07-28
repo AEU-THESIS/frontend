@@ -52,7 +52,7 @@ export const applyVariationTemplate = async (
   templateId: number
 ): Promise<AppliedVariationTemplate> => {
   const res = await http.post<AppliedVariationTemplate>(
-    `/api/variation-templates/${templateId}/apply`
+    `/api/variation-templates/${templateId}/applications`
   )
   return res.data
 }
