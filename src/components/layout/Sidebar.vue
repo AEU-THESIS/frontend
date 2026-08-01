@@ -73,6 +73,14 @@ const navSections = computed(() => {
       items: [
         { nameKey: 'sidebar.items.inventory', route: APP_ROUTES.INVENTORY, icon: 'inventory_2' },
         { nameKey: 'sidebar.items.categories', route: APP_ROUTES.CATEGORIES, icon: 'category' },
+        { nameKey: 'sidebar.items.products', route: APP_ROUTES.PRODUCT, icon: 'inventory_2' },
+      ],
+    },
+    {
+      titleKey: 'sidebar.sections.marketing',
+      roles: [ROLES.ADMIN, ROLES.MANAGER],
+      items: [
+        { nameKey: 'sidebar.items.promotions', route: APP_ROUTES.PROMOTIONS, icon: 'campaign' },
       ],
     },
     {
@@ -84,7 +92,6 @@ const navSections = computed(() => {
           route: APP_ROUTES.SALE_REPORTS,
           icon: 'receipt_long',
         },
-        { nameKey: 'sidebar.items.analytics', route: APP_ROUTES.ANALYTICS, icon: 'bar_chart' },
         { nameKey: 'sidebar.items.staff', route: APP_ROUTES.STAFF, icon: 'groups' },
       ],
     },

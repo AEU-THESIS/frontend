@@ -18,7 +18,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: APP_ROUTES.DASHBOARD.path,
         name: APP_ROUTES.DASHBOARD.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/DashboardView.vue'),
       },
       {
         path: APP_ROUTES.ORDERS.path,
@@ -31,6 +31,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/OrderHistoryView.vue'),
       },
       {
+        path: APP_ROUTES.PRODUCT.path,
+        name: APP_ROUTES.PRODUCT.name,
+        component: () => import('@/views/ProductManagement.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      },
+      {
         path: APP_ROUTES.INVENTORY.path,
         name: APP_ROUTES.INVENTORY.name,
         component: () => import('@/views/InventoryManagementView.vue'),
@@ -39,20 +45,20 @@ const routes: RouteRecordRaw[] = [
       {
         path: APP_ROUTES.CATEGORIES.path,
         name: APP_ROUTES.CATEGORIES.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/CategoryManagement.vue'),
         meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {
         path: APP_ROUTES.SALE_REPORTS.path,
         name: APP_ROUTES.SALE_REPORTS.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/SaleReportSummaryView.vue'),
         meta: { roles: [ROLES.ADMIN] },
       },
       {
-        path: APP_ROUTES.ANALYTICS.path,
-        name: APP_ROUTES.ANALYTICS.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
-        meta: { roles: [ROLES.ADMIN] },
+        path: APP_ROUTES.PROMOTIONS.path,
+        name: APP_ROUTES.PROMOTIONS.name,
+        component: () => import('@/views/PromotionsManagementView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {
         path: APP_ROUTES.STAFF.path,

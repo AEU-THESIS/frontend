@@ -83,7 +83,7 @@ const removeImage = (e: Event) => {
 <template>
   <div class="space-y-2.5">
     <div
-      class="relative border-2 border-dashed border-primary/30 rounded-2xl p-6 bg-[#FAFAFA]/50 hover:bg-[#FAFAFA] transition-all group cursor-pointer flex items-center gap-8 min-h-[140px]"
+      class="relative border-2 border-dashed border-primary/30 dark:border-stone-700 rounded-2xl p-6 bg-[#FAFAFA]/50 dark:bg-stone-800/50 hover:bg-[#FAFAFA] dark:hover:bg-stone-800 transition-all group cursor-pointer flex items-center gap-8 min-h-[140px]"
       :class="{
         'opacity-60 cursor-not-allowed': disabled || isUploading,
         'border-rose-500 bg-rose-50/30': error,
@@ -101,7 +101,7 @@ const removeImage = (e: Event) => {
 
       <!-- Preview/Placeholder Slot -->
       <div
-        class="relative size-24 shrink-0 overflow-hidden rounded-xl border border-primary/30 bg-white flex flex-col items-center justify-center gap-1.5 shadow-sm group-hover:border-primary transition-colors"
+        class="relative size-24 shrink-0 overflow-hidden rounded-xl border border-primary/30 bg-white dark:bg-stone-800 flex flex-col items-center justify-center gap-1.5 shadow-sm group-hover:border-primary transition-colors"
       >
         <template v-if="previewUrl">
           <img :src="getImageUrl(previewUrl)" class="h-full w-full object-cover" />
@@ -123,7 +123,7 @@ const removeImage = (e: Event) => {
         <!-- Loading State -->
         <div
           v-if="isUploading"
-          class="absolute inset-0 bg-white/80 flex items-center justify-center"
+          class="absolute inset-0 bg-white/80 dark:bg-stone-900/80 flex items-center justify-center"
         >
           <LoaderCircle class="size-6 text-primary animate-spin" />
         </div>
@@ -131,10 +131,12 @@ const removeImage = (e: Event) => {
 
       <!-- Text Info -->
       <div class="space-y-1 flex-1">
-        <p class="text-sm font-bold text-[#1A1C1C]">
+        <p class="text-sm font-bold text-[#1A1C1C] dark:text-stone-100">
           {{ label || t('imageUpload.label') }}
         </p>
-        <p class="text-[11px] text-[#737373] leading-relaxed max-w-[320px] font-medium">
+        <p
+          class="text-[11px] text-[#737373] dark:text-stone-400 leading-relaxed max-w-[320px] font-medium"
+        >
           {{ recommendation || t('imageUpload.recommendation') }}
         </p>
 
@@ -150,7 +152,7 @@ const removeImage = (e: Event) => {
         type="button"
         variant="outline"
         size="icon-sm"
-        class="absolute top-4 right-4 rounded-full shadow-md border-[#EEEEEE] text-[#737373] hover:text-rose-500 transition-colors z-10"
+        class="absolute top-4 right-4 rounded-full shadow-md border-[#EEEEEE] dark:border-stone-800 text-[#737373] dark:text-stone-400 hover:text-rose-500 transition-colors z-10"
         aria-label="Remove image"
         @click="removeImage"
       >

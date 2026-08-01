@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useProductStore } from '@/store/useProductStore'
 import { useCartStore } from '@/store/useCartStore'
 import type { Product } from '@/types/product.types'
-import type { OrderResult } from '@/types/order.types'
+import type { CheckoutSuccessResult } from '@/types/order.types'
 import ProductCard from '@/components/pos/ProductCard.vue'
 import ProductModifierModal from '@/components/pos/ProductModifierModal.vue'
 import CashPaymentModal from '@/components/pos/CashPaymentModal.vue'
@@ -20,21 +20,15 @@ const searchInput = ref('')
 const selectedProductForOptions = ref<Product | null>(null)
 const isModifiersModalOpen = ref(false)
 const isSuccessModalOpen = ref(false)
-interface CheckoutSuccessData {
-  orderId: number
-  orderNumber: string
-  totalAmount: number
-  receivedAmount: number
-  paymentCurrency: string
-  changeUSD: number
-  changeKHR: number
-}
-
-const checkoutResult = ref<CheckoutSuccessData | null>(null)
+const checkoutResult = ref<CheckoutSuccessResult | null>(null)
 
 onMounted(async () => {
   try {
-    await Promise.all([productStore.fetchCategories(), productStore.fetchProducts()])
+    await Promise.all([
+      productStore.fetchCategories(),
+      productStore.fetchProducts(),
+      cartStore.fetchActivePromotions(),
+    ])
   } catch {
     toast.error(t('cart.fetchFailed'))
   }
@@ -54,23 +48,31 @@ const handleProductSelect = (product: Product) => {
     selectedProductForOptions.value = product
     isModifiersModalOpen.value = true
   } else {
-    // Directly add simple products with no custom modifiers
-    cartStore.addToCart(product.id, product.name, product.imageUrl, Number(product.price), 1, [])
-    toast.success(t('cart.addedToCart', { name: product.name }))
+    // For a "Buy 1 Get 1" item, add the pair in one tap (one paid + one free) so the
+    // barista immediately sees they should make two and charge for one. The backend
+    // recomputes the discount authoritatively at checkout.
+    const promo = cartStore.promotionForProduct(product.id, product.categoryId)
+    const isBogo = promo?.discountType === 'BOGO'
+    cartStore.addToCart(
+      product.id,
+      product.categoryId,
+      product.name,
+      product.imageUrl,
+      Number(product.price),
+      isBogo ? 2 : 1,
+      []
+    )
+    toast.success(
+      isBogo
+        ? t('cart.addedBogo', { name: product.name })
+        : t('cart.addedToCart', { name: product.name })
+    )
   }
 }
 
-const handlePaymentSuccess = (result: OrderResult & { changeUSD: number; changeKHR: number }) => {
+const handlePaymentSuccess = (result: CheckoutSuccessResult) => {
   cartStore.isCashModalOpen = false
-  checkoutResult.value = {
-    orderId: result.id,
-    orderNumber: result.orderNumber,
-    totalAmount: Number(result.totalAmount),
-    receivedAmount: Number(result.receivedAmount),
-    paymentCurrency: result.paymentCurrency,
-    changeUSD: result.changeUSD,
-    changeKHR: result.changeKHR,
-  }
+  checkoutResult.value = result
   isSuccessModalOpen.value = true
 }
 
@@ -181,6 +183,7 @@ const handleSuccessModalClose = () => {
           v-for="prod in productStore.products"
           :key="prod.id"
           :product="prod"
+          :promotion="cartStore.promotionForProduct(prod.id, prod.categoryId)"
           @select="handleProductSelect"
         />
       </div>

@@ -29,10 +29,19 @@ export const fulfillmentStatusSchema = z.enum(['preparing', 'ready', 'completed'
 export const getOrdersParamsSchema = z.object({
   status: z.string().optional(),
   paymentStatus: z.string().optional(),
+  paymentMethod: z.string().optional(),
   date: z.string().optional(),
   search: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   page: z.number().int().positive().optional(),
   limit: z.number().int().positive().optional(),
+})
+
+export const todayOrdersFiltersSchema = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD')
+    .optional(),
+  paymentMethod: z.enum(['cash', 'khqr']).optional(),
 })

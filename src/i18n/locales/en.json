@@ -70,21 +70,22 @@
       "pos": "POS & Order",
       "inventory": "Inventory",
       "reports": "Reports",
-      "settings": "Settings"
+      "settings": "Settings",
+      "marketing": "Marketing"
     },
     "items": {
       "dashboard": "Dashboard",
       "pos": "POS",
       "orders": "Orders",
       "orderHistory": "Order History",
-      "inventory": "Inventory Management",
+      "inventory": "Inventory",
       "products": "Stock",
       "categories": "Categories",
-      "inventory": "Inventory",
       "saleReports": "Sale",
       "analytics": "Analytics",
       "staff": "Staff",
-      "config": "Shop Settings"
+      "config": "Shop Settings",
+      "promotions": "Promotions"
     }
   },
   "navbar": {
@@ -106,6 +107,11 @@
       "croissant": "Butter Croissant",
       "avocadoToast": "Avocado Toast",
       "matchaLatte": "Matcha Latte"
+    },
+    "promo": {
+      "percentOff": "{value}% OFF",
+      "amountOff": "{value} OFF",
+      "bogo": "Buy 1 Get 1"
     },
     "noProducts": "No items found in this category"
   },
@@ -148,12 +154,16 @@
     "printReceipt": "Print Receipt",
     "fetchFailed": "Failed to load POS catalog",
     "addedToCart": "{name} added to cart!",
+    "addedBogo": "{name} added — 2nd is free (Buy 1 Get 1)",
+    "bogoFree": "{count} free (Buy 1 Get 1)",
+    "bogoHint": "Add 1 more — 2nd is free",
     "addToCart": "Add to Cart",
     "insufficientPayment": "Payment received is less than total amount due",
     "checkoutFailed": "Failed to complete transaction",
     "orderCreatedSuccess": "Order #{num} created successfully!",
     "paymentDetails": "Payment Details",
-    "loadingCatalog": "Loading POS Catalog..."
+    "loadingCatalog": "Loading POS Catalog...",
+    "discount": "Discounts"
   },
   "maintenance": {
     "title": "Under Maintenance",
@@ -338,7 +348,9 @@
     "create": "Create",
     "search": "Search",
     "loading": "Loading...",
-    "noData": "No data available"
+    "noData": "No data available",
+    "all": "All",
+    "select": "Select"
   },
   "offline": {
     "noConnection": "No Connection",
@@ -585,5 +597,411 @@
     },
     "startDate": "Start Date",
     "endDate": "End Date"
+  },
+  "reports": {
+    "title": "Sales Summary Report",
+    "subtitle": "Daily revenue breakdown, cash drawer, and payment methods.",
+    "loading": "Loading reports...",
+    "total_revenue_today": "Total Revenue Today",
+    "cash_drawer_expected": "Cash Drawer Expected",
+    "khqr_expected": "KHQR Expected",
+    "showing_for": "Today's Report Lists",
+    "paymentMethods": "Payment Methods",
+    "date": "Date Reports",
+    "filters": {
+      "all": "All",
+      "cash": "Cash",
+      "khqr": "KHQR"
+    },
+    "errors": {
+      "fetchDailyOverviewFailed": "Failed to load daily sales summary."
+    },
+    "table": {
+      "time": "Timestamp",
+      "orderId": "Order ID",
+      "type": "Customer Type",
+      "payment": "Payment Status",
+      "method": "Method",
+      "total": "Total Price",
+      "takeaway": "Takeaway",
+      "dineIn": "Dine-in",
+      "empty": "No Orders Found",
+      "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports"
+    }
+  },
+  "menuManagement": {
+    "title": "Menu Management",
+    "subtitle": "Manage your store's item catalog, pricing, and stock levels.",
+    "filters": "Filters",
+    "newItem": "New Item",
+    "filterPanel": {
+      "itemName": "Item Name",
+      "category": "Category",
+      "status": "Status",
+      "search": "Search...",
+      "clearAll": "Clear All",
+      "applyFilters": "Apply Filters"
+    },
+    "statusOptions": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "dialog": {
+      "addTitle": "Add Menu Item",
+      "addDescription": "Enter the details of your new menu item.",
+      "editTitle": "Edit Menu Item",
+      "editDescription": "Update the details of your menu item.",
+      "detailsTitle": "Product Details",
+      "detailsDescription": "View and edit the details of this product."
+    },
+    "messages": {
+      "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+      "deleteError": "Failed to delete product:",
+      "toggleError": "Failed to toggle product availability:"
+    },
+    "productTable": {
+      "tableHeaders": {
+        "itemName": "ITEM NAME",
+        "category": "CATEGORY",
+        "price": "PRICE",
+        "onSale": "ON SALE",
+        "actions": "ACTIONS"
+      },
+      "skuLabel": "SKU:",
+      "dropdownMenu": {
+        "edit": "Edit",
+        "view": "View",
+        "delete": "Delete"
+      },
+      "pagination": {
+        "showing": "Showing {from}–{to} of {total} items",
+        "firstPage": "First page",
+        "previousPage": "Previous page",
+        "nextPage": "Next page",
+        "lastPage": "Last page"
+      },
+      "emptyState": {
+        "title": "No items found",
+        "description": "There are no items to display at the moment."
+      }
+    },
+    "productForm": {
+      "sections": {
+        "basicInfo": "Basic Info",
+        "sizesAndPrices": "Sizes & Prices",
+        "optionsAndVariations": "Options & Variations",
+        "details": "Details"
+      },
+      "labels": {
+        "itemName": "Item Name",
+        "category": "Category",
+        "itemType": "Item Type",
+        "price": "Price",
+        "pricingMode": "Pricing Mode",
+        "productImage": "Product Image"
+      },
+      "itemType": {
+        "drink": "Drink",
+        "food": "Food"
+      },
+      "pricingMode": [
+        {
+          "value": "fixed",
+          "label": "Fixed price",
+          "hint": "One price for all — e.g. espresso."
+        },
+        {
+          "value": "bySize",
+          "label": "Price by size",
+          "hint": "Different price per size — e.g. latte."
+        }
+      ],
+      "sizesSection": {
+        "title": "Sizes & Prices",
+        "sizeLabel": "Size",
+        "priceLabel": "Price",
+        "sizeePlaceholder": "e.g. Small, Medium, Large",
+        "addButton": "Add another size",
+        "removeButtonLabel": "Remove size"
+      },
+      "optionsSection": {
+        "title": "Options & Variations",
+        "subtitle": "(optional)",
+        "description": "Group related choices together, e.g. \"Milk Type\" or \"Toppings\".",
+        "addGroupButton": "Add group",
+        "emptyStateIcon": "tune",
+        "emptyStateTitle": "No option groups yet",
+        "emptyStateDescription": "Click \"Add group\" to let customers customise this item.",
+        "groupNamePlaceholder": "Group name, e.g. Milk Type",
+        "removeGroupButtonLabel": "Remove option group",
+        "dragToReorder": "Drag to reorder",
+        "optionLabel": "Option Label",
+        "priceModifier": "Price Modifier",
+        "choicePlaceholder": "e.g. Oat Milk",
+        "addChoiceButton": "Add choice",
+        "removeChoiceButtonLabel": "Remove choice"
+      },
+      "buttons": {
+        "reset": "Reset",
+        "save": "Save Item",
+        "saving": "Creating..."
+      },
+      "placeholders": {
+        "selectCategory": "Select a category"
+      },
+      "skuLabel": "SKU:",
+      "productValidation": {
+        "size": {
+          "required": "Size is required",
+          "priceInvalid": "Price must be a valid number"
+        },
+        "choice": {
+          "labelRequired": "Choice label is required",
+          "priceModifierInvalid": "Price modifier must be a valid number"
+        },
+        "optionGroup": {
+          "nameRequired": "Group name is required",
+          "choicesRequired": "At least one choice is required"
+        },
+        "product": {
+          "nameRequired": "Product name is required",
+          "nameTooLong": "Name too long",
+          "categoryRequired": "Category is required",
+          "priceRequiredAndPositive": "Price is required & Price must be greater than 0",
+          "sizesRequired": "At least one size is required",
+          "sizePricePositive": "Size price must be greater than 0"
+        }
+      }
+    }
+  },
+  "category": {
+    "categoryManagement": "Category Management",
+    "categorySubtitle": "Manage your store's category catalog, pricing, and stock levels.",
+    "newCategory": "New Category",
+    "searchPlaceholder": "Search...",
+    "categoryName": "CATEGORY NAME",
+    "itemsCount": "ITEMS COUNT",
+    "status": "STATUS",
+    "actions": "ACTIONS",
+    "items": "items",
+    "active": "Active",
+    "inactive": "Inactive",
+    "edit": "Edit",
+    "view": "View",
+    "delete": "Delete",
+    "showing": "Showing {from}-{to} of {total} items",
+    "to": "-",
+    "of": "of",
+    "noCategoriesFound": "No categories found",
+    "noCategoriesSubtitle": "There are no categories to display at the moment.",
+    "editCategory": "Edit Category",
+    "addCategory": "Add New Category",
+    "editDescription": "Update the category details below.",
+    "addDescription": "Fill in the details below to create a new category.",
+    "deleteCategory": "Delete Category",
+    "deleteConfirmation": "Are you sure you want to delete this category? This action cannot be undone.",
+    "deleteWarning": "You are about to delete the category:",
+    "cancel": "Cancel",
+    "toastSuccess": "Category deleted successfully",
+    "toastError": "Failed to delete category",
+    "form": {
+      "categoryNameLabel": "Category Name",
+      "categoryPlaceholder": "e.g. Coffee, Pastries, Teas",
+      "categoryStatusLabel": "Category Status",
+      "saveCategory": "Save Category",
+      "updateCategory": "Update Category",
+      "nameRequiredError": "Category name is required",
+      "toastUpdateSuccess": "Category updated successfully",
+      "toastCreateSuccess": "Category created successfully",
+      "toastUpdateError": "Failed to update category",
+      "toastCreateError": "Failed to create category"
+    }
+  },
+  "analytics": {
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "title": "Executive Analytics",
+    "premium": "Premium",
+    "exportReport": "Export Report",
+    "viewAll": "View All",
+    "viewInventory": "View Inventory",
+    "bestSelling": "Top 5 Best-Selling Items",
+    "lowestSelling": "Bottom 5 Lowest-Selling Items",
+    "noItemData": "No sales data for this period.",
+    "loadError": "Failed to load selling items.",
+    "lowStockAlerts": "Low Stock Alerts",
+    "insightOfTheWeek": "Insight of the Week",
+    "insightBody": "\"Artisan Latte\" sales are up by 15% after moving it to the top of the morning digital board.",
+    "range": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "globalFilter": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "thisMonth": "This Month",
+      "thisYear": "This Year",
+      "custom": "Custom Range",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply"
+    },
+    "kpi": {
+      "netSales": "Net Sales",
+      "totalOrders": "Total Orders",
+      "avgTicket": "Avg. Ticket",
+      "activeStaff": "Active Staff",
+      "vsLastPeriod": "vs last period",
+      "currentlyClockedIn": "Currently clocked in"
+    },
+    "chart": {
+      "netSalesOverview": "Net Sales Overview",
+      "subtitle": "Compare performance across your selected time granularity."
+    },
+    "granularity": {
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "period": {
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "thisYear": "This Year",
+      "dateRange": "Date Range"
+    },
+    "table": {
+      "item": "Item",
+      "category": "Category",
+      "unitsSold": "Units Sold",
+      "status": "Status",
+      "remaining": "Remaining"
+    },
+    "stock": {
+      "critical": "Critical",
+      "lowStock": "Low Stock",
+      "unitsLeft": "{count} units left",
+      "allStocked": "All ingredients are well stocked."
+    }
+  },
+  "promotions": {
+    "title": "Promotions Management",
+    "subtitle": "Create and monitor your seasonal marketing campaigns",
+    "searchPlaceholder": "Search promotions...",
+    "addPromotion": "Add Promotion",
+    "loading": "Loading promotions...",
+    "empty": "No promotions found",
+    "pagination": "Showing {start} to {end} of {total} promotions",
+    "confirmDelete": "Delete promotion \"{name}\"? This cannot be undone.",
+    "stats": {
+      "active": "Active Promotions",
+      "redeemed": "Total Redeemed",
+      "upcoming": "Upcoming Offers"
+    },
+    "table": {
+      "name": "Promotion Name",
+      "type": "Type",
+      "value": "Value",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "status": "Status",
+      "actions": "Actions",
+      "code": "Code"
+    },
+    "types": {
+      "PERCENTAGE": "Percentage",
+      "FIXED_AMOUNT": "Fixed Amount",
+      "BOGO": "Buy 1 Get 1"
+    },
+    "state": {
+      "active": "Active",
+      "scheduled": "Scheduled",
+      "expired": "Expired",
+      "inactive": "Inactive"
+    },
+    "value": {
+      "percentage": "{value}% Off",
+      "fixed": "{value} Off",
+      "freeItem": "Free Item"
+    },
+    "form": {
+      "addTitle": "Add New Promotion",
+      "editTitle": "Edit Promotion",
+      "name": "Promotion Name",
+      "namePlaceholder": "e.g. Weekend Pastry Discount",
+      "code": "Promo Code (optional)",
+      "codePlaceholder": "e.g. WEEKEND15",
+      "type": "Type",
+      "value": "Value",
+      "bogoHint": "Buy 1 Get 1 does not require a value.",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "conditionsTitle": "Conditions & Scope",
+      "scopeAll": "All Menu Items",
+      "scopeAllHint": "Apply the promotion to every product.",
+      "scopeSpecific": "Specific Selection",
+      "scopeSpecificHint": "Apply to selected categories or items.",
+      "chooseItems": "Select Categories & Items",
+      "editSelection": "{count} selected — edit",
+      "activeLabel": "Active",
+      "activeHint": "Make this promotion available immediately.",
+      "saveChanges": "Save Changes",
+      "create": "Create Promotion",
+      "errors": {
+        "nameRequired": "Name is required",
+        "valueInvalid": "Enter a valid value",
+        "percentageMax": "Percentage cannot exceed 100",
+        "dateOrder": "End date must be after the start date",
+        "scopeRequired": "Select at least one category or item"
+      }
+    },
+    "selector": {
+      "title": "Select Items",
+      "subtitle": "Choose products to apply the promotion to",
+      "searchPlaceholder": "Search items by name",
+      "itemsTab": "Items",
+      "categoriesTab": "Categories",
+      "selectAll": "Select All Items",
+      "itemsAvailable": "{count} items available",
+      "noItems": "No items found",
+      "noCategories": "No categories found",
+      "selectedCount": "{count} selected",
+      "breakdown": "{items} items, {categories} categories",
+      "inOtherPromotion": "In another promotion",
+      "addSelected": "Add Selected Items"
+    },
+    "toast": {
+      "loadFailed": "Failed to load promotions",
+      "created": "Promotion created",
+      "updated": "Promotion updated",
+      "saveFailed": "Failed to save promotion",
+      "deleted": "Promotion deleted",
+      "deleteFailed": "Failed to delete promotion"
+    }
+  },
+  "receipt": {
+    "orderNo": "Order No.",
+    "date": "Date",
+    "cashier": "Cashier",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "total": "Total",
+    "paid": "Paid",
+    "change": "Change"
   }
 }

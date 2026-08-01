@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '@/store/useAuthStore'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import ReceiptPrintTemplate, {
+  type ReceiptItem,
+} from '@/components/receipt/ReceiptPrintTemplate.vue'
+import type { CheckoutSuccessResult } from '@/types/order.types'
 
 const props = defineProps<{
   isOpen: boolean
-  orderResult: {
-    orderId: number
-    orderNumber: string
-    totalAmount: number
-    receivedAmount: number
-    paymentCurrency: string
-    changeUSD: number
-    changeKHR: number
-  } | null
+  orderResult: CheckoutSuccessResult | null
 }>()
 
 const emit = defineEmits<{
@@ -20,84 +18,44 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const authStore = useAuthStore()
+const shopSettingsStore = useShopSettingsStore()
 
-const receiptRef = ref<HTMLElement | null>(null)
+// Map the order's items (with their modifiers) into the shape the receipt
+const receiptItems = computed<ReceiptItem[]>(() => {
+  if (!props.orderResult) return []
+  return props.orderResult.items.map(item => ({
+    id: item.id,
+    productName: item.product.name,
+    quantity: item.quantity,
+    unitPrice: Number(item.price),
+    lineTotal: Number(item.subtotal),
+    options: item.options.map(opt => ({
+      groupName: opt.groupName,
+      optionName: opt.optionName,
+      extraPrice: Number(opt.extraPrice),
+    })),
+  }))
+})
+
+// Subtotal is the pre-discount total: net total charged plus whatever the
+// applied promotions took off, per the backend's OrderDetail contract.
+const receiptSubtotal = computed(() => {
+  if (!props.orderResult) return 0
+  return Number(props.orderResult.totalAmount) + Number(props.orderResult.discountAmount || 0)
+})
+
+// KHR total uses the exchange rate snapshot locked in at checkout time, so the
+// receipt always reflects the rate the customer actually paid at.
+const receiptTotalKHR = computed(() => {
+  if (!props.orderResult) return 0
+  return Math.ceil(
+    Number(props.orderResult.totalAmount) * Number(props.orderResult.exchangeRateSnapshot)
+  )
+})
 
 const handlePrintReceipt = () => {
-  if (!receiptRef.value) return
-
-  // Create an iframe for printing to avoid popup blockers and keep it elegant
-  const iframe = document.createElement('iframe')
-  iframe.style.position = 'fixed'
-  iframe.style.right = '0'
-  iframe.style.bottom = '0'
-  iframe.style.width = '0'
-  iframe.style.height = '0'
-  iframe.style.border = '0'
-  document.body.appendChild(iframe)
-
-  const doc = iframe.contentDocument || iframe.contentWindow?.document
-  if (!doc) return
-
-  // Copy style tags and link stylesheets
-  const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-  const headHTML = styles.map(style => style.outerHTML).join('\n')
-
-  // Build printing document mimicking the premium thermal receipt style
-  doc.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Receipt - ${props.orderResult?.orderNumber || ''}</title>
-        ${headHTML}
-        <style>
-          @media print {
-            body {
-              margin: 0;
-              padding: 20px;
-              background-color: white !important;
-              color: black !important;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-          }
-          body {
-            font-family: ui-sans-serif, system-ui, sans-serif;
-            background-color: white;
-            padding: 20px;
-          }
-          .bg-stone-50 {
-            background-color: #fafaf9 !important;
-          }
-          .border {
-            border: 1px solid #e7e5e4 !important;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="w-full max-w-sm mx-auto">
-          <div class="text-center mb-6">
-            <h1 class="text-xl font-bold uppercase tracking-wide">Routine Café & Bakery</h1>
-            <p class="text-xs text-stone-500">Receipt / Invoice</p>
-          </div>
-          ${receiptRef.value.outerHTML}
-        </div>
-      </body>
-    </html>
-  `)
-  doc.close()
-
-  // Wait for resources and styling to fully render, then execute browser print flow
-  setTimeout(() => {
-    if (iframe.contentWindow) {
-      iframe.contentWindow.focus()
-      iframe.contentWindow.print()
-      // Safely remove the iframe after standard print dialog interaction
-      setTimeout(() => {
-        document.body.removeChild(iframe)
-      }, 1000)
-    }
-  }, 500)
+  window.print()
 }
 </script>
 
@@ -167,7 +125,6 @@ const handlePrintReceipt = () => {
 
       <!-- Receipt Card Info -->
       <div
-        ref="receiptRef"
         class="w-full bg-stone-50 dark:bg-stone-950 p-6 rounded-2xl border border-stone-200/50 dark:border-stone-800/50 space-y-4 mb-8 text-left"
       >
         <div class="flex justify-between items-center text-xs">
@@ -252,5 +209,23 @@ const handlePrintReceipt = () => {
         </Button>
       </div>
     </div>
+
+    <ReceiptPrintTemplate
+      v-if="orderResult"
+      :shop-name="shopSettingsStore.shop_name"
+      :footer="shopSettingsStore.receipt_footer"
+      :order-number="orderResult.orderNumber"
+      :created-at="orderResult.createdAt"
+      :cashier-name="authStore.user?.name"
+      :items="receiptItems"
+      :subtotal="receiptSubtotal"
+      :discount-amount="Number(orderResult.discountAmount || 0)"
+      :total-usd="Number(orderResult.totalAmount)"
+      :total-khr="receiptTotalKHR"
+      :payment-currency="orderResult.paymentCurrency"
+      :received-amount="Number(orderResult.receivedAmount)"
+      :change-usd="orderResult.changeUSD"
+      :change-khr="orderResult.changeKHR"
+    />
   </div>
 </template>

@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
-import type { PaymentCurrency, OrderResult } from '@/types/order.types'
+import type { PaymentCurrency, CheckoutSuccessResult } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
@@ -11,7 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'success', result: OrderResult & { changeUSD: number; changeKHR: number }): void
+  (e: 'success', result: CheckoutSuccessResult): void
 }>()
 
 const { t } = useI18n()
@@ -34,11 +34,11 @@ watch(
   }
 )
 
-// Total due in USD
-const totalUSD = computed(() => cartStore.cartTotal)
+// Total due in USD (net of any promotion discount)
+const totalUSD = computed(() => cartStore.netTotal)
 
-// Total due in KHR
-const totalKHR = computed(() => cartStore.cartTotalInRiel)
+// Total due in KHR (net of any promotion discount)
+const totalKHR = computed(() => cartStore.netTotalInRiel)
 
 // Current total due depending on currency
 const currentTotalDue = computed(() => {

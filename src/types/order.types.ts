@@ -10,6 +10,7 @@ export interface CartItemOption {
 export interface CartItem {
   cartId: string // UUID — unique per cart entry
   productId: number
+  categoryId: number // used to match category-scoped promotions
   productName: string
   imageUrl: string | null
   basePrice: number
@@ -49,6 +50,27 @@ export interface OrderResult {
   fulfillmentStatus: string
 }
 
+// Lightweight promotion summary attached to an order for display in history.
+export interface OrderPromotion {
+  id: number
+  name: string
+  code: string | null
+  discountType: string
+  discountValue: number | string
+}
+
+// One row of an order's per-promotion discount breakdown (promotions stack).
+export interface AppliedOrderPromotion {
+  promotionId: number
+  discountAmount: number | string
+  promotion: {
+    id: number
+    name: string
+    code: string | null
+    discountType: string
+  }
+}
+
 export interface OrderItemOptionDetail {
   id: number
   orderItemId: number
@@ -80,6 +102,11 @@ export interface OrderDetail extends OrderResult {
   userId: number | null
   tableSessionId: number | null
   promotionId: number | null
+  // Amount the applied promotion took off. totalAmount is the net (post-discount)
+  // charged; the pre-discount subtotal is totalAmount + discountAmount.
+  discountAmount: number | string
+  promotion?: OrderPromotion | null
+  appliedPromotions?: AppliedOrderPromotion[]
   orderType: OrderType
   customerName: string | null
   customerPhone: string | null
@@ -87,6 +114,11 @@ export interface OrderDetail extends OrderResult {
   paymentMethod: string
   khqrString: string | null
   items: OrderItemDetail[]
+}
+
+export interface CheckoutSuccessResult extends OrderDetail {
+  changeUSD: number
+  changeKHR: number
 }
 
 export interface PaginatedOrders {
@@ -98,3 +130,36 @@ export interface PaginatedOrders {
     totalPages: number
   }
 }
+
+export interface OrderRow {
+  id: number
+  orderNumber: string
+  orderType: 'dine_in' | 'takeaway'
+  paymentStatus: string
+  paymentMethod: 'cash' | 'khqr'
+  totalAmount: string | number
+  paymentCurrency: 'USD' | 'KHR'
+  createdAt: string
+}
+
+export interface OrdersResponse {
+  orders: OrderRow[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+export interface DailySummary {
+  total_revenue: number
+  cash_total: number
+  khqr_total: number
+  exchange_rate: number
+}
+export interface TodayOrdersFilters {
+  date?: string // YYYY-MM-DD
+  paymentMethod?: 'cash' | 'khqr'
+}
+
+export type PaymentMethodFilter = 'all' | 'cash' | 'khqr'
