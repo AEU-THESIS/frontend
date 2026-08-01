@@ -160,7 +160,7 @@ const applyRange = () => {
             <span class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#A3A3A3]">
               {{ t('analytics.globalFilter.from') }}
             </span>
-            <Input
+            <AppInput
               v-model="rangeStart"
               type="date"
               :max="rangeEnd || todayInput"
@@ -171,7 +171,7 @@ const applyRange = () => {
             <span class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#A3A3A3]">
               {{ t('analytics.globalFilter.to') }}
             </span>
-            <Input
+            <AppInput
               v-model="rangeEnd"
               type="date"
               :min="rangeStart"

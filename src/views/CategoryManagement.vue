@@ -3,6 +3,8 @@ import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppDialog from '@/components/common/AppDialog.vue'
 import AddCategoryForm from '@/components/category/AddCategoryForm.vue'
+import FilterPanel from '@/components/common/FilterPanel.vue'
+import { AppInput } from '@/components/ui/input'
 import { Pencil, Eye } from 'lucide-vue-next'
 import {
   DropdownMenuRoot,
@@ -129,46 +131,42 @@ const openAddDialog = () => {
 <template>
   <!-- Main Content (Canvas) -->
   <main class="p-8 mb-10 overflow-y-auto">
-    <div class="flex justify-between items-center mb-8">
-      <div class="w-auto">
-        <h1 class="font-headline-lg text-[24px] font-bold text-on-background mb-[4px]">
-          {{ $t('category.categoryManagement') }}
-        </h1>
-        <p class="text-[14px]">{{ $t('category.categorySubtitle') }}</p>
-      </div>
-      <div class="flex gap-2 w-auto">
-        <button
-          class="px-4 py-2 bg-stone-900 text-white rounded-lg text-[16px] font-bold flex items-center gap-2"
-          @click="openAddDialog()"
-        >
-          <span class="material-symbols-outlined text-[18px]">add</span>
-          {{ $t('category.newCategory') }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="flex justify-between items-center mb-8">
-      <div class="flex-[2] min-w-[240px] flex flex-col gap-1">
-        <div class="relative">
-          <span
-            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 text-[20px]"
-            >search</span
-          >
-          <input
-            v-model="filters.name"
-            class="w-100 pl-10 pr-4 py-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-sm focus:ring-2 focus:ring-primary transition-all shadow-sm"
-            :placeholder="$t('category.searchPlaceholder')"
-            type="text"
-          />
-        </div>
-      </div>
+    <div class="mb-8">
+      <h1 class="font-headline-lg text-[24px] font-bold text-on-background mb-[4px]">
+        {{ $t('category.categoryManagement') }}
+      </h1>
+      <p class="text-[14px]">{{ $t('category.categorySubtitle') }}</p>
     </div>
 
     <!-- Table  -->
     <div
       class="bg-white dark:bg-stone-900 rounded-xl shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden"
     >
+      <!-- Filter -->
+      <FilterPanel
+        :show-apply="false"
+        :show-clear="false"
+        :add-label="$t('category.newCategory')"
+        actions-class="col-span-3 lg:col-span-2"
+        @add="openAddDialog"
+      >
+        <div class="col-span-9 lg:col-span-10">
+          <div class="grid grid-cols-12 gap-4 sm:items-end">
+            <AppInput
+              id="category-filter-search"
+              v-model="filters.name"
+              search-icon
+              type="text"
+              :label="$t('common.search')"
+              label-class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+              container-class="col-span-6 lg:col-span-4"
+              :placeholder="$t('category.searchPlaceholder')"
+              class="h-10 border-none bg-[#FAFAFA] pr-4 text-sm text-[#1A1C1C] shadow-none placeholder:text-stone-400 focus-visible:ring-2 focus-visible:ring-primary dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+            />
+          </div>
+        </div>
+      </FilterPanel>
+
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[640px]">
           <thead>

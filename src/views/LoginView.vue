@@ -126,7 +126,7 @@ const handleLogin = async () => {
               >
                 <Mail class="size-5" aria-hidden="true" />
               </div>
-              <Input
+              <AppInput
                 id="email"
                 v-model="payload.email"
                 class="h-14 rounded-2xl border-none bg-slate-100/50 pl-14 pr-6 text-[15px] font-bold shadow-none focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all"
@@ -162,7 +162,7 @@ const handleLogin = async () => {
               >
                 <LockKeyhole class="size-5" aria-hidden="true" />
               </div>
-              <Input
+              <AppInput
                 id="password"
                 v-model="payload.password"
                 class="h-14 rounded-2xl border-none bg-slate-100/50 pl-14 pr-14 text-[15px] font-bold shadow-none focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all"

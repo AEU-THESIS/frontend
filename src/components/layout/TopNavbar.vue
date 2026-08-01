@@ -32,6 +32,8 @@ const pageTitle = computed(() => {
       return t('sidebar.items.inventory')
     case APP_ROUTES.SALE_REPORTS.name:
       return t('sidebar.items.saleReports')
+    case APP_ROUTES.PRODUCT.name:
+      return t('menuManagement.title')
     default:
       return t('app.title')
   }
@@ -79,7 +81,7 @@ const getProfileImageUrl = (path: string | undefined | null) => {
     class="h-16 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between px-8 shrink-0 relative z-30"
   >
     <div>
-      <h2 class="font-bold text-stone-800 dark:text-stone-50 text-lg leading-tight">
+      <h2 class="font-bold text-stone-800 dark:text-stone-50 text-[24px] leading-tight">
         {{ pageTitle }}
       </h2>
       <p v-if="pageSubtitle" class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">

@@ -18,8 +18,6 @@ import {
   Minus,
   Pencil,
   Plus,
-  Search,
-  SlidersHorizontal,
   Trash2,
   X,
 } from 'lucide-vue-next'
@@ -32,6 +30,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
+import FilterPanel from '@/components/common/FilterPanel.vue'
+import { AppInput } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import ImageUpload from '@/components/common/ImageUpload.vue'
 import { useInventoryStore } from '@/store/useInventoryStore'
@@ -62,7 +63,6 @@ const unitOptions = [
 const searchQuery = ref('')
 const selectedStatus = ref<InventoryFilterStatus>('all')
 const selectedUnit = ref('all')
-const isFilterPanelOpen = ref(false)
 const currentPage = ref(1)
 const pageSize = 10
 const showAllCriticalStock = ref(false)
@@ -101,13 +101,23 @@ const inventoryQueryFilters = computed(() => {
 })
 const filteredItems = computed(() => items.value)
 
+const statusFilterOptions = computed(() => [
+  { value: 'in_stock', label: t('inventory.status.inStock') },
+  { value: 'low_stock', label: t('inventory.status.lowStock') },
+  { value: 'out_of_stock', label: t('inventory.status.outOfStock') },
+])
+
 const unitFilterOptions = computed(() => {
   const availableUnits = new Set(items.value.map(item => item.unitOfMeasure).filter(Boolean))
   unitOptions.forEach(unit => availableUnits.add(unit.value))
-  return Array.from(availableUnits)
+  return Array.from(availableUnits).map(unit => ({ value: unit, label: unit }))
 })
-const activeFilterCount = computed(
-  () => Number(selectedStatus.value !== 'all') + Number(selectedUnit.value !== 'all')
+
+const hasActiveFilters = computed(
+  () =>
+    searchQuery.value.trim() !== '' ||
+    selectedStatus.value !== 'all' ||
+    selectedUnit.value !== 'all'
 )
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / pageSize)))
@@ -356,27 +366,23 @@ const getModalTitle = () => {
   return t('inventory.modal.addTitle')
 }
 
-const clearFilters = () => {
-  selectedStatus.value = 'all'
-  selectedUnit.value = 'all'
+const fetchFilteredItems = async () => {
+  currentPage.value = 1
+  await inventoryStore.fetchItems(inventoryQueryFilters.value).catch(() => {
+    toast.error(t('inventory.messages.loadError'))
+  })
 }
 
-watch([searchQuery, selectedStatus, selectedUnit], () => {
-  currentPage.value = 1
-})
+const applyFilters = async () => {
+  await fetchFilteredItems()
+}
 
-let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null
-watch([searchQuery, selectedStatus, selectedUnit], () => {
-  if (searchDebounceTimeout) {
-    clearTimeout(searchDebounceTimeout)
-  }
-
-  searchDebounceTimeout = setTimeout(() => {
-    inventoryStore.fetchItems(inventoryQueryFilters.value).catch(() => {
-      toast.error(t('inventory.messages.loadError'))
-    })
-  }, 300)
-})
+const clearFilters = async () => {
+  searchQuery.value = ''
+  selectedStatus.value = 'all'
+  selectedUnit.value = 'all'
+  await fetchFilteredItems()
+}
 
 watch(totalPages, pages => {
   if (currentPage.value > pages) currentPage.value = pages
@@ -393,6 +399,24 @@ onMounted(() => {
   <div
     class="h-full overflow-y-auto bg-[#F9FAFB] p-8 text-[#1A1C1C] dark:bg-stone-900 dark:text-stone-100"
   >
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex gap-3 items-center">
+        <div class="w-auto">
+          <h1 class="font-headline-lg text-xl font-bold text-on-background mb-[4px]">
+            {{ t('menuManagement.title') }}
+          </h1>
+          <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p>
+        </div>
+      </div>
+      <Button
+        class="h-11 rounded-xl bg-primary px-6 font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
+        @click="openSupplyModal('add')"
+      >
+        <Plus class="size-4" />
+        {{ t('inventory.actions.addItem') }}
+      </Button>
+    </div>
+
     <div class="flex w-full flex-col gap-5">
       <div class="grid gap-5 md:grid-cols-3">
         <Card
@@ -422,104 +446,45 @@ onMounted(() => {
         </Card>
       </div>
 
-      <div class="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-          <div class="relative w-full max-w-[500px]">
-            <Search
-              class="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3] dark:text-stone-500"
-            />
-            <Input
-              v-model="searchQuery"
-              :placeholder="t('inventory.searchPlaceholder')"
-              class="h-11 rounded-xl border border-slate-200 bg-white pl-11 text-sm font-semibold shadow-sm dark:border-stone-700 dark:bg-stone-900"
-            />
-          </div>
-          <Button
-            variant="secondary"
-            class="h-11 rounded-xl border bg-white px-5 font-bold hover:bg-slate-50 dark:bg-stone-900 dark:hover:bg-stone-800/50"
-            :class="
-              isFilterPanelOpen || activeFilterCount > 0
-                ? 'border-[#974400] text-[#974400] dark:text-amber-500'
-                : 'border-slate-200 dark:border-stone-700'
-            "
-            @click="isFilterPanelOpen = !isFilterPanelOpen"
-          >
-            <SlidersHorizontal class="size-4" />
-            {{ t('inventory.actions.filters') }}
-            <span
-              v-if="activeFilterCount > 0"
-              class="flex size-5 items-center justify-center rounded-full bg-[#974400] text-[11px] text-white"
-            >
-              {{ activeFilterCount }}
-            </span>
-          </Button>
-        </div>
-        <Button
-          class="h-11 rounded-xl bg-primary px-6 font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
-          @click="openSupplyModal('add')"
-        >
-          <Plus class="size-4" />
-          {{ t('inventory.actions.addItem') }}
-        </Button>
-
-        <Card
-          v-if="isFilterPanelOpen"
-          class="absolute left-0 top-[calc(100%+0.5rem)] z-20 w-full max-w-[640px] gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-lg dark:border-stone-700 dark:bg-stone-900 sm:left-[calc(500px+0.75rem)] sm:w-[420px]"
-        >
-          <div class="grid gap-3 sm:grid-cols-2">
-            <Label
-              class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
-            >
-              {{ t('inventory.filters.status') }}
-              <Select v-model="selectedStatus">
-                <SelectTrigger class="h-10 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{{ t('inventory.filters.allStatuses') }}</SelectItem>
-                  <SelectItem value="in_stock">{{ t('inventory.status.inStock') }}</SelectItem>
-                  <SelectItem value="low_stock">{{ t('inventory.status.lowStock') }}</SelectItem>
-                  <SelectItem value="out_of_stock">
-                    {{ t('inventory.status.outOfStock') }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </Label>
-
-            <Label
-              class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
-            >
-              {{ t('inventory.filters.unit') }}
-              <Select v-model="selectedUnit">
-                <SelectTrigger class="h-10 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{{ t('inventory.filters.allUnits') }}</SelectItem>
-                  <SelectItem v-for="unit in unitFilterOptions" :key="unit" :value="unit">
-                    {{ unit }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </Label>
-          </div>
-
-          <div class="flex justify-end">
-            <Button
-              variant="tertiary"
-              class="h-8 text-xs font-black text-[#974400] dark:text-amber-500"
-              :disabled="activeFilterCount === 0"
-              @click="clearFilters"
-            >
-              {{ t('inventory.filters.clear') }}
-            </Button>
-          </div>
-        </Card>
-      </div>
-
       <Card
-        class="overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm dark:border dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100"
+        class="gap-0 overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm dark:border dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100"
       >
+        <!-- Filter  -->
+        <FilterPanel
+          :has-active-filters="hasActiveFilters"
+          @submit="applyFilters"
+          @clear="clearFilters"
+        >
+          <AppInput
+            id="inventory-filter-name"
+            v-model="searchQuery"
+            search-icon
+            type="text"
+            :label="t('inventory.form.itemName')"
+            label-class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+            container-class="col-span-4 lg:col-span-5"
+            :placeholder="t('inventory.searchPlaceholder')"
+            class="h-10 border-none bg-[#FAFAFA] pr-4 text-sm text-[#1A1C1C] shadow-none placeholder:text-stone-400 focus-visible:ring-2 focus-visible:ring-primary dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+          />
+
+          <AppSelect
+            v-model="selectedStatus"
+            :options="statusFilterOptions"
+            :label="t('inventory.filters.status')"
+            :all-option-label="t('inventory.filters.allStatuses')"
+            class="w-full col-span-4 lg:col-span-2"
+          />
+
+          <AppSelect
+            v-model="selectedUnit"
+            :options="unitFilterOptions"
+            :label="t('inventory.filters.unit')"
+            :all-option-label="t('inventory.filters.allUnits')"
+            class="w-full col-span-4 lg:col-span-2"
+          />
+        </FilterPanel>
+
+        <!-- Table  -->
         <div class="overflow-x-auto">
           <table class="w-full min-w-[820px] text-left">
             <thead>
@@ -857,7 +822,7 @@ onMounted(() => {
                 t('inventory.form.required')
               }}</span>
             </span>
-            <Input
+            <AppInput
               v-model="supplyForm.name"
               :disabled="supplyModalMode === 'view'"
               :placeholder="t('inventory.form.itemNamePlaceholder')"
@@ -884,7 +849,7 @@ onMounted(() => {
               class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
             >
               {{ t('inventory.form.numberOfItems') }}
-              <Input
+              <AppInput
                 v-model="supplyForm.quantity"
                 :disabled="supplyModalMode === 'view'"
                 type="number"
@@ -915,7 +880,7 @@ onMounted(() => {
             class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
           >
             {{ t('inventory.form.minAlert') }}
-            <Input
+            <AppInput
               v-model="supplyForm.minAlertThreshold"
               :disabled="supplyModalMode === 'view'"
               type="number"
@@ -1116,7 +1081,7 @@ onMounted(() => {
             >
               <Minus class="size-4" />
             </Button>
-            <Input
+            <AppInput
               v-model="adjustmentForm.amount"
               type="number"
               min="1"

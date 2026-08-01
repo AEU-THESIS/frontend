@@ -6,6 +6,9 @@ import { storeToRefs } from 'pinia'
 import type { OrderDetail } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
+import FilterPanel from '@/components/common/FilterPanel.vue'
+import { AppInput } from '@/components/ui/input'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
@@ -17,15 +20,37 @@ let confirmCancelTimeout: ReturnType<typeof setTimeout> | null = null
 
 // ── 1. Search and Filtering States ────────────────────────────────
 const search = ref('')
-const fulfillmentStatus = ref('')
-const paymentStatus = ref('')
+const fulfillmentStatus = ref('all')
+const paymentStatus = ref('all')
 const page = ref(1)
 const limit = ref(10)
+
+const fulfillmentStatusOptions = computed(() => [
+  { value: 'preparing', label: t('orderDashboard.preparing') },
+  { value: 'ready', label: t('orderDashboard.ready') },
+  { value: 'completed', label: t('orderDashboard.completed') },
+  { value: 'canceled', label: t('orderDashboard.canceled') },
+])
+
+const paymentStatusOptions = computed(() => [
+  { value: 'paid', label: t('orderDashboard.paid') },
+  { value: 'unpaid', label: t('orderDashboard.unpaid') },
+])
 
 // Date preset selection: today, yesterday, last7Days, customRange
 const datePreset = ref<'today' | 'yesterday' | 'last7Days' | 'customRange'>('today')
 const customStartDate = ref('')
 const customEndDate = ref('')
+
+const hasActiveFilters = computed(
+  () =>
+    search.value.trim() !== '' ||
+    fulfillmentStatus.value !== 'all' ||
+    paymentStatus.value !== 'all' ||
+    datePreset.value !== 'today' ||
+    customStartDate.value !== '' ||
+    customEndDate.value !== ''
+)
 
 // ── 2. Preset Date calculations helper (Timezone-proof Local Calendar Formatting) ──
 const dateFilters = computed(() => {
@@ -76,9 +101,9 @@ const dateFilters = computed(() => {
 const fetchHistory = async () => {
   const dates = dateFilters.value
   await orderStore.fetchHistoryOrders({
-    search: search.value || undefined,
-    status: fulfillmentStatus.value || undefined,
-    paymentStatus: paymentStatus.value || undefined,
+    search: search.value.trim() || undefined,
+    status: fulfillmentStatus.value !== 'all' ? fulfillmentStatus.value : undefined,
+    paymentStatus: paymentStatus.value !== 'all' ? paymentStatus.value : undefined,
     startDate: dates.startDate,
     endDate: dates.endDate,
     page: page.value,
@@ -91,24 +116,25 @@ watch(page, () => {
   fetchHistory()
 })
 
-// Watch filters to fetch automatically
-watch([fulfillmentStatus, paymentStatus, datePreset, customStartDate, customEndDate], () => {
+// Filters are applied explicitly — resetting the page triggers the watcher above
+const applyFilters = () => {
   if (page.value !== 1) {
     page.value = 1
   } else {
     fetchHistory()
   }
-})
+}
 
-// Debounce search to avoid unnecessary API queries
-let searchTimeout: ReturnType<typeof setTimeout>
-watch(search, () => {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    page.value = 1 // Reset to page 1 on new search
-    fetchHistory()
-  }, 400)
-})
+const clearFilters = () => {
+  search.value = ''
+  fulfillmentStatus.value = 'all'
+  paymentStatus.value = 'all'
+  datePreset.value = 'today'
+  customStartDate.value = ''
+  customEndDate.value = ''
+
+  applyFilters()
+}
 
 onMounted(() => {
   fetchHistory()
@@ -206,81 +232,60 @@ onUnmounted(() => {
 
 <template>
   <div class="flex-1 overflow-hidden flex flex-col p-6 gap-6 h-full relative receipt-print-wrapper">
-    <!-- ── HEADER ── -->
-    <header class="shrink-0 flex justify-end">
-      <!-- Fuzzy search input -->
-      <div class="relative w-full md:w-80 shrink-0">
-        <span
-          class="material-symbols-outlined absolute left-4.5 top-1/2 -translate-y-1/2 text-stone-400 text-lg leading-none"
-          >search</span
-        >
-        <input
-          v-model="search"
-          type="text"
-          :placeholder="t('orderHistory.searchPlaceholder')"
-          class="w-full pl-12 pr-6 py-2.5 bg-stone-100 dark:bg-stone-950/80 border border-transparent focus:border-stone-200 dark:focus:border-stone-800 focus:bg-white rounded-2xl text-[13px] font-semibold transition-all focus:outline-none"
-        />
-      </div>
-    </header>
-
     <!-- ── ADVANCED FILTERS PANE (Timezone and width aligned grid) ── -->
-    <section
-      class="grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200/60 dark:border-stone-800/60 shadow-sm shrink-0"
+    <FilterPanel
+      :has-active-filters="hasActiveFilters"
+      section-class="rounded-xl shadow-sm"
+      @submit="applyFilters"
+      @clear="clearFilters"
     >
-      <!-- Date Presets -->
-      <div class="flex flex-col gap-2 lg:col-span-2">
-        <label
-          class="text-[11px] font-extrabold text-stone-400 dark:text-stone-500 uppercase tracking-wide"
-        >
-          {{ t('orderHistory.filterStatus') }}
-        </label>
-        <select
-          v-model="fulfillmentStatus"
-          class="w-full bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-2xl py-2.5 px-4 text-xs font-semibold focus:outline-none focus:border-amber-700/50"
-        >
-          <option value="">{{ t('orderHistory.allStatuses') }}</option>
-          <option value="preparing">{{ t('orderDashboard.preparing') }}</option>
-          <option value="ready">{{ t('orderDashboard.ready') }}</option>
-          <option value="completed">{{ t('orderDashboard.completed') }}</option>
-          <option value="canceled">{{ t('orderDashboard.canceled') }}</option>
-        </select>
-      </div>
+      <AppInput
+        id="order-history-search"
+        v-model="search"
+        search-icon
+        type="text"
+        :label="t('common.search')"
+        label-class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+        container-class="col-span-12 sm:col-span-4 lg:col-span-4"
+        :placeholder="t('orderHistory.searchPlaceholder')"
+        class="h-10 border-none bg-[#FAFAFA] pr-4 text-sm text-[#1A1C1C] shadow-none placeholder:text-stone-400 focus-visible:ring-2 focus-visible:ring-primary dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+      />
 
-      <!-- Payment Status -->
-      <div class="flex flex-col gap-2 lg:col-span-2">
-        <label
-          class="text-[11px] font-extrabold text-stone-400 dark:text-stone-500 uppercase tracking-wide"
-        >
-          {{ t('orderHistory.filterPayment') }}
-        </label>
-        <select
-          v-model="paymentStatus"
-          class="w-full bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-2xl py-2.5 px-4 text-xs font-semibold focus:outline-none focus:border-amber-700/50"
-        >
-          <option value="">{{ t('orderHistory.allPayments') }}</option>
-          <option value="paid">{{ t('orderDashboard.paid') }}</option>
-          <option value="unpaid">{{ t('orderDashboard.unpaid') }}</option>
-        </select>
-      </div>
+      <AppSelect
+        v-model="fulfillmentStatus"
+        :options="fulfillmentStatusOptions"
+        :label="t('orderHistory.filterStatus')"
+        :all-option-label="t('orderHistory.allStatuses')"
+        class="w-full col-span-6 sm:col-span-4 lg:col-span-4"
+      />
 
-      <!-- Date Presets Button Group -->
-      <div class="flex flex-col gap-2 lg:col-span-4">
+      <AppSelect
+        v-model="paymentStatus"
+        :options="paymentStatusOptions"
+        :label="t('orderHistory.filterPayment')"
+        :all-option-label="t('orderHistory.allPayments')"
+        class="w-full col-span-6 sm:col-span-4 lg:col-span-4"
+      />
+
+      <!-- Date presets -->
+      <div class="flex flex-col gap-1 col-span-12 sm:col-span-6 lg:col-span-4">
         <label
-          class="text-[11px] font-extrabold text-stone-400 dark:text-stone-500 uppercase tracking-wide"
+          class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
         >
           {{ t('orderHistory.datePreset') }}
         </label>
         <div
-          class="flex border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden divide-x divide-stone-200 dark:divide-stone-800 text-xs font-bold w-full h-[38px] shrink-0"
+          class="flex h-10 w-full shrink-0 divide-x divide-stone-200 overflow-hidden rounded-md bg-stone-50 text-xs font-bold dark:divide-stone-700 dark:bg-stone-800"
         >
           <button
             v-for="preset in ['today', 'yesterday', 'last7Days', 'customRange'] as const"
             :key="preset"
-            class="flex-1 h-full flex items-center justify-center transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/20 active:bg-stone-100"
+            type="button"
+            class="flex h-full flex-1 items-center justify-center whitespace-nowrap px-1 transition-colors hover:bg-stone-100 dark:hover:bg-stone-700/50"
             :class="
               datePreset === preset
-                ? 'bg-[#fcf3eb] text-[#b05a18] dark:bg-amber-900/10 dark:text-amber-500 font-extrabold'
-                : 'text-stone-500'
+                ? 'bg-[#fcf3eb] font-extrabold text-[#b05a18] dark:bg-amber-900/10 dark:text-amber-500'
+                : 'text-stone-500 dark:text-stone-400'
             "
             @click="datePreset = preset"
           >
@@ -289,31 +294,33 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Custom Date Pickers (Aligned with Dropdown Heights) -->
+      <!-- Custom date range -->
       <div
-        class="flex flex-col gap-2 lg:col-span-4"
-        :class="datePreset === 'customRange' ? 'opacity-100' : 'opacity-30 pointer-events-none'"
+        class="flex flex-col gap-1 col-span-12 sm:col-span-6 lg:col-span-5"
+        :class="datePreset === 'customRange' ? 'opacity-100' : 'pointer-events-none opacity-30'"
       >
         <label
-          class="text-[11px] font-extrabold text-stone-400 dark:text-stone-500 uppercase tracking-wide"
+          class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
         >
           {{ t('orderHistory.customRange') }}
         </label>
-        <div class="flex items-center gap-2 w-full h-[38px] shrink-0">
+        <div class="flex h-10 w-full shrink-0 items-center gap-2">
           <input
             v-model="customStartDate"
             type="date"
-            class="flex-1 min-w-0 bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-2xl h-full px-3 text-xs font-semibold focus:outline-none focus:border-[#b05a18]/50"
+            :aria-label="t('orderHistory.startDate')"
+            class="h-10 min-w-0 flex-1 rounded-md border-none bg-stone-50 px-3 text-sm text-[#1A1C1C] transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:bg-stone-800 dark:text-stone-100"
           />
-          <span class="text-stone-400 text-xs shrink-0 font-extrabold">—</span>
+          <span class="shrink-0 text-xs font-extrabold text-stone-400">—</span>
           <input
             v-model="customEndDate"
             type="date"
-            class="flex-1 min-w-0 bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-2xl h-full px-3 text-xs font-semibold focus:outline-none focus:border-[#b05a18]/50"
+            :aria-label="t('orderHistory.endDate')"
+            class="h-10 min-w-0 flex-1 rounded-md border-none bg-stone-50 px-3 text-sm text-[#1A1C1C] transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:bg-stone-800 dark:text-stone-100"
           />
         </div>
       </div>
-    </section>
+    </FilterPanel>
 
     <!-- ── TABLE SHEET LIST ── -->
     <div

@@ -116,7 +116,7 @@ const handleSubmit = async () => {
               >
                 <Mail class="size-5" aria-hidden="true" />
               </div>
-              <Input
+              <AppInput
                 id="reset-email"
                 v-model="email"
                 class="h-14 rounded-2xl border-none bg-slate-100/50 pl-14 pr-6 text-[15px] font-bold shadow-none focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all"
