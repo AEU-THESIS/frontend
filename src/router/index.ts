@@ -18,7 +18,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: APP_ROUTES.DASHBOARD.path,
         name: APP_ROUTES.DASHBOARD.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/DashboardView.vue'),
       },
       {
         path: APP_ROUTES.ORDERS.path,
@@ -51,13 +51,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: APP_ROUTES.SALE_REPORTS.path,
         name: APP_ROUTES.SALE_REPORTS.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
-        meta: { roles: [ROLES.ADMIN] },
-      },
-      {
-        path: APP_ROUTES.ANALYTICS.path,
-        name: APP_ROUTES.ANALYTICS.name,
-        component: () => import('@/views/UnderMaintenanceView.vue'),
+        component: () => import('@/views/SaleReportSummaryView.vue'),
         meta: { roles: [ROLES.ADMIN] },
       },
       {

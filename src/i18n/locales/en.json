@@ -598,6 +598,37 @@
     "startDate": "Start Date",
     "endDate": "End Date"
   },
+  "reports": {
+    "title": "Sales Summary Report",
+    "subtitle": "Daily revenue breakdown, cash drawer, and payment methods.",
+    "loading": "Loading reports...",
+    "total_revenue_today": "Total Revenue Today",
+    "cash_drawer_expected": "Cash Drawer Expected",
+    "khqr_expected": "KHQR Expected",
+    "showing_for": "Today's Report Lists",
+    "paymentMethods": "Payment Methods",
+    "date": "Date Reports",
+    "filters": {
+      "all": "All",
+      "cash": "Cash",
+      "khqr": "KHQR"
+    },
+    "errors": {
+      "fetchDailyOverviewFailed": "Failed to load daily sales summary."
+    },
+    "table": {
+      "time": "Timestamp",
+      "orderId": "Order ID",
+      "type": "Customer Type",
+      "payment": "Payment Status",
+      "method": "Method",
+      "total": "Total Price",
+      "takeaway": "Takeaway",
+      "dineIn": "Dine-in",
+      "empty": "No Orders Found",
+      "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports"
+    }
+  },
   "menuManagement": {
     "title": "Menu Management",
     "subtitle": "Manage your store's item catalog, pricing, and stock levels.",
@@ -784,6 +815,88 @@
       "toastCreateSuccess": "Category created successfully",
       "toastUpdateError": "Failed to update category",
       "toastCreateError": "Failed to create category"
+    }
+  },
+  "analytics": {
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "title": "Executive Analytics",
+    "premium": "Premium",
+    "exportReport": "Export Report",
+    "viewAll": "View All",
+    "viewInventory": "View Inventory",
+    "bestSelling": "Top 5 Best-Selling Items",
+    "lowestSelling": "Bottom 5 Lowest-Selling Items",
+    "noItemData": "No sales data for this period.",
+    "loadError": "Failed to load selling items.",
+    "lowStockAlerts": "Low Stock Alerts",
+    "insightOfTheWeek": "Insight of the Week",
+    "insightBody": "\"Artisan Latte\" sales are up by 15% after moving it to the top of the morning digital board.",
+    "range": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "globalFilter": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "thisMonth": "This Month",
+      "thisYear": "This Year",
+      "custom": "Custom Range",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply"
+    },
+    "kpi": {
+      "netSales": "Net Sales",
+      "totalOrders": "Total Orders",
+      "avgTicket": "Avg. Ticket",
+      "activeStaff": "Active Staff",
+      "vsLastPeriod": "vs last period",
+      "currentlyClockedIn": "Currently clocked in"
+    },
+    "chart": {
+      "netSalesOverview": "Net Sales Overview",
+      "subtitle": "Compare performance across your selected time granularity."
+    },
+    "granularity": {
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "period": {
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "thisYear": "This Year",
+      "dateRange": "Date Range"
+    },
+    "table": {
+      "item": "Item",
+      "category": "Category",
+      "unitsSold": "Units Sold",
+      "status": "Status",
+      "remaining": "Remaining"
+    },
+    "stock": {
+      "critical": "Critical",
+      "lowStock": "Low Stock",
+      "unitsLeft": "{count} units left",
+      "allStocked": "All ingredients are well stocked."
     }
   },
   "promotions": {

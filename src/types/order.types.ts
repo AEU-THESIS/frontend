@@ -125,3 +125,36 @@ export interface PaginatedOrders {
     totalPages: number
   }
 }
+
+export interface OrderRow {
+  id: number
+  orderNumber: string
+  orderType: 'dine_in' | 'takeaway'
+  paymentStatus: string
+  paymentMethod: 'cash' | 'khqr'
+  totalAmount: string | number
+  paymentCurrency: 'USD' | 'KHR'
+  createdAt: string
+}
+
+export interface OrdersResponse {
+  orders: OrderRow[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+export interface DailySummary {
+  total_revenue: number
+  cash_total: number
+  khqr_total: number
+  exchange_rate: number
+}
+export interface TodayOrdersFilters {
+  date?: string // YYYY-MM-DD
+  paymentMethod?: 'cash' | 'khqr'
+}
+
+export type PaymentMethodFilter = 'all' | 'cash' | 'khqr'
