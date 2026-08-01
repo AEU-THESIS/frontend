@@ -86,7 +86,7 @@ const handleImageChange = (file: File | null) => {
                   >
                     {{ t('staff.form.name') }}
                   </Label>
-                  <Input
+                  <AppInput
                     id="staff-name"
                     class="h-14 rounded-xl border-[#DDC1B3] bg-white px-6 text-sm font-semibold text-[#1A1C1C] placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] transition-all shadow-sm"
                     :placeholder="t('staff.form.namePlaceholder')"
@@ -169,7 +169,7 @@ const handleImageChange = (file: File | null) => {
                       <Mail
                         class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3]"
                       />
-                      <Input
+                      <AppInput
                         id="staff-email"
                         class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] transition-all shadow-sm disabled:bg-slate-50 disabled:opacity-50"
                         :placeholder="t('staff.form.emailPlaceholder')"
@@ -199,7 +199,7 @@ const handleImageChange = (file: File | null) => {
                       <Phone
                         class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3]"
                       />
-                      <Input
+                      <AppInput
                         id="staff-phone"
                         class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] transition-all shadow-sm"
                         :placeholder="t('staff.form.phonePlaceholder')"
@@ -224,7 +224,7 @@ const handleImageChange = (file: File | null) => {
                     <Home
                       class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3]"
                     />
-                    <Input
+                    <AppInput
                       id="staff-address"
                       class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] transition-all shadow-sm"
                       :placeholder="t('staff.form.addressPlaceholder')"

@@ -384,7 +384,7 @@ watch(
           <label for="item-name" :class="CLS.label">{{
             t('menuManagement.productForm.labels.itemName')
           }}</label>
-          <Input
+          <AppInput
             v-model="form.name"
             type="text"
             :placeholder="t('menuManagement.productForm.labels.itemName')"
@@ -458,7 +458,7 @@ watch(
           }}</label>
           <div class="relative">
             <span :class="[CLS.prefix, getError('price') ? 'top-1/3' : 'top-1/2']">$</span>
-            <Input
+            <AppInput
               id="item-price"
               v-model="form.price"
               type="number"
@@ -546,7 +546,7 @@ watch(
           class="grid grid-cols-12 gap-4 items-center"
         >
           <div class="col-span-6">
-            <Input
+            <AppInput
               v-model="row.size"
               type="text"
               :placeholder="t('menuManagement.productForm.sizesSection.sizeePlaceholder')"
@@ -570,7 +570,7 @@ watch(
             <span :class="[CLS.prefix, getError(`sizes.${index}.price`) ? 'top-1/3' : 'top-1/2']"
               >$</span
             >
-            <Input
+            <AppInput
               v-model="row.price"
               type="number"
               step="0.01"
@@ -682,7 +682,7 @@ watch(
             >
 
             <div class="flex-1 min-w-0">
-              <Input
+              <AppInput
                 v-model="group.name"
                 type="text"
                 :placeholder="t('menuManagement.productForm.optionsSection.groupNamePlaceholder')"
@@ -737,7 +737,7 @@ watch(
                 class="grid grid-cols-12 gap-3 items-center"
               >
                 <div class="col-span-6">
-                  <Input
+                  <AppInput
                     v-model="choice.label"
                     type="text"
                     :placeholder="t('menuManagement.productForm.optionsSection.choicePlaceholder')"
@@ -764,7 +764,7 @@ watch(
                     class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"
                     >+$</span
                   >
-                  <Input
+                  <AppInput
                     v-model="choice.priceModifier"
                     type="number"
                     step="0.01"

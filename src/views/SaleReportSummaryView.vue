@@ -48,45 +48,41 @@
         </div>
 
         <Card
-          class="overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm flex flex-col"
+          class="gap-0 overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm flex flex-col"
         >
-          <div
-            class="flex flex-wrap items-center justify-between gap-3 p-4 h-auto md:h-[56px] border-b border-[#F2F2F2]"
+          <!-- Filter -->
+          <FilterPanel
+            :has-active-filters="hasActiveFilters"
+            actions-class="col-span-12 sm:col-span-4"
+            @submit="applyFilters"
+            @clear="clearFilters"
           >
-            <div class="flex flex-wrap items-center gap-4">
-              <div class="flex items-center gap-2">
-                <label
-                  class="text-[11px] font-bold uppercase text-[#A3A3A3] tracking-wider whitespace-nowrap"
-                >
-                  {{ t('reports.date') }}
-                </label>
-                <input
-                  v-model="reportStore.selectedDate"
-                  type="date"
-                  :max="todayIsoDate"
-                  class="w-40 h-9 bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-lg px-3 text-xs font-semibold focus:outline-none focus:border-[#b05a18]/50 cursor-pointer"
-                  @change="reportStore.fetchDailyOverview"
-                />
-              </div>
-
-              <div class="flex items-center gap-2">
-                <label
-                  class="text-[11px] font-bold uppercase text-[#A3A3A3] tracking-wider whitespace-nowrap"
-                >
-                  {{ t('reports.paymentMethods') }}
-                </label>
-                <select
-                  v-model="reportStore.selectedPaymentMethod"
-                  class="w-36 h-9 bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800/80 rounded-lg px-3 text-xs font-semibold focus:outline-none focus:border-[#b05a18]/50 cursor-pointer"
-                  @change="reportStore.fetchDailyOverview"
-                >
-                  <option value="all">{{ t('reports.filters.all') }}</option>
-                  <option value="cash">{{ t('reports.filters.cash') }}</option>
-                  <option value="khqr">{{ t('reports.filters.khqr') }}</option>
-                </select>
-              </div>
+            <!-- Date -->
+            <div class="flex flex-col gap-1 col-span-12 sm:col-span-4">
+              <label
+                for="report-filter-date"
+                class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+              >
+                {{ t('reports.date') }}
+              </label>
+              <input
+                id="report-filter-date"
+                v-model="reportStore.selectedDate"
+                type="date"
+                :max="todayIsoDate"
+                class="h-10 w-full cursor-pointer rounded-md border-none bg-stone-50 px-3 text-sm text-[#1A1C1C] transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:bg-stone-800 dark:text-stone-100"
+              />
             </div>
-          </div>
+
+            <!-- Payment method -->
+            <AppSelect
+              v-model="reportStore.selectedPaymentMethod"
+              :options="paymentMethodOptions"
+              :label="t('reports.paymentMethods')"
+              :all-option-label="t('reports.filters.all')"
+              class="w-full col-span-12 sm:col-span-4"
+            />
+          </FilterPanel>
 
           <div v-if="reportStore.isLoading" class="p-10 text-center text-sm text-[#A3A3A3]">
             {{ t('reports.loading') }}
@@ -190,10 +186,12 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { DollarSign, Wallet, QrCode, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import StaffStatCard from '@/components/staff/StaffStatCard.vue'
 import { Card } from '@/components/ui/card'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
+import FilterPanel from '@/components/common/FilterPanel.vue'
 import { useReportStore } from '@/store/useReportStore'
 
 const { t } = useI18n()
@@ -203,6 +201,15 @@ const today = new Date()
 const todayIsoDate = new Intl.DateTimeFormat('en-CA').format(today)
 
 const formatUsd = (amount: number | string) => `$${Number(amount).toFixed(2)}`
+
+const paymentMethodOptions = computed(() => [
+  { value: 'cash', label: t('reports.filters.cash') },
+  { value: 'khqr', label: t('reports.filters.khqr') },
+])
+
+const hasActiveFilters = computed(
+  () => reportStore.selectedDate !== todayIsoDate || reportStore.selectedPaymentMethod !== 'all'
+)
 
 const ITEMS_PER_PAGE = 5
 const currentPage = ref(1)
@@ -230,12 +237,17 @@ const prevPage = () => {
   if (currentPage.value > 1) currentPage.value--
 }
 
-watch(
-  () => [reportStore.selectedDate, reportStore.selectedPaymentMethod],
-  () => {
-    currentPage.value = 1
-  }
-)
+const applyFilters = async () => {
+  currentPage.value = 1
+  await reportStore.fetchDailyOverview()
+}
+
+const clearFilters = async () => {
+  reportStore.selectedDate = todayIsoDate
+  reportStore.selectedPaymentMethod = 'all'
+
+  await applyFilters()
+}
 
 /**
  * "exchange rate $1 = 4100khr" — combined USD/KHR display per the acceptance criteria.

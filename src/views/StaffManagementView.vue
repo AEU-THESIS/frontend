@@ -2,20 +2,20 @@
 import {
   Users,
   LoaderCircle,
-  Search,
   Eye,
   Pencil,
   Trash2,
   ChevronLeft,
   ChevronRight,
   UserRoundX,
-  Plus,
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { ROLES } from '@/constants/roles'
 import { useStaffManagement } from '@/composables/useStaffManagement'
 import { AppSelect } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
+import FilterPanel from '@/components/common/FilterPanel.vue'
+import { AppInput } from '@/components/ui/input'
 import StaffDetailModal from '@/components/staff/StaffDetailModal.vue'
 import StaffFormModal from '@/components/staff/StaffFormModal.vue'
 import StaffStatCard from '@/components/staff/StaffStatCard.vue'
@@ -110,59 +110,42 @@ const getRoleBadgeClass = (role: string | null) => {
 
         <!-- Main Card -->
         <Card
-          class="overflow-hidden border border-transparent dark:border-stone-800 shadow-sm rounded-2xl bg-white dark:bg-stone-900/50 backdrop-blur-sm"
+          class="gap-0 overflow-hidden border border-transparent dark:border-stone-800 shadow-sm rounded-2xl bg-white dark:bg-stone-900/50 backdrop-blur-sm p-0"
         >
-          <!-- Toolbar -->
-          <div class="p-8 flex flex-col gap-6 md:flex-row md:items-center justify-between">
-            <div class="flex flex-col md:flex-row items-center gap-8 flex-1">
-              <!-- Search -->
-              <div class="relative w-full max-w-sm">
-                <Search class="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
-                <Input
+          <!-- Filter -->
+          <FilterPanel
+            :show-apply="false"
+            :show-clear="false"
+            :add-label="t('staff.addStaff')"
+            actions-class="col-span-3 lg:col-span-2"
+            @submit="handleSearch"
+            @add="openAddDialog"
+          >
+            <div class="col-span-9 lg:col-span-10">
+              <div class="grid grid-cols-12 gap-4 sm:items-end">
+                <AppInput
+                  id="staff-filter-search"
                   v-model="searchQuery"
+                  search-icon
+                  type="text"
+                  :label="t('common.search')"
+                  label-class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+                  container-class="col-span-6 lg:col-span-4"
                   :placeholder="t('staff.searchPlaceholder')"
-                  class="h-12 rounded-xl border-none bg-[#FAFAFA] dark:bg-stone-800/50 pl-11 pr-4 text-sm font-medium focus-visible:ring-1 focus-visible:ring-primary/20 transition-all placeholder:text-[#A3A3A3] text-stone-800 dark:text-stone-100"
-                  @input="handleSearch"
+                  class="h-10 border-none bg-[#FAFAFA] pr-4 text-sm text-[#1A1C1C] shadow-none placeholder:text-stone-400 focus-visible:ring-2 focus-visible:ring-primary dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+                  @update:model-value="handleSearch"
+                />
+
+                <app-select
+                  v-model="roleFilter"
+                  :options="roles.map(r => ({ value: r.id, label: r.name }))"
+                  :label="t('staff.table.role')"
+                  :all-option-label="t('staff.allRoles')"
+                  class="w-full col-span-4 lg:col-span-2"
                 />
               </div>
-
-              <!-- Filter -->
-              <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-[#A3A3A3] uppercase tracking-wider"
-                  >{{ t('common.search') }}:</span
-                >
-                <div class="relative min-w-[140px]">
-                  <!-- <Select v-model="roleFilter">
-                    <SelectTrigger
-                      class="h-12 w-full border-none bg-[#FAFAFA] dark:bg-stone-800/50 px-5 text-sm font-bold text-[#1A1C1C] dark:text-stone-100 focus:ring-0"
-                    >
-                      <SelectValue :placeholder="t('staff.allRoles')" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{{ t('staff.allRoles') }}</SelectItem>
-                      <SelectItem v-for="role in roles" :key="role.id" :value="role.name">
-                        {{ role.name }}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select> -->
-                  <app-select
-                    v-model="roleFilter"
-                    :options="roles.map(r => ({ value: r.id, label: r.name }))"
-                    :placeholder="t('staff.allRoles')"
-                  />
-                </div>
-              </div>
             </div>
-
-            <!-- Add Button -->
-            <Button
-              class="h-12 gap-2 rounded-xl bg-[#D2691E] hover:bg-[#B35919] px-8 font-bold text-white shadow-none transition-all"
-              @click="openAddDialog"
-            >
-              <Plus class="size-5" />
-              {{ t('staff.addStaff') }}
-            </Button>
-          </div>
+          </FilterPanel>
 
           <!-- Table -->
           <div class="overflow-x-auto">

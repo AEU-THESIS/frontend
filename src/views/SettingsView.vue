@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { AppInput } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { getShopSettings, updateShopSettings } from '@/api/shop'
@@ -225,7 +225,7 @@ onMounted(loadSettings)
               class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200"
             >
               {{ t('settings.fields.shopName') }}
-              <Input
+              <AppInput
                 v-model="form.name"
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
@@ -235,7 +235,7 @@ onMounted(loadSettings)
               class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200"
             >
               {{ t('settings.fields.branchSlug') }}
-              <Input
+              <AppInput
                 v-model="form.slug"
                 disabled
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-400"
@@ -246,7 +246,7 @@ onMounted(loadSettings)
               class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200"
             >
               {{ t('settings.fields.ownerName') }}
-              <Input
+              <AppInput
                 v-model="form.ownerName"
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
@@ -256,7 +256,7 @@ onMounted(loadSettings)
               class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200"
             >
               {{ t('settings.fields.phoneNumber') }}
-              <Input
+              <AppInput
                 v-model="form.phone"
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
@@ -266,7 +266,7 @@ onMounted(loadSettings)
               class="flex flex-col items-start gap-2 text-xs font-bold text-stone-700 dark:text-stone-200 md:col-span-2"
             >
               {{ t('settings.fields.fullAddress') }}
-              <Input
+              <AppInput
                 v-model="form.address"
                 class="h-11 rounded-lg border-stone-200 bg-stone-100 font-semibold text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
               />
@@ -323,7 +323,7 @@ onMounted(loadSettings)
                 class="flex flex-col items-start gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
               >
                 {{ t('settings.fields.bakongAccountId') }}
-                <Input
+                <AppInput
                   v-model="form.bakongAccountId"
                   class="h-12 rounded-lg border-stone-200 bg-stone-100 px-4 text-base font-bold text-stone-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
                 />
@@ -362,7 +362,7 @@ onMounted(loadSettings)
               >
                 {{ t('settings.fields.exchangeRate') }}
                 <div class="relative">
-                  <Input
+                  <AppInput
                     v-model="form.exchangeRate"
                     type="number"
                     min="0.01"

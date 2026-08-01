@@ -166,7 +166,7 @@ const submit = () => {
                   <label class="mb-1.5 block text-sm font-bold text-[#1A1C1C] dark:text-stone-200">
                     {{ t('promotions.form.name') }}
                   </label>
-                  <Input
+                  <AppInput
                     v-model="name"
                     :placeholder="t('promotions.form.namePlaceholder')"
                     class="h-12 rounded-xl border border-stone-200 dark:border-stone-700"
@@ -180,7 +180,7 @@ const submit = () => {
                   <label class="mb-1.5 block text-sm font-bold text-[#1A1C1C] dark:text-stone-200">
                     {{ t('promotions.form.code') }}
                   </label>
-                  <Input
+                  <AppInput
                     v-model="code"
                     :placeholder="t('promotions.form.codePlaceholder')"
                     class="h-12 rounded-xl border border-stone-200 dark:border-stone-700"
@@ -216,7 +216,7 @@ const submit = () => {
                     >
                       {{ currencySymbol || '$' }}
                     </span>
-                    <Input
+                    <AppInput
                       v-model.number="discountValue"
                       type="number"
                       min="0"
@@ -247,7 +247,7 @@ const submit = () => {
                     >
                       {{ t('promotions.form.startDate') }}
                     </label>
-                    <Input
+                    <AppInput
                       v-model="startDate"
                       type="date"
                       class="h-12 rounded-xl border border-stone-200 dark:border-stone-700"
@@ -259,7 +259,7 @@ const submit = () => {
                     >
                       {{ t('promotions.form.endDate') }}
                     </label>
-                    <Input
+                    <AppInput
                       v-model="endDate"
                       type="date"
                       class="h-12 rounded-xl border border-stone-200 dark:border-stone-700"

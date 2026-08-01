@@ -1,4 +1,5 @@
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { ZodError } from 'zod'
 import { toast } from 'vue-sonner'
@@ -9,6 +10,8 @@ import type { StaffMember } from '@/types/user.types'
 import type { CreateStaffInput } from '@/types/staff.types'
 import { uploadApi } from '@/api/upload'
 import type { ApiError } from '@/types/api.types'
+
+const SEARCH_DEBOUNCE_MS = 300
 
 export function useStaffManagement() {
   const { t } = useI18n()
@@ -56,13 +59,33 @@ export function useStaffManagement() {
   }))
 
   // --- Methods ---
+  // Live search fires on every keystroke, so each list fetch abandons the one
+  // before it instead of racing it to overwrite `staffList`.
+  let listController: AbortController | null = null
+  let lastRequestedSearch: string | null = null
+
   const fetchStaff = (page = 1) => {
-    staffStore.fetchStaff(page, staffStore.pagination.limit, searchQuery.value)
+    listController?.abort()
+    listController = new AbortController()
+    lastRequestedSearch = searchQuery.value
+    staffStore.fetchStaff(
+      page,
+      staffStore.pagination.limit,
+      searchQuery.value,
+      listController.signal
+    )
   }
 
   const handleSearch = () => {
     fetchStaff(1)
   }
+
+  // Bound to the search field: only the last keystroke in a burst reaches the
+  // API, and a value we already asked for (e.g. just submitted) is skipped.
+  const handleSearchInput = useDebounceFn(() => {
+    if (searchQuery.value === lastRequestedSearch) return
+    fetchStaff(1)
+  }, SEARCH_DEBOUNCE_MS)
 
   const changePage = (page: number) => {
     fetchStaff(page)
@@ -219,6 +242,7 @@ export function useStaffManagement() {
     roles: computed(() => staffStore.roles),
     // Methods
     handleSearch,
+    handleSearchInput,
     changePage,
     openAddDialog,
     openEditDialog,

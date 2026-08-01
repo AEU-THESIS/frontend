@@ -263,7 +263,8 @@
       "unit": "Unit",
       "allStatuses": "All Statuses",
       "allUnits": "All Units",
-      "clear": "Clear Filters"
+      "clear": "Clear Filters",
+      "apply": "Apply Filters"
     },
     "actions": {
       "addItem": "Add Item",
@@ -350,7 +351,9 @@
     "loading": "Loading...",
     "noData": "No data available",
     "all": "All",
-    "select": "Select"
+    "select": "Select",
+    "applyFilters": "Apply Filters",
+    "clearFilters": "Clear Filters"
   },
   "offline": {
     "noConnection": "No Connection",
@@ -596,7 +599,9 @@
       "confirmCancel": "Confirm Cancel?"
     },
     "startDate": "Start Date",
-    "endDate": "End Date"
+    "endDate": "End Date",
+    "applyFilters": "Apply Filters",
+    "clearFilters": "Clear Filters"
   },
   "reports": {
     "title": "Sales Summary Report",
@@ -611,7 +616,9 @@
     "filters": {
       "all": "All",
       "cash": "Cash",
-      "khqr": "KHQR"
+      "khqr": "KHQR",
+      "apply": "Apply Filters",
+      "clear": "Clear Filters"
     },
     "errors": {
       "fetchDailyOverviewFailed": "Failed to load daily sales summary."
@@ -638,6 +645,8 @@
       "itemName": "Item Name",
       "category": "Category",
       "status": "Status",
+      "allCategories": "All Categories",
+      "allStatuses": "All Statuses",
       "search": "Search...",
       "clearAll": "Clear All",
       "applyFilters": "Apply Filters"
@@ -904,6 +913,9 @@
     "subtitle": "Create and monitor your seasonal marketing campaigns",
     "searchPlaceholder": "Search promotions...",
     "addPromotion": "Add Promotion",
+    "filters": {
+      "clear": "Clear Filters"
+    },
     "loading": "Loading promotions...",
     "empty": "No promotions found",
     "pagination": "Showing {start} to {end} of {total} promotions",

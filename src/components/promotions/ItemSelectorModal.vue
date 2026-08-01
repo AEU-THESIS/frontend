@@ -148,7 +148,7 @@ const formatPrice = (price: number | null) =>
             <div class="px-8 pb-4">
               <div class="relative">
                 <Search class="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
-                <Input
+                <AppInput
                   v-model="search"
                   :placeholder="t('promotions.selector.searchPlaceholder')"
                   class="h-12 rounded-xl border border-stone-200 bg-white pl-11 pr-4 text-sm dark:border-stone-700 dark:bg-stone-800"
