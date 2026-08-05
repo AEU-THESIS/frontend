@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { reactive, watch, computed, onMounted, ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { ComboboxSelect } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import { RadioGroupRoot, RadioGroupItem, RadioGroupIndicator } from 'reka-ui'
-import { Plus } from 'lucide-vue-next'
+import { BookOpen, ChevronDown, Pencil, Plus, Save, Trash2, X } from 'lucide-vue-next'
 import { useProductStore } from '@/store/useProductStore'
+import { useVariationTemplateStore } from '@/store/useVariationTemplateStore'
 import { productFormSchema, type CreateProductPayload } from '@/validations/productValidation'
+import {
+  createVariationTemplatePayloadSchema,
+  updateVariationTemplatePayloadSchema,
+} from '@/validations/variationTemplateValidation'
 import { PRICE_MODE, TYPE, OPTIONS_SET_TYPE } from '@/constants/product'
 import { toast } from 'vue-sonner'
 import ImageUpload from '@/components/common/ImageUpload.vue'
@@ -19,6 +26,7 @@ import type {
   ItemForm,
   Product,
 } from '@/types/product.types'
+import type { VariationTemplate } from '@/types/variationTemplate.types'
 
 const { t } = useI18n()
 
@@ -29,6 +37,7 @@ const props = defineProps<{
 
 // ── Constants ──────────────────────────────────────────────────────────
 const productStore = useProductStore()
+const variationTemplateStore = useVariationTemplateStore()
 
 const PRICE_MODE_OPTIONS = computed(() => [
   {
@@ -92,6 +101,22 @@ const DEFAULT_FORM = (): ItemForm => ({
 // ── State ──────────────────────────────────────────────────────────────────
 const form = reactive<ItemForm>(DEFAULT_FORM())
 const selectedImageFile = ref<File | null>(null)
+const variationTemplates = computed(() => variationTemplateStore.templates)
+const templateMenuRef = ref<HTMLElement | null>(null)
+const isTemplateMenuOpen = ref(false)
+onClickOutside(templateMenuRef, () => {
+  isTemplateMenuOpen.value = false
+})
+const isTemplateEditorOpen = ref(false)
+const editingTemplateId = ref<number | null>(null)
+const templateDraft = reactive({
+  name: '',
+  choices: [] as Array<{
+    id: string
+    label: string
+    priceModifier: number
+  }>,
+})
 
 const showPrice = () => form.type === TYPE.FOOD || form.priceMode === PRICE_MODE.FIXED
 const showSizes = () => form.type === TYPE.DRINK && form.priceMode === PRICE_MODE.BY_SIZE
@@ -113,6 +138,148 @@ function addOptionGroup() {
 }
 function removeOptionGroup(id: string) {
   form.optionGroups = form.optionGroups.filter(g => g.id !== id)
+}
+function resetTemplateDraft() {
+  editingTemplateId.value = null
+  templateDraft.name = ''
+  templateDraft.choices = []
+}
+function closeTemplateEditor() {
+  isTemplateEditorOpen.value = false
+  resetTemplateDraft()
+}
+function buildTemplateOptionsPayload(
+  choices: Array<{ label: string; priceModifier?: number | null }>
+) {
+  return choices
+    .filter(choice => choice.label.trim())
+    .map((choice, index) => ({
+      optionLabel: choice.label.trim(),
+      priceModifier: Number(choice.priceModifier) || 0,
+      displayOrder: index,
+    }))
+}
+async function saveOptionGroupAsTemplate(group: OptionGroup) {
+  const name = group.name.trim()
+  const options = buildTemplateOptionsPayload(group.choices)
+
+  const validation = createVariationTemplatePayloadSchema.safeParse({ name, options })
+  if (!validation.success) {
+    toast.error(t(validation.error.issues[0].message))
+    return
+  }
+
+  const existing = variationTemplateStore.templates.find(
+    template => template.name.toLowerCase() === validation.data.name.toLowerCase()
+  )
+
+  try {
+    if (existing) {
+      const confirmed = window.confirm(
+        t('menuManagement.productForm.templateEditor.replaceConfirm', { name: existing.name })
+      )
+      if (!confirmed) return
+      await variationTemplateStore.updateTemplate(existing.id, validation.data)
+    } else {
+      await variationTemplateStore.createTemplate(validation.data)
+    }
+    toast.success(t('menuManagement.productForm.templateEditor.toastSaved'))
+  } catch {
+    toast.error(t('menuManagement.productForm.templateEditor.toastError'))
+  }
+}
+function openTemplateEditor(template: VariationTemplate) {
+  editingTemplateId.value = template.id
+  templateDraft.name = template.name
+  templateDraft.choices = template.options.map(option => ({
+    id: uid(),
+    label: option.optionLabel,
+    priceModifier: option.priceModifier,
+  }))
+  isTemplateMenuOpen.value = false
+  isTemplateEditorOpen.value = true
+}
+function addTemplateDraftChoice() {
+  templateDraft.choices.push({ id: uid(), label: '', priceModifier: 0 })
+}
+function removeTemplateDraftChoice(id: string) {
+  if (templateDraft.choices.length === 1) return
+  templateDraft.choices = templateDraft.choices.filter(choice => choice.id !== id)
+}
+async function saveEditedTemplate() {
+  if (!editingTemplateId.value) return
+
+  const options = buildTemplateOptionsPayload(templateDraft.choices)
+
+  const validation = updateVariationTemplatePayloadSchema.safeParse({
+    name: templateDraft.name.trim(),
+    options,
+  })
+  if (!validation.success) {
+    toast.error(t(validation.error.issues[0].message))
+    return
+  }
+
+  const duplicateName = variationTemplateStore.templates.some(
+    template =>
+      template.id !== editingTemplateId.value &&
+      template.name.toLowerCase() === validation.data.name?.toLowerCase()
+  )
+  if (duplicateName) {
+    toast.error(t('menuManagement.productForm.templateEditor.validation.duplicateName'))
+    return
+  }
+
+  try {
+    await variationTemplateStore.updateTemplate(editingTemplateId.value, validation.data)
+    closeTemplateEditor()
+    toast.success(t('menuManagement.productForm.templateEditor.toastUpdated'))
+  } catch {
+    toast.error(t('menuManagement.productForm.templateEditor.toastError'))
+  }
+}
+async function deleteVariationTemplate(template: VariationTemplate) {
+  const confirmed = window.confirm(
+    t('menuManagement.productForm.templateEditor.deleteConfirm', { name: template.name })
+  )
+  if (!confirmed) return
+
+  try {
+    await variationTemplateStore.deleteTemplate(template.id)
+    if (variationTemplateStore.templates.length === 0) {
+      isTemplateMenuOpen.value = false
+    }
+    toast.success(t('menuManagement.productForm.templateEditor.toastDeleted'))
+  } catch {
+    toast.error(t('menuManagement.productForm.templateEditor.toastError'))
+  }
+}
+function applyVariationTemplate(template: VariationTemplate) {
+  const hasSameGroup = form.optionGroups.some(
+    group => group.name.trim().toLowerCase() === template.name.toLowerCase()
+  )
+
+  if (hasSameGroup) {
+    const confirmed = window.confirm(
+      t('menuManagement.productForm.templateEditor.duplicateApplyConfirm', { name: template.name })
+    )
+    if (!confirmed) return
+  }
+
+  form.optionGroups.push({
+    id: uid(),
+    name: template.name,
+    type: OPTIONS_SET_TYPE.CUSTOM,
+    choices: template.options.map(option => ({
+      id: uid(),
+      label: option.optionLabel,
+      priceModifier: option.priceModifier,
+    })),
+  })
+  isTemplateMenuOpen.value = false
+  toast.success(
+    t('menuManagement.productForm.templateEditor.toastApplied', { name: template.name })
+  )
 }
 function addChoice(group: OptionGroup) {
   group.choices.push(makeChoice())
@@ -157,7 +324,7 @@ function onDragEnd() {
 
 // ── Mounted ───────────────────────────────────────────────────────
 onMounted(async () => {
-  await productStore.fetchCategories()
+  await Promise.all([variationTemplateStore.fetchTemplates(), productStore.fetchCategories()])
 })
 
 // ── Computed ───────────────────────────────────────────────────────────
@@ -630,10 +797,97 @@ watch(
             {{ t('menuManagement.productForm.optionsSection.description') }}
           </p>
         </div>
-        <button type="button" :class="CLS.actionBtn" @click="addOptionGroup">
-          <Plus class="w-3.5 h-3.5" />
-          {{ t('menuManagement.productForm.optionsSection.addGroupButton') }}
-        </button>
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <div ref="templateMenuRef" class="relative">
+            <Button
+              type="button"
+              variant="tertiary"
+              :disabled="variationTemplates.length === 0"
+              class="h-auto rounded-xl border border-[#D2691E]/20 bg-white px-3 py-2 text-sm font-semibold text-[#D2691E] hover:bg-[#D2691E]/10 dark:bg-stone-900 disabled:opacity-50 disabled:cursor-not-allowed"
+              @click="isTemplateMenuOpen = !isTemplateMenuOpen"
+            >
+              <BookOpen class="w-4 h-4" />
+              {{ t('menuManagement.productForm.templateMenu.triggerButton') }}
+              <span
+                v-if="variationTemplates.length"
+                class="rounded-full bg-[#D2691E]/10 px-1.5 py-0.5 text-[11px] font-black"
+              >
+                {{ variationTemplates.length }}
+              </span>
+              <ChevronDown class="w-3.5 h-3.5" />
+            </Button>
+
+            <div
+              v-if="isTemplateMenuOpen"
+              class="absolute right-0 top-11 z-30 w-72 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-stone-900"
+            >
+              <div class="border-b border-zinc-100 px-3 py-2 dark:border-zinc-800">
+                <p
+                  class="text-xs font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400"
+                >
+                  {{ t('menuManagement.productForm.templateMenu.header') }}
+                </p>
+              </div>
+              <div
+                v-for="template in variationTemplates"
+                :key="template.id"
+                class="flex w-full items-center justify-between gap-3 px-3 py-3 hover:bg-[#D2691E]/10 dark:hover:bg-stone-800"
+              >
+                <span class="min-w-0">
+                  <span
+                    class="block truncate text-sm font-extrabold text-stone-800 dark:text-stone-100"
+                  >
+                    {{ template.name }}
+                  </span>
+                  <span class="block truncate text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                    {{
+                      t('menuManagement.productForm.templateMenu.optionsCount', {
+                        count: template.optionCount,
+                      })
+                    }}
+                  </span>
+                </span>
+                <span class="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    class="h-auto rounded-md px-2 py-1 text-xs font-black text-[#D2691E] hover:bg-[#D2691E]/10"
+                    @click="applyVariationTemplate(template)"
+                  >
+                    {{ t('menuManagement.productForm.templateMenu.useButton') }}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    size="icon"
+                    :aria-label="t('menuManagement.productForm.templateMenu.editTooltip')"
+                    :title="t('menuManagement.productForm.templateMenu.editTooltip')"
+                    class="h-7 w-7 rounded-md text-zinc-500 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    @click="openTemplateEditor(template)"
+                  >
+                    <Pencil class="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    size="icon"
+                    :aria-label="t('menuManagement.productForm.templateMenu.deleteTooltip')"
+                    :title="t('menuManagement.productForm.templateMenu.deleteTooltip')"
+                    class="h-7 w-7 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    @click="deleteVariationTemplate(template)"
+                  >
+                    <Trash2 class="h-3.5 w-3.5" />
+                  </Button>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" :class="CLS.actionBtn" @click="addOptionGroup">
+            <Plus class="w-3.5 h-3.5" />
+            {{ t('menuManagement.productForm.optionsSection.addGroupButton') }}
+          </button>
+        </div>
       </div>
 
       <!-- Empty state -->
@@ -702,6 +956,16 @@ watch(
                 {{ getError(`optionGroups.${groupIndex}.name`) }}
               </p>
             </div>
+
+            <Button
+              type="button"
+              variant="tertiary"
+              class="h-8 gap-1.5 rounded-lg bg-[#D2691E]/10 px-2.5 text-xs font-bold text-[#D2691E] hover:bg-[#D2691E]/20"
+              @click="saveOptionGroupAsTemplate(group)"
+            >
+              <Save class="w-3.5 h-3.5" />
+              {{ t('menuManagement.productForm.templateMenu.saveAsTemplateButton') }}
+            </Button>
 
             <button
               type="button"
@@ -824,6 +1088,136 @@ watch(
         />
       </div>
     </section>
+
+    <div
+      v-if="isTemplateEditorOpen"
+      class="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-4"
+      @click.self="closeTemplateEditor"
+    >
+      <div
+        class="flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-stone-950"
+      >
+        <div
+          class="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-zinc-800"
+        >
+          <div>
+            <h2 class="text-xl font-extrabold text-stone-950 dark:text-stone-50">
+              {{ t('menuManagement.productForm.templateEditor.title') }}
+            </h2>
+            <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              {{ t('menuManagement.productForm.templateEditor.subtitle') }}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="tertiary"
+            size="icon"
+            class="h-9 w-9 rounded-full text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            @click="closeTemplateEditor"
+          >
+            <X class="h-5 w-5" />
+          </Button>
+        </div>
+
+        <div class="space-y-4 overflow-y-auto p-5">
+          <label class="block space-y-2">
+            <span
+              class="text-[11px] font-black uppercase tracking-widest text-[#564338] dark:text-stone-200"
+            >
+              {{ t('menuManagement.productForm.templateEditor.nameLabel') }}
+            </span>
+            <Input
+              v-model="templateDraft.name"
+              type="text"
+              class="h-11 rounded-xl bg-[#FAFAFA] font-bold text-[#000000] dark:bg-stone-800 dark:text-stone-100"
+              :placeholder="t('menuManagement.productForm.templateEditor.namePlaceholder')"
+            />
+          </label>
+
+          <div class="space-y-2">
+            <div class="grid grid-cols-12 gap-3 px-1">
+              <span
+                class="col-span-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500"
+              >
+                {{ t('menuManagement.productForm.optionsSection.optionLabel') }}
+              </span>
+              <span
+                class="col-span-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500"
+              >
+                {{ t('menuManagement.productForm.optionsSection.priceModifier') }}
+              </span>
+            </div>
+
+            <div
+              v-for="choice in templateDraft.choices"
+              :key="choice.id"
+              class="grid grid-cols-12 items-center gap-3"
+            >
+              <Input
+                v-model="choice.label"
+                type="text"
+                class="col-span-6 h-11 rounded-xl bg-[#FAFAFA] font-bold text-[#000000] dark:bg-stone-800 dark:text-stone-100"
+                :placeholder="t('menuManagement.productForm.optionsSection.choicePlaceholder')"
+              />
+              <div class="relative col-span-4">
+                <span
+                  class="absolute left-4 top-1/2 -translate-y-1/2 text-xs text-zinc-400 dark:text-zinc-500"
+                >
+                  +$
+                </span>
+                <Input
+                  v-model="choice.priceModifier"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="h-11 rounded-xl bg-[#FAFAFA] pl-8 font-bold text-[#000000] dark:bg-stone-800 dark:text-stone-100"
+                  placeholder="0.00"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="tertiary"
+                size="icon"
+                :disabled="templateDraft.choices.length === 1"
+                class="col-span-2 h-9 w-auto rounded-lg text-red-400 hover:bg-red-50 disabled:opacity-30 dark:hover:bg-red-950/30"
+                @click="removeTemplateDraftChoice(choice.id)"
+              >
+                <Trash2 class="h-4 w-4" />
+              </Button>
+            </div>
+
+            <Button
+              type="button"
+              variant="tertiary"
+              :class="[CLS.addBtn, 'h-auto py-0 text-xs']"
+              @click="addTemplateDraftChoice"
+            >
+              <Plus class="h-3.5 w-3.5" />
+              {{ t('menuManagement.productForm.templateEditor.addChoiceButton') }}
+            </Button>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 border-t border-zinc-100 p-4 dark:border-zinc-800">
+          <Button
+            type="button"
+            variant="tertiary"
+            class="h-auto rounded-xl px-4 py-2 text-sm font-semibold text-zinc-500 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            @click="closeTemplateEditor"
+          >
+            {{ t('menuManagement.productForm.templateEditor.cancelButton') }}
+          </Button>
+          <Button
+            type="button"
+            variant="tertiary"
+            class="h-auto rounded-xl bg-[#D2691E] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#b85c18]"
+            @click="saveEditedTemplate"
+          >
+            {{ t('menuManagement.productForm.templateEditor.saveButton') }}
+          </Button>
+        </div>
+      </div>
+    </div>
 
     <!-- ── Form actions ───────────────────────────────────────────────── -->
     <div class="flex items-center justify-end gap-3 pt-2">

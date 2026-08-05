@@ -750,6 +750,38 @@
         "addChoiceButton": "Add choice",
         "removeChoiceButtonLabel": "Remove choice"
       },
+      "templateMenu": {
+        "triggerButton": "Templates",
+        "header": "Saved templates",
+        "useButton": "Use",
+        "editTooltip": "Edit template",
+        "deleteTooltip": "Delete template",
+        "optionsCount": "{count} options",
+        "saveAsTemplateButton": "Save template"
+      },
+      "templateEditor": {
+        "title": "Edit Template",
+        "subtitle": "Update this saved variation group for future menu items.",
+        "nameLabel": "Template name",
+        "namePlaceholder": "e.g. Milk Type",
+        "addChoiceButton": "Add option",
+        "cancelButton": "Cancel",
+        "saveButton": "Save Template",
+        "validation": {
+          "nameRequired": "Template name is required",
+          "optionLabelRequired": "Option label is required",
+          "optionsRequired": "At least one option is required",
+          "duplicateName": "A template with this name already exists"
+        },
+        "toastSaved": "Variation group saved as template",
+        "toastUpdated": "Template updated",
+        "toastDeleted": "Template deleted",
+        "toastApplied": "Applied {name}",
+        "toastError": "Something went wrong. Please try again.",
+        "deleteConfirm": "Delete \"{name}\" template?",
+        "replaceConfirm": "Replace the existing \"{name}\" template?",
+        "duplicateApplyConfirm": "\"{name}\" already exists. Add another copy?"
+      },
       "buttons": {
         "reset": "Reset",
         "save": "Save Item",

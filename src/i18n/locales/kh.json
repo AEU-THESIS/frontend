@@ -696,6 +696,38 @@
         "addChoiceButton": "បន្ថែមជម្រើស",
         "removeChoiceButtonLabel": "ដកចេញជម្រើស"
       },
+      "templateMenu": {
+        "triggerButton": "គំរូ",
+        "header": "គំរូដែលបានរក្សាទុក",
+        "useButton": "ប្រើប្រាស់",
+        "editTooltip": "កែសម្រួលគំរូ",
+        "deleteTooltip": "លុបគំរូ",
+        "optionsCount": "{count} ជម្រើស",
+        "saveAsTemplateButton": "រក្សាទុកជាគំរូ"
+      },
+      "templateEditor": {
+        "title": "កែសម្រួលគំរូ",
+        "subtitle": "ធ្វើបច្ចុប្បន្នភាពក្រុមជម្រើសដែលបានរក្សាទុកនេះសម្រាប់មុខទំនិញនាពេលអនាគត។",
+        "nameLabel": "ឈ្មោះគំរូ",
+        "namePlaceholder": "ឧ. ប្រភេទទឹកដោះគោ",
+        "addChoiceButton": "បន្ថែមជម្រើស",
+        "cancelButton": "បោះបង់",
+        "saveButton": "រក្សាទុកគំរូ",
+        "validation": {
+          "nameRequired": "ត្រូវការឈ្មោះគំរូ",
+          "optionLabelRequired": "ស្លាកជម្រើសគឺត្រូវបានទាមទារ",
+          "optionsRequired": "ត្រូវការជម្រើសយ៉ាងហោចណាស់មួយ",
+          "duplicateName": "គំរូដែលមានឈ្មោះនេះមានរួចហើយ"
+        },
+        "toastSaved": "ក្រុមជម្រើសត្រូវបានរក្សាទុកជាគំរូ",
+        "toastUpdated": "គំរូត្រូវបានធ្វើបច្ចុប្បន្នភាព",
+        "toastDeleted": "គំរូត្រូវបានលុប",
+        "toastApplied": "បានអនុវត្ត {name}",
+        "toastError": "មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។",
+        "deleteConfirm": "លុបគំរូ \"{name}\"?",
+        "replaceConfirm": "ជំនួសគំរូ \"{name}\" ដែលមានស្រាប់?",
+        "duplicateApplyConfirm": "\"{name}\" មានរួចហើយ។ តើបន្ថែមច្បាប់ចម្លងមួយទៀតទេ?"
+      },
       "buttons": {
         "reset": "កែសម្រួលឡើងវិញ",
         "save": "រក្សាទុកវត្ថុ",
