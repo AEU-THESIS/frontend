@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import CartSidebar from '@/components/cart/CartSidebar.vue'
 import Sidebar from '@/components/layout/Sidebar.vue'
@@ -9,6 +11,7 @@ import { getShopSettings } from '@/api/shop'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 
 const route = useRoute()
+const { t } = useI18n()
 const shopSettingsStore = useShopSettingsStore()
 
 onMounted(async () => {
@@ -16,7 +19,10 @@ onMounted(async () => {
     const settings = await getShopSettings()
     shopSettingsStore.setShopSettings(settings)
   } catch (error) {
+    // Surface the failure instead of silently falling back to defaults
+    // (which would show the wrong currency/rate and hide the Orders menu).
     console.error('Failed to load shop settings:', error)
+    toast.error(t('settings.messages.loadError'))
   }
 })
 </script>

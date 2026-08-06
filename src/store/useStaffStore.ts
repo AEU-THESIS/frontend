@@ -25,19 +25,29 @@ export const useStaffStore = defineStore('staff', () => {
   const inactiveStaffCount = computed(() => staffList.value.length - activeStaffCount.value)
 
   // Actions
-  const fetchStaff = async (page: number = 1, limit: number = 10, search: string = '') => {
+  const fetchStaff = async (
+    page: number = 1,
+    limit: number = 10,
+    search: string = '',
+    signal?: AbortSignal
+  ) => {
     isLoading.value = true
     lastError.value = null
     try {
-      const result = await getStaffList(page, limit, search)
+      const result = await getStaffList(page, limit, search, signal)
       staffList.value = result.data
       pagination.value = result.pagination
     } catch (err: unknown) {
+      // Aborted because a newer live-search request superseded this one; the
+      // newer request now owns loading/error state, so bail without touching it.
+      if (signal?.aborted) return
       const error = err as Error
       lastError.value = error.message || 'Failed to fetch staff'
       throw err
     } finally {
-      isLoading.value = false
+      if (!signal?.aborted) {
+        isLoading.value = false
+      }
     }
   }
 
