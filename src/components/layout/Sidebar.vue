@@ -46,7 +46,11 @@ const toggleSidebar = () => {
 }
 
 const navSections = computed(() => {
-  const userRole = authStore.user?.role || ''
+  const KNOWN_ROLES: RoleType[] = [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER]
+  const rawRole = authStore.user?.role
+  const userRole: RoleType = KNOWN_ROLES.includes(rawRole as RoleType)
+    ? (rawRole as RoleType)
+    : ROLES.CASHIER
 
   const sections = [
     {
@@ -115,7 +119,7 @@ const navSections = computed(() => {
   ]
 
   // A missing roles list means "visible to every authenticated user".
-  const canAccess = (roles?: RoleType[]) => !roles || roles.includes(userRole as RoleType)
+  const canAccess = (roles?: RoleType[]) => !roles || roles.includes(userRole)
 
   // Filter at the section level, then within each surviving section filter items
   // by their own optional roles, and drop any section left with no visible items.
