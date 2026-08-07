@@ -79,7 +79,7 @@
       "orders": "Orders",
       "orderHistory": "Order History",
       "inventory": "Inventory",
-      "products": "Stock",
+      "products": "Product",
       "categories": "Categories",
       "saleReports": "Sale",
       "analytics": "Analytics",
@@ -637,7 +637,7 @@
     }
   },
   "menuManagement": {
-    "title": "Menu Management",
+    "title": "Product Management",
     "subtitle": "Manage your store's item catalog, pricing, and stock levels.",
     "filters": "Filters",
     "newItem": "New Item",
