@@ -9,7 +9,7 @@ import ProductCard from '@/components/pos/ProductCard.vue'
 import ProductModifierModal from '@/components/pos/ProductModifierModal.vue'
 import CashPaymentModal from '@/components/pos/CashPaymentModal.vue'
 import CheckoutSuccessModal from '@/components/pos/CheckoutSuccessModal.vue'
-import { Input } from '@/components/ui/input'
+import { AppInput } from '@/components/ui/input'
 import { toast } from 'vue-sonner'
 
 const { t } = useI18n()
@@ -116,7 +116,7 @@ const handleSuccessModalClose = () => {
           <span class="material-symbols-outlined text-stone-400 dark:text-stone-600 text-lg"
             >search</span
           >
-          <Input
+          <AppInput
             v-model="searchInput"
             class="bg-transparent border-none focus-visible:ring-0 shadow-none w-full text-stone-800 dark:text-stone-50 ml-2.5 font-body text-sm outline-none px-0 h-auto"
             :placeholder="t('home.searchPlaceholder')"

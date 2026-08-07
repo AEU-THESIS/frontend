@@ -120,7 +120,7 @@ function categoryBadgeClass(category: string) {
 
 <template>
   <div
-    class="bg-white dark:bg-stone-900 rounded-xl shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden"
+    class="bg-white dark:bg-stone-900 shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden"
   >
     <!-- ── Table ─────────────────────────────────────────────────────────── -->
     <div class="overflow-x-auto">

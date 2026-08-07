@@ -151,7 +151,7 @@ const todayInput = toDateInput(new Date())
             <span class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#A3A3A3]">
               {{ t('analytics.globalFilter.from') }}
             </span>
-            <Input
+            <AppInput
               v-model="customStart"
               type="date"
               :max="customEnd || todayInput"
@@ -162,7 +162,7 @@ const todayInput = toDateInput(new Date())
             <span class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#A3A3A3]">
               {{ t('analytics.globalFilter.to') }}
             </span>
-            <Input
+            <AppInput
               v-model="customEnd"
               type="date"
               :min="customStart"

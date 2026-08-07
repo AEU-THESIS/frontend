@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ref, reactive, onMounted, computed, onUnmounted } from 'vue'
-import {
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-  DropdownMenuPortal,
-  DropdownMenuContent,
-} from 'reka-ui'
 import { useProductStore } from '@/store/useProductStore'
 import { OPTIONS_SET_TYPE } from '@/constants/product'
 import type { Product, ProductFilters, ProductOptionSet } from '@/types/product.types'
 import NoImage from '@/assets/no-image.jpg'
 import AddProductForm from '@/components/menu/AddProductForm.vue'
 import ProductTable from '@/components/menu/table/ProductTable.vue'
+import { Card } from '@/components/ui/card'
+import { AppInput } from '@/components/ui/input'
+import FilterPanel from '@/components/common/FilterPanel.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppDialog from '@/components/common/AppDialog.vue'
 import ProductDetail from '@/components/menu/ProductDetail.vue'
@@ -28,6 +25,14 @@ const statusFilterOptions = computed(() => [
   { value: 'active', label: t('menuManagement.statusOptions.active') },
   { value: 'not-active', label: t('menuManagement.statusOptions.inactive') },
 ])
+
+const categoryFilterOptions = computed(() =>
+  productStore.categories.map(category => ({ value: category.name, label: category.name }))
+)
+
+const hasActiveFilters = computed(
+  () => filters.name.trim() !== '' || filters.category !== 'all' || filters.status !== 'all'
+)
 
 const productId = ref<number | null>(null)
 const isDetailDialogOpen = ref(false)
@@ -191,8 +196,7 @@ onUnmounted(() => {
 <template>
   <!-- Main Content (Canvas) -->
   <main class="p-8 mb-10 overflow-y-auto">
-    <!-- Toolbar -->
-    <div class="flex justify-between items-center mb-8">
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex gap-3 items-center">
         <div class="w-auto">
           <h1 class="font-headline-lg text-[24px] font-bold text-on-background mb-[4px]">
@@ -201,184 +205,66 @@ onUnmounted(() => {
           <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p>
         </div>
       </div>
-      <div class="flex gap-2 w-auto">
-        <DropdownMenuRoot>
-          <DropdownMenuTrigger
-            class="transition-opacity cursor-pointer hover:text-[#974400] focus:outline-none"
-            @click.stop
-          >
-            <button
-              class="px-4 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-lg text-[16px] font-bold text-sm flex items-center gap-2 shadow-sm relative z-[20]"
-            >
-              <span class="material-symbols-outlined text-[18px]">tune</span>
-              <span class="max-sm:sr-only">{{ t('menuManagement.filters') }}</span>
-              <span class="w-2 h-2 bg-primary rounded-full"></span>
-            </button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuPortal>
-            <DropdownMenuContent
-              class="z-50 min-w-[140px] bg-white dark:bg-stone-800 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
-              :side-offset="4"
-              align="end"
-            >
-              <div
-                class="bg-white dark:bg-stone-900 w-full border border-stone-100 dark:border-stone-800 rounded-xl mb-8 shadow-sm p-6"
-              >
-                <div class="flex flex-col gap-6">
-                  <!-- Filter Inputs Row -->
-                  <div class="flex flex-wrap gap-4 items-end">
-                    <!-- Search Field -->
-                    <div class="flex-[2] min-w-[240px] flex flex-col gap-1">
-                      <label
-                        class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
-                        >{{ t('menuManagement.filterPanel.itemName') }}</label
-                      >
-                      <div class="relative">
-                        <span
-                          class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 text-[20px]"
-                          >search</span
-                        >
-                        <input
-                          v-model="filters.name"
-                          class="w-full pl-10 pr-4 py-2.5 bg-stone-50 dark:bg-stone-800 border-stone-100 dark:border-stone-800 rounded-lg text-sm dark:text-stone-100 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-stone-900 transition-all placeholder:text-stone-400 dark:placeholder:text-stone-500"
-                          :placeholder="t('menuManagement.filterPanel.search')"
-                          type="text"
-                        />
-                      </div>
-                    </div>
-                    <!-- Category Dropdown -->
-                    <div class="flex-1 min-w-[140px] flex flex-col gap-1">
-                      <app-select
-                        v-model="filters.category"
-                        :options="[
-                          ...productStore.categories.map(c => ({ value: c.name, label: c.name })),
-                        ]"
-                        :label="t('menuManagement.filterPanel.category')"
-                        class="w-full"
-                      />
-                    </div>
-                    <!-- Status Dropdown -->
-                    <div class="flex-1 min-w-[140px] flex flex-col gap-1">
-                      <app-select
-                        v-model="filters.status"
-                        :options="statusFilterOptions"
-                        :label="t('menuManagement.filterPanel.status')"
-                        class="w-full"
-                      />
-                    </div>
-                  </div>
-                  <!-- Actions Row -->
-                  <div
-                    class="flex justify-end items-center gap-4 pt-4 border-t border-stone-50 dark:border-stone-800"
-                  >
-                    <button
-                      class="px-4 py-2.5 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 text-sm font-bold transition-colors"
-                      @click="clearFilters"
-                    >
-                      {{ t('menuManagement.filterPanel.clearAll') }}
-                    </button>
-                    <button
-                      class="px-8 py-2.5 bg-primary text-white rounded-lg text-sm font-bold shadow-sm hover:opacity-90 transition-opacity"
-                      @click="applyFilters"
-                    >
-                      {{ t('menuManagement.filterPanel.applyFilters') }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenuPortal>
-        </DropdownMenuRoot>
-        <button
-          class="px-4 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg text-[16px] font-bold flex items-center gap-2"
-          @click="openAddDialog()"
-        >
-          <span class="material-symbols-outlined text-[18px]">add</span>
-          {{ t('menuManagement.newItem') }}
-        </button>
-      </div>
+      <button
+        class="flex h-10 shrink-0 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+        @click="openAddDialog()"
+      >
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        {{ t('menuManagement.newItem') }}
+      </button>
     </div>
 
-    <!-- Updated Filter Bar Layout (Horizontal) -->
-    <div
-      v-if="isFilterOpen"
-      id="filter-popover"
-      class="bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-xl mb-8 shadow-sm p-6"
+    <Card
+      class="gap-0 overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm dark:border dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100"
     >
-      <div class="flex flex-col gap-6">
-        <!-- Filter Inputs Row -->
-        <div class="flex flex-wrap gap-4 items-end">
-          <!-- Search Field -->
-          <div class="flex-[2] min-w-[240px] flex flex-col gap-1">
-            <label
-              class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
-              >{{ t('menuManagement.filterPanel.itemName') }}</label
-            >
-            <div class="relative">
-              <span
-                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 text-[20px]"
-                >search</span
-              >
-              <input
-                v-model="filters.name"
-                class="w-full pl-10 pr-4 py-2.5 bg-stone-50 dark:bg-stone-800 border-stone-100 dark:border-stone-800 rounded-lg text-sm dark:text-stone-100 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-stone-900 transition-all placeholder:text-stone-400 dark:placeholder:text-stone-500"
-                :placeholder="t('menuManagement.filterPanel.search')"
-                type="text"
-              />
-            </div>
-          </div>
-          <!-- Category Dropdown -->
-          <div class="flex-1 min-w-[140px] flex flex-col gap-1">
-            <app-select
-              v-model="filters.category"
-              :options="[...productStore.categories.map(c => ({ value: c.name, label: c.name }))]"
-              :label="t('menuManagement.filterPanel.category')"
-              class="w-full"
-            />
-          </div>
-          <!-- Status Dropdown -->
-          <div class="flex-1 min-w-[140px] flex flex-col gap-1">
-            <app-select
-              v-model="filters.status"
-              :options="statusFilterOptions"
-              :label="t('menuManagement.filterPanel.status')"
-              class="w-full"
-            />
-          </div>
-        </div>
-        <!-- Actions Row -->
-        <div
-          class="flex justify-end items-center gap-4 pt-4 border-t border-stone-50 dark:border-stone-800"
-        >
-          <button
-            class="px-4 py-2.5 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 text-sm font-bold transition-colors"
-            @click="clearFilters"
-          >
-            {{ t('menuManagement.filterPanel.clearAll') }}
-          </button>
-          <button
-            class="px-8 py-2.5 bg-primary text-white rounded-lg text-sm font-bold shadow-sm hover:opacity-90 transition-opacity"
-            @click="applyFilters"
-          >
-            {{ t('menuManagement.filterPanel.applyFilters') }}
-          </button>
-        </div>
-      </div>
-    </div>
+      <!-- Filter -->
+      <FilterPanel
+        :has-active-filters="hasActiveFilters"
+        @submit="applyFilters"
+        @clear="clearFilters"
+      >
+        <AppInput
+          id="filter-item-name"
+          v-model="filters.name"
+          search-icon
+          type="text"
+          :label="t('menuManagement.filterPanel.itemName')"
+          label-class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+          container-class="col-span-4 lg:col-span-5"
+          :placeholder="t('menuManagement.filterPanel.search')"
+          class="h-10 border-none bg-[#FAFAFA] pr-4 text-sm text-[#1A1C1C] shadow-none placeholder:text-stone-400 focus-visible:ring-2 focus-visible:ring-primary dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+        />
 
-    <!-- PRODUCT TABLE  -->
-    <ProductTable
-      :products="filteredProducts"
-      :total="productStore.totalProducts"
-      :items-per-page="5"
-      :page="queryParams.paginationParams?.page ?? 1"
-      @page-change="fetchProducts"
-      @toggle-available="handleToggleAvailable"
-      @edit-product="handleEditProduct"
-      @delete-product="handleDeleteProduct"
-      @view-product="handleViewProduct"
-    />
+        <app-select
+          v-model="filters.category"
+          :options="categoryFilterOptions"
+          :label="t('menuManagement.filterPanel.category')"
+          :all-option-label="t('menuManagement.filterPanel.allCategories')"
+          class="w-full col-span-4 lg:col-span-2"
+        />
+
+        <app-select
+          v-model="filters.status"
+          :options="statusFilterOptions"
+          :label="t('menuManagement.filterPanel.status')"
+          :all-option-label="t('menuManagement.filterPanel.allStatuses')"
+          class="w-full col-span-4 lg:col-span-2"
+        />
+      </FilterPanel>
+
+      <!-- PRODUCT TABLE  -->
+      <ProductTable
+        :products="filteredProducts"
+        :total="productStore.totalProducts"
+        :items-per-page="5"
+        :page="queryParams.paginationParams?.page ?? 1"
+        @page-change="fetchProducts"
+        @toggle-available="handleToggleAvailable"
+        @edit-product="handleEditProduct"
+        @delete-product="handleDeleteProduct"
+        @view-product="handleViewProduct"
+      />
+    </Card>
   </main>
 
   <app-dialog

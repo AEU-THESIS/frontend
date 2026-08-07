@@ -6,8 +6,6 @@ import {
   Megaphone,
   Ticket,
   CalendarClock,
-  Search,
-  Plus,
   Pencil,
   Trash2,
   ChevronLeft,
@@ -15,6 +13,8 @@ import {
   LoaderCircle,
 } from 'lucide-vue-next'
 import { Card } from '@/components/ui/card'
+import FilterPanel from '@/components/common/FilterPanel.vue'
+import { AppInput } from '@/components/ui/input'
 import { usePromotionStore } from '@/store/usePromotionStore'
 import { getCategories, getProducts } from '@/api/product'
 import { getPromotions } from '@/api/promotion'
@@ -76,7 +76,7 @@ onMounted(async () => {
   }
 })
 
-const handleSearch = () => store.setSearch(searchInput.value)
+const applyFilters = () => store.setSearch(searchInput.value.trim())
 
 const openAdd = () => {
   editing.value = null
@@ -258,28 +258,29 @@ const pageEnd = computed(() =>
 
         <!-- Main card -->
         <Card
-          class="overflow-hidden rounded-2xl border border-transparent bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900/50"
+          class="gap-0 overflow-hidden rounded-2xl border border-transparent bg-white p-0 shadow-sm dark:border-stone-800 dark:bg-stone-900/50"
         >
-          <!-- Toolbar -->
-          <div class="flex flex-col justify-between gap-6 p-8 md:flex-row md:items-center">
-            <div class="relative w-full max-w-sm">
-              <Search class="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
-              <Input
-                v-model="searchInput"
-                :placeholder="t('promotions.searchPlaceholder')"
-                class="h-12 rounded-xl border-none bg-[#FAFAFA] pl-11 pr-4 text-sm font-medium dark:bg-stone-800/50"
-                @input="handleSearch"
-              />
-            </div>
-
-            <Button
-              class="h-12 gap-2 rounded-xl bg-[#D2691E] px-8 font-bold text-white hover:bg-[#B35919]"
-              @click="openAdd"
-            >
-              <Plus class="size-5" />
-              {{ t('promotions.addPromotion') }}
-            </Button>
-          </div>
+          <!-- Filter -->
+          <FilterPanel
+            :show-apply="false"
+            :show-clear="false"
+            :add-label="t('promotions.addPromotion')"
+            actions-class="col-span-6 lg:col-span-2"
+            @add="openAdd"
+          >
+            <AppInput
+              id="promotion-filter-search"
+              v-model="searchInput"
+              search-icon
+              type="text"
+              :label="t('common.search')"
+              label-class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+              container-class="col-span-6 lg:col-span-10"
+              :placeholder="t('promotions.searchPlaceholder')"
+              class="h-10 border-none bg-[#FAFAFA] pr-4 text-sm text-[#1A1C1C] shadow-none placeholder:text-stone-400 focus-visible:ring-2 focus-visible:ring-primary lg:w-100 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+              @update:model-value="applyFilters"
+            />
+          </FilterPanel>
 
           <!-- Table -->
           <div class="overflow-x-auto">
@@ -482,13 +483,16 @@ const pageEnd = computed(() =>
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e5e7eb;
   border-radius: 10px;
 }
+
 table {
   border-spacing: 0;
 }

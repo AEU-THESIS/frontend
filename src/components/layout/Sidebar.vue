@@ -46,12 +46,16 @@ const toggleSidebar = () => {
 }
 
 const navSections = computed(() => {
-  const userRole = authStore.user?.role || ''
+  const KNOWN_ROLES: RoleType[] = [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER]
+  const rawRole = authStore.user?.role
+  const userRole: RoleType = KNOWN_ROLES.includes(rawRole as RoleType)
+    ? (rawRole as RoleType)
+    : ROLES.CASHIER
 
   const sections = [
     {
       titleKey: 'sidebar.sections.home',
-      roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER],
+      roles: [ROLES.ADMIN, ROLES.MANAGER],
       items: [
         { nameKey: 'sidebar.items.dashboard', route: APP_ROUTES.DASHBOARD, icon: 'grid_view' },
       ],
@@ -85,14 +89,20 @@ const navSections = computed(() => {
     },
     {
       titleKey: 'sidebar.sections.reports',
-      roles: [ROLES.ADMIN],
+      roles: [ROLES.ADMIN, ROLES.MANAGER],
       items: [
         {
           nameKey: 'sidebar.items.saleReports',
           route: APP_ROUTES.SALE_REPORTS,
           icon: 'receipt_long',
         },
-        { nameKey: 'sidebar.items.staff', route: APP_ROUTES.STAFF, icon: 'groups' },
+        // Staff management stays Admin-only even though Managers can see this section.
+        {
+          nameKey: 'sidebar.items.staff',
+          route: APP_ROUTES.STAFF,
+          icon: 'groups',
+          roles: [ROLES.ADMIN],
+        },
       ],
     },
     {
@@ -108,11 +118,18 @@ const navSections = computed(() => {
     },
   ]
 
-  // Filter sections based on role. Sections without roles are visible to all authenticated users.
-  return sections.filter(section => {
-    const allowedRoles = section.roles as RoleType[] | undefined
-    return !allowedRoles || allowedRoles.includes(userRole as RoleType)
-  })
+  // A missing roles list means "visible to every authenticated user".
+  const canAccess = (roles?: RoleType[]) => !roles || roles.includes(userRole)
+
+  // Filter at the section level, then within each surviving section filter items
+  // by their own optional roles, and drop any section left with no visible items.
+  return sections
+    .filter(section => canAccess(section.roles as RoleType[] | undefined))
+    .map(section => ({
+      ...section,
+      items: section.items.filter(item => canAccess((item as { roles?: RoleType[] }).roles)),
+    }))
+    .filter(section => section.items.length > 0)
 })
 
 const shopDisplayName = computed(() => {

@@ -16,10 +16,12 @@ export interface PaginatedStaff {
 export const getStaffList = async (
   page: number = 1,
   limit: number = 10,
-  search: string = ''
+  search: string = '',
+  signal?: AbortSignal
 ): Promise<PaginatedStaff> => {
   const res = await http.get<PaginatedStaff>('/api/users', {
     params: { page, limit, search },
+    signal,
   })
   return res.data
 }

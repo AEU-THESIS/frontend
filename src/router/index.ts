@@ -19,6 +19,7 @@ const routes: RouteRecordRaw[] = [
         path: APP_ROUTES.DASHBOARD.path,
         name: APP_ROUTES.DASHBOARD.name,
         component: () => import('@/views/DashboardView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {
         path: APP_ROUTES.ORDERS.path,
@@ -52,7 +53,7 @@ const routes: RouteRecordRaw[] = [
         path: APP_ROUTES.SALE_REPORTS.path,
         name: APP_ROUTES.SALE_REPORTS.name,
         component: () => import('@/views/SaleReportSummaryView.vue'),
-        meta: { roles: [ROLES.ADMIN] },
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {
         path: APP_ROUTES.PROMOTIONS.path,
@@ -126,7 +127,9 @@ router.beforeEach(to => {
     const userRole = authStore.user?.role
     if (!userRole || !allowedRoles.includes(userRole)) {
       toast.error('401 Unauthorized Access: You do not have permission to view this page.')
-      return { name: APP_ROUTES.DASHBOARD.name }
+      // Fall back to POS (Home), the one page every authenticated role can access.
+      // Redirecting to Dashboard here would infinite-loop for roles now barred from it.
+      return { name: APP_ROUTES.HOME.name }
     }
   }
 
