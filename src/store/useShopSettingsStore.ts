@@ -29,6 +29,7 @@ const normalizeExchangeRate = (exchangeRate: ShopSettings['exchangeRate']) => {
 export const useShopSettingsStore = defineStore('shopSettings', () => {
   const initialExchangeRate = Number(getStoredValue('exchange_rate') || DEFAULT_EXCHANGE_RATE)
   const shop_name = ref(getStoredValue('shop_name') || DEFAULT_SHOP_NAME)
+  const receipt_footer = ref(getStoredValue('receipt_footer') || '')
   const currency_symbol = ref(normalizeCurrencySymbol(getStoredValue('currency_symbol')))
   const exchange_rate = ref(
     Number.isFinite(initialExchangeRate) ? initialExchangeRate : DEFAULT_EXCHANGE_RATE
@@ -41,15 +42,17 @@ export const useShopSettingsStore = defineStore('shopSettings', () => {
   const setShopSettings = (
     settings: Pick<
       ShopSettings,
-      'name' | 'currencySymbol' | 'exchangeRate' | 'isOrderManagementEnabled'
+      'name' | 'currencySymbol' | 'exchangeRate' | 'isOrderManagementEnabled' | 'receiptFooter'
     >
   ) => {
     shop_name.value = settings.name || DEFAULT_SHOP_NAME
+    receipt_footer.value = settings.receiptFooter || ''
     currency_symbol.value = normalizeCurrencySymbol(settings.currencySymbol)
     exchange_rate.value = normalizeExchangeRate(settings.exchangeRate)
     is_order_management_enabled.value = settings.isOrderManagementEnabled === true
 
     setStoredValue('shop_name', shop_name.value)
+    setStoredValue('receipt_footer', receipt_footer.value)
     setStoredValue('currency_symbol', currency_symbol.value)
     setStoredValue('exchange_rate', String(exchange_rate.value))
     setStoredValue('is_order_management_enabled', String(is_order_management_enabled.value))
@@ -69,6 +72,7 @@ export const useShopSettingsStore = defineStore('shopSettings', () => {
 
   return {
     shop_name,
+    receipt_footer,
     currency_symbol,
     currency_code,
     exchange_rate,

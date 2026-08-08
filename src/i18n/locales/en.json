@@ -1037,5 +1037,15 @@
       "deleted": "Promotion deleted",
       "deleteFailed": "Failed to delete promotion"
     }
+  },
+  "receipt": {
+    "orderNo": "Order No.",
+    "date": "Date",
+    "cashier": "Cashier",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "total": "Total",
+    "paid": "Paid",
+    "change": "Change"
   }
 }

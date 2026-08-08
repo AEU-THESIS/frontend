@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useProductStore } from '@/store/useProductStore'
 import { useCartStore } from '@/store/useCartStore'
 import type { Product } from '@/types/product.types'
-import type { OrderResult } from '@/types/order.types'
+import type { CheckoutSuccessResult } from '@/types/order.types'
 import ProductCard from '@/components/pos/ProductCard.vue'
 import ProductModifierModal from '@/components/pos/ProductModifierModal.vue'
 import CashPaymentModal from '@/components/pos/CashPaymentModal.vue'
@@ -20,17 +20,7 @@ const searchInput = ref('')
 const selectedProductForOptions = ref<Product | null>(null)
 const isModifiersModalOpen = ref(false)
 const isSuccessModalOpen = ref(false)
-interface CheckoutSuccessData {
-  orderId: number
-  orderNumber: string
-  totalAmount: number
-  receivedAmount: number
-  paymentCurrency: string
-  changeUSD: number
-  changeKHR: number
-}
-
-const checkoutResult = ref<CheckoutSuccessData | null>(null)
+const checkoutResult = ref<CheckoutSuccessResult | null>(null)
 
 onMounted(async () => {
   try {
@@ -80,17 +70,9 @@ const handleProductSelect = (product: Product) => {
   }
 }
 
-const handlePaymentSuccess = (result: OrderResult & { changeUSD: number; changeKHR: number }) => {
+const handlePaymentSuccess = (result: CheckoutSuccessResult) => {
   cartStore.isCashModalOpen = false
-  checkoutResult.value = {
-    orderId: result.id,
-    orderNumber: result.orderNumber,
-    totalAmount: Number(result.totalAmount),
-    receivedAmount: Number(result.receivedAmount),
-    paymentCurrency: result.paymentCurrency,
-    changeUSD: result.changeUSD,
-    changeKHR: result.changeKHR,
-  }
+  checkoutResult.value = result
   isSuccessModalOpen.value = true
 }
 

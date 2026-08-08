@@ -116,6 +116,11 @@ export interface OrderDetail extends OrderResult {
   items: OrderItemDetail[]
 }
 
+export interface CheckoutSuccessResult extends OrderDetail {
+  changeUSD: number
+  changeKHR: number
+}
+
 export interface PaginatedOrders {
   orders: OrderDetail[]
   pagination: {

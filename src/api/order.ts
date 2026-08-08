@@ -1,7 +1,6 @@
 import http from './api'
 import type {
   CreateOrderPayload,
-  OrderResult,
   OrderDetail,
   PaginatedOrders,
   OrdersResponse,
@@ -14,9 +13,9 @@ import {
   todayOrdersFiltersSchema,
 } from '@/validations/orderValidation'
 
-export const placeOrder = async (payload: CreateOrderPayload): Promise<OrderResult> => {
+export const placeOrder = async (payload: CreateOrderPayload): Promise<OrderDetail> => {
   const parsedPayload = createOrderSchema.parse(payload)
-  const res = await http.post<OrderResult>('/api/orders', parsedPayload)
+  const res = await http.post<OrderDetail>('/api/orders', parsedPayload)
   return res.data
 }
 

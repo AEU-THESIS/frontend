@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
-import type { PaymentCurrency, OrderResult } from '@/types/order.types'
+import type { PaymentCurrency, CheckoutSuccessResult } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
@@ -11,7 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'success', result: OrderResult & { changeUSD: number; changeKHR: number }): void
+  (e: 'success', result: CheckoutSuccessResult): void
 }>()
 
 const { t } = useI18n()
