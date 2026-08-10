@@ -248,6 +248,8 @@
     "searchPlaceholder": "ស្វែងរកសម្ភារៈ...",
     "summary": {
       "totalSupplies": "សម្ភារៈសរុប",
+      "totalValue": "តម្លៃស្តុកសរុប",
+      "acrossSupplies": "លើសម្ភារៈ {count} មុខ",
       "stockHealth": "{percentage}%",
       "lowStock": "ការព្រមាន៖ ស្តុកទាប",
       "outOfStock": "ធ្ងន់ធ្ងរ៖ អស់ពីស្តុក",
@@ -261,6 +263,8 @@
       "name": "ឈ្មោះ",
       "stockLevel": "កម្រិតស្តុក",
       "unit": "ឯកតា",
+      "unitCost": "តម្លៃក្នុងមួយឯកតា",
+      "totalValue": "តម្លៃសរុប",
       "status": "ស្ថានភាព",
       "actions": "សកម្មភាព"
     },
@@ -283,6 +287,7 @@
       "filters": "តម្រង",
       "adjust": "កែសម្រួលស្តុក",
       "view": "មើល",
+      "viewHistory": "មើលប្រវត្តិ",
       "edit": "កែសម្រួល",
       "delete": "លុប",
       "restock": "បំពេញស្តុក",
@@ -318,6 +323,9 @@
       "unitOfMeasure": "ឯកតារង្វាស់",
       "minAlert": "ការព្រមានស្តុកទាបអប្បបរមា",
       "minAlertPlaceholder": "ឧ. 5",
+      "unitCost": "តម្លៃដើមក្នុងមួយឯកតា ({currency})",
+      "unitCostPlaceholder": "ឧ. 3.50",
+      "unitCostHint": "តម្លៃដែលអ្នកបង់ក្នុងមួយឯកតា — ប្រើសម្រាប់គណនាតម្លៃស្តុក។",
       "itemImage": "រូបភាពមុខទំនិញ",
       "imageRecommendation": "បង្ហោះឯកសារ ឬអូសទម្លាក់ PNG, JPG រហូតដល់ 10MB"
     },
@@ -333,8 +341,30 @@
       "typeAndAmount": "ប្រភេទ និងចំនួនកែសម្រួល",
       "addStock": "+ បន្ថែមស្តុក",
       "removeStock": "- ដកស្តុក",
+      "unitCost": "តម្លៃទិញក្នុងមួយឯកតា ({currency})",
+      "unitCostHint": "តម្លៃដែលអ្នកបានបង់លើកនេះ — នឹងធ្វើបច្ចុប្បន្នភាពតម្លៃដើមជាមធ្យម។",
       "notes": "កំណត់ចំណាំ",
       "notesPlaceholder": "បន្ថែមព័ត៌មានលម្អិតអំពីការកែសម្រួលនេះ..."
+    },
+    "history": {
+      "title": "ប្រវត្តិស្តុក",
+      "back": "ត្រឡប់ទៅសារពើភ័ណ្ឌ",
+      "empty": "គ្មានចលនាស្តុកសម្រាប់រយៈពេលនេះទេ។",
+      "date": "កាលបរិច្ឆេទ",
+      "change": "ការផ្លាស់ប្តូរ",
+      "unitCost": "តម្លៃក្នុងមួយឯកតា",
+      "notes": "កំណត់ចំណាំ",
+      "by": "ដោយ",
+      "summary": {
+        "currentStock": "ស្តុកបច្ចុប្បន្ន",
+        "averageDailyUsage": "ការប្រើប្រាស់ជាមធ្យមប្រចាំថ្ងៃ",
+        "totalIn": "បញ្ចូលសរុប",
+        "totalOut": "ដកសរុប",
+        "currentValue": "តម្លៃបច្ចុប្បន្ន",
+        "category": "ប្រភេទ",
+        "unit": "ឯកតា",
+        "reorderLevel": "កម្រិតបញ្ជាទិញឡើងវិញ"
+      }
     },
     "messages": {
       "loading": "កំពុងផ្ទុកសារពើភ័ណ្ឌ...",

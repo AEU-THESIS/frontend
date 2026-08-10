@@ -249,6 +249,8 @@
     "searchPlaceholder": "Search supplies...",
     "summary": {
       "totalSupplies": "Total Supplies",
+      "totalValue": "Total Inventory Value",
+      "acrossSupplies": "Across {count} supplies",
       "stockHealth": "{percentage}%",
       "lowStock": "Warning: Low Stock",
       "outOfStock": "Critical: Out of Stock",
@@ -262,6 +264,8 @@
       "name": "Name",
       "stockLevel": "Stock Level",
       "unit": "Unit",
+      "unitCost": "Unit Cost",
+      "totalValue": "Total Value",
       "status": "Status",
       "actions": "Actions"
     },
@@ -284,6 +288,7 @@
       "filters": "Filters",
       "adjust": "Adjust",
       "view": "View",
+      "viewHistory": "View History",
       "edit": "Edit",
       "delete": "Delete",
       "restock": "Restock",
@@ -319,6 +324,9 @@
       "unitOfMeasure": "Unit of Measure",
       "minAlert": "Min Low Stock Alert",
       "minAlertPlaceholder": "e.g. 5",
+      "unitCost": "Cost Price per Unit ({currency})",
+      "unitCostPlaceholder": "e.g. 3.50",
+      "unitCostHint": "What you pay per unit — used to value your stock.",
       "itemImage": "Item Image",
       "imageRecommendation": "Upload a file or drag and drop PNG, JPG up to 10MB"
     },
@@ -334,8 +342,30 @@
       "typeAndAmount": "Adjustment Type & Amount",
       "addStock": "+ Add Stock",
       "removeStock": "- Remove Stock",
+      "unitCost": "Purchase Price per Unit ({currency})",
+      "unitCostHint": "The price you paid this time — updates the item's average cost.",
       "notes": "Notes",
       "notesPlaceholder": "Add additional details about this adjustment..."
+    },
+    "history": {
+      "title": "Stock History",
+      "back": "Back to Inventory",
+      "empty": "No stock movements for this period.",
+      "date": "Date",
+      "change": "Change",
+      "unitCost": "Unit Cost",
+      "notes": "Notes",
+      "by": "By",
+      "summary": {
+        "currentStock": "Current Stock",
+        "averageDailyUsage": "Average Daily Usage",
+        "totalIn": "Total In",
+        "totalOut": "Total Out",
+        "currentValue": "Current Value",
+        "category": "Category",
+        "unit": "Unit",
+        "reorderLevel": "Reorder Level"
+      }
     },
     "messages": {
       "loading": "Loading inventory...",

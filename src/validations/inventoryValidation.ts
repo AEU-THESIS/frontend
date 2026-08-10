@@ -5,11 +5,13 @@ export const inventoryItemSchema = z.object({
   unit_of_measure: z.string().trim().min(1, 'Unit of measure is required'),
   quantity: z.number().finite().min(0, 'Stock cannot be negative'),
   min_alert_threshold: z.number().finite().min(0, 'Low stock threshold cannot be negative'),
+  unit_cost: z.number().finite().min(0, 'Cost price cannot be negative'),
   image: z.instanceof(File).optional().nullable(),
 })
 
 export const inventoryAdjustmentSchema = z.object({
   adjustment_type: z.enum(['add', 'remove']),
   change_amount: z.number().finite().positive('Adjustment amount must be greater than 0'),
+  unit_cost: z.number().finite().min(0, 'Cost price cannot be negative').optional().nullable(),
   notes: z.string().trim().optional().nullable(),
 })
