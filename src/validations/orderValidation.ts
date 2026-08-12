@@ -18,9 +18,9 @@ export const createOrderSchema = z.object({
   orderType: z.enum(['dine_in', 'takeaway']),
   paymentMethod: z.literal('cash'),
   paymentCurrency: z.enum(['USD', 'KHR']),
-  receivedAmount: z.number().positive('Received amount is required'),
-  exchangeRateSnapshot: z.number().positive(),
-  totalAmount: z.number().positive(),
+  // May be 0 for a 100%-off order. The server owns the total and the exchange
+  // rate, so they are no longer sent from the client.
+  receivedAmount: z.number().min(0, 'Received amount must be zero or more'),
   items: z.array(cartItemPayloadSchema).min(1, 'At least one item is required'),
 })
 

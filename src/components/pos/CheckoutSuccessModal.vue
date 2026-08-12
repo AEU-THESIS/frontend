@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { roundRielUp } from '@/utils/money'
 
 const props = defineProps<{
   isOpen: boolean
@@ -10,6 +11,7 @@ const props = defineProps<{
     totalAmount: number
     receivedAmount: number
     paymentCurrency: string
+    exchangeRateSnapshot: number
     changeUSD: number
     changeKHR: number
   } | null
@@ -20,6 +22,18 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+// Total shown in the payment currency. For a riel order this is the note-rounded
+// riel due (using the order's own snapshot rate), so the receipt matches Order
+// History exactly.
+const totalDisplay = computed(() => {
+  if (!props.orderResult) return ''
+  const { totalAmount, paymentCurrency, exchangeRateSnapshot } = props.orderResult
+  if (paymentCurrency === 'KHR') {
+    return `${roundRielUp(totalAmount * exchangeRateSnapshot).toLocaleString()}៛`
+  }
+  return `$${totalAmount.toFixed(2)}`
+})
 
 const receiptRef = ref<HTMLElement | null>(null)
 
@@ -185,9 +199,9 @@ const handlePrintReceipt = () => {
             class="text-xs text-stone-400 dark:text-stone-500 font-bold uppercase tracking-wider"
             >{{ t('cart.totalAmount') }}</span
           >
-          <span class="font-headline font-extrabold text-stone-900 dark:text-stone-100"
-            >${{ Number(orderResult.totalAmount).toFixed(2) }}</span
-          >
+          <span class="font-headline font-extrabold text-stone-900 dark:text-stone-100">{{
+            totalDisplay
+          }}</span>
         </div>
 
         <div class="flex justify-between items-center">

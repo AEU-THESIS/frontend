@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import type { OrderDetail } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import { roundRielUp } from '@/utils/money'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
@@ -14,6 +15,18 @@ const { t } = useI18n()
 const orderStore = useOrderStore()
 const shopSettingsStore = useShopSettingsStore()
 const { historyOrders, historyPagination, loading, selectedOrder } = storeToRefs(orderStore)
+
+// Order total shown in the currency the customer actually paid in. A riel order
+// shows the exact note-rounded riel figure (using the order's OWN snapshot rate),
+// so Order History matches the receipt and reconciles even if the shop later
+// changed its exchange rate. USD orders show dollars.
+const formatOrderTotal = (order: OrderDetail) => {
+  if (order.paymentCurrency === 'KHR') {
+    const riel = roundRielUp(Number(order.totalAmount) * Number(order.exchangeRateSnapshot))
+    return `${riel.toLocaleString()}៛`
+  }
+  return `$${Number(order.totalAmount).toFixed(2)}`
+}
 
 const confirmCancelActive = ref(false)
 let confirmCancelTimeout: ReturnType<typeof setTimeout> | null = null
@@ -401,7 +414,7 @@ onUnmounted(() => {
               <td
                 class="py-3.5 px-6 text-right font-extrabold text-stone-900 dark:text-stone-50 font-headline"
               >
-                {{ shopSettingsStore.formatAmount(Number(order.totalAmount)) }}
+                {{ formatOrderTotal(order) }}
               </td>
             </tr>
 
@@ -711,9 +724,7 @@ onUnmounted(() => {
                 class="flex justify-between font-extrabold text-lg text-[#b05a18] dark:text-amber-500 pt-3 border-t border-stone-100 dark:border-stone-800 print:text-sm print:pt-2"
               >
                 <span>{{ t('orderDashboard.total') }}</span>
-                <span class="font-headline">{{
-                  shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount))
-                }}</span>
+                <span class="font-headline">{{ formatOrderTotal(selectedOrder) }}</span>
               </div>
             </div>
           </div>

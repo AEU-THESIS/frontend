@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { placeOrder } from '@/api/order'
 import { getActivePromotions } from '@/api/promotion'
 import { cartDiscounts, type CartLineForCalc } from '@/lib/promotionDiscount'
+import { roundRielUp } from '@/utils/money'
 import type { Promotion } from '@/types/promotion.types'
 import type {
   CartItem,
@@ -93,12 +94,14 @@ export const useCartStore = defineStore('cart', () => {
     return map
   })
 
+  // Riel amounts due are rounded UP to the nearest 100៛ (the smallest note),
+  // matching the server so the POS shows exactly what the customer must pay.
   const cartTotalInRiel = computed(() => {
-    return Math.ceil(cartTotal.value * exchangeRate.value)
+    return roundRielUp(cartTotal.value * exchangeRate.value)
   })
 
   const netTotalInRiel = computed(() => {
-    return Math.ceil(netTotal.value * exchangeRate.value)
+    return roundRielUp(netTotal.value * exchangeRate.value)
   })
 
   const itemsCount = computed(() => {
@@ -195,9 +198,8 @@ export const useCartStore = defineStore('cart', () => {
         paymentMethod: 'cash',
         paymentCurrency,
         receivedAmount,
-        exchangeRateSnapshot: exchangeRate.value,
-        // Net total; the server ignores this and recomputes authoritatively.
-        totalAmount: netTotal.value,
+        // The server owns the total and the exchange rate — they are recomputed
+        // authoritatively from the shop's settings, never sent from here.
         items: items.value.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
