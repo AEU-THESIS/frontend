@@ -46,6 +46,20 @@ export const updateOrderStatus = async (id: number, status: string): Promise<Ord
   return res.data
 }
 
+// Void a whole order — reverses the payment (refund + un-redeem promotions) and
+// marks it refunded + canceled. Returns the recalculated order tree.
+export const voidOrder = async (id: number, reason?: string): Promise<OrderDetail> => {
+  const res = await http.post<OrderDetail>(`/api/orders/${id}/void`, reason ? { reason } : {})
+  return res.data
+}
+
+// Cancel a single line item — recalculates the order over the survivors and refunds
+// the difference. Returns the updated order tree.
+export const cancelOrderItem = async (orderId: number, itemId: number): Promise<OrderDetail> => {
+  const res = await http.post<OrderDetail>(`/api/orders/${orderId}/items/${itemId}/cancel`, {})
+  return res.data
+}
+
 const localIsoDate = (d: Date) => new Intl.DateTimeFormat('en-CA').format(d)
 
 export const getTodayOrders = async (filters: TodayOrdersFilters = {}): Promise<OrdersResponse> => {

@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useOrderStore } from '@/store/useOrderStore'
 import { storeToRefs } from 'pinia'
-import type { OrderDetail } from '@/types/order.types'
+import type { OrderDetail, OrderItemDetail } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { roundRielUp } from '@/utils/money'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
+import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
@@ -28,8 +29,40 @@ const formatOrderTotal = (order: OrderDetail) => {
   return `$${Number(order.totalAmount).toFixed(2)}`
 }
 
-const confirmCancelActive = ref(false)
-let confirmCancelTimeout: ReturnType<typeof setTimeout> | null = null
+// ── Void / cancel-item action state ───────────────────────────────
+const voidDialogOpen = ref(false)
+const cancelItemDialogOpen = ref(false)
+const pendingCancelItemId = ref<number | null>(null)
+const actionBusy = ref(false)
+
+// A fully-voided (refunded) order can no longer be voided or have items cancelled.
+const orderFullyReversed = computed(() => selectedOrder.value?.paymentStatus === 'refunded')
+
+const isItemCancelled = (item: OrderItemDetail) => item.canceledAt != null
+
+// Total refunded so far, summed from the reversing (negative-amount) transactions and
+// shown in the order's own payment currency.
+const refundedDisplay = computed(() => {
+  const order = selectedOrder.value
+  if (!order?.transactions?.length) return null
+  const refunded = order.transactions.reduce(
+    (sum, txn) => (Number(txn.amount) < 0 ? sum + -Number(txn.amount) : sum),
+    0
+  )
+  if (refunded <= 0) return null
+  return order.paymentCurrency === 'KHR'
+    ? `${refunded.toLocaleString()}៛`
+    : `$${refunded.toFixed(2)}`
+})
+
+const voidedByLabel = computed(() => {
+  const order = selectedOrder.value
+  if (!order?.voidedBy || !order.voidedAt) return null
+  return t('orderActions.voidedBy', {
+    name: order.voidedBy.name,
+    time: formatDateTime(order.voidedAt),
+  })
+})
 
 // ── 1. Search and Filtering States ────────────────────────────────
 const search = ref('')
@@ -171,21 +204,11 @@ const formatDateTime = (dateStr: string) => {
 
 // ── 5. Detail Modal side sheet triggers ───────────────────────────
 const openOrderDetails = async (order: OrderDetail) => {
-  confirmCancelActive.value = false
-  if (confirmCancelTimeout) {
-    clearTimeout(confirmCancelTimeout)
-    confirmCancelTimeout = null
-  }
   await orderStore.fetchSingleOrderDetail(order.id)
 }
 
 const closeOrderDetails = () => {
   selectedOrder.value = null
-  confirmCancelActive.value = false
-  if (confirmCancelTimeout) {
-    clearTimeout(confirmCancelTimeout)
-    confirmCancelTimeout = null
-  }
 }
 
 const getSelectedOrderTotalQty = computed(() => {
@@ -197,50 +220,46 @@ const handlePrint = () => {
   window.print()
 }
 
-const handleToggleFulfillmentStatus = async () => {
+// ── Void & cancel-item actions (both reverse money server-side) ────
+const openVoidDialog = () => {
+  voidDialogOpen.value = true
+}
+
+const confirmVoid = async (reason?: string) => {
   if (!selectedOrder.value) return
-
-  const currentStatus = selectedOrder.value.fulfillmentStatus
-
-  if (currentStatus === 'completed') {
-    if (!confirmCancelActive.value) {
-      confirmCancelActive.value = true
-      if (confirmCancelTimeout) clearTimeout(confirmCancelTimeout)
-      confirmCancelTimeout = setTimeout(() => {
-        confirmCancelActive.value = false
-      }, 3000)
-      return
-    }
-
-    if (confirmCancelTimeout) {
-      clearTimeout(confirmCancelTimeout)
-      confirmCancelTimeout = null
-    }
-    confirmCancelActive.value = false
-
-    await orderStore.changeStatus(selectedOrder.value.id, 'canceled')
-    selectedOrder.value.fulfillmentStatus = 'canceled'
-    toast.success(t('orderDashboard.statusUpdated'))
+  actionBusy.value = true
+  try {
+    await orderStore.voidOrder(selectedOrder.value.id, reason)
+    toast.success(t('orderActions.orderVoided'))
+    voidDialogOpen.value = false
     fetchHistory()
-  } else {
-    confirmCancelActive.value = false
-    if (confirmCancelTimeout) {
-      clearTimeout(confirmCancelTimeout)
-      confirmCancelTimeout = null
-    }
-
-    await orderStore.changeStatus(selectedOrder.value.id, 'completed')
-    selectedOrder.value.fulfillmentStatus = 'completed'
-    toast.success(t('orderDashboard.statusUpdated'))
-    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
   }
 }
 
-onUnmounted(() => {
-  if (confirmCancelTimeout) {
-    clearTimeout(confirmCancelTimeout)
+const openCancelItemDialog = (itemId: number) => {
+  pendingCancelItemId.value = itemId
+  cancelItemDialogOpen.value = true
+}
+
+const confirmCancelItem = async () => {
+  if (!selectedOrder.value || pendingCancelItemId.value == null) return
+  actionBusy.value = true
+  try {
+    await orderStore.cancelItem(selectedOrder.value.id, pendingCancelItemId.value)
+    toast.success(t('orderActions.itemCanceled'))
+    cancelItemDialogOpen.value = false
+    pendingCancelItemId.value = null
+    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
   }
-})
+}
 </script>
 
 <template>
@@ -591,6 +610,7 @@ onUnmounted(() => {
                 v-for="item in selectedOrder.items"
                 :key="item.id"
                 class="flex items-start gap-4 border-b border-stone-100 dark:border-stone-800 pb-4 last:border-0 last:pb-0"
+                :class="{ 'opacity-70': isItemCancelled(item) }"
               >
                 <!-- Thumbnail -->
                 <div
@@ -611,13 +631,27 @@ onUnmounted(() => {
                 </div>
 
                 <div class="flex-1 min-w-0">
-                  <div class="flex justify-between items-start">
+                  <div class="flex justify-between items-start gap-2">
                     <p
                       class="font-bold text-stone-800 dark:text-stone-100 text-[15px] leading-tight"
+                      :class="{
+                        'line-through text-stone-400 dark:text-stone-600': isItemCancelled(item),
+                      }"
                     >
                       {{ item.product?.name }}
+                      <span
+                        v-if="isItemCancelled(item)"
+                        class="ml-1 inline-block align-middle rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-rose-600 no-underline dark:bg-rose-950/30 dark:text-rose-400"
+                      >
+                        {{ t('orderActions.cancelledBadge') }}
+                      </span>
                     </p>
-                    <p class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2">
+                    <p
+                      class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2"
+                      :class="{
+                        'line-through text-stone-400 dark:text-stone-600': isItemCancelled(item),
+                      }"
+                    >
                       {{
                         shopSettingsStore.formatAmount(Number(item.price) + Number(item.extraPrice))
                       }}
@@ -651,6 +685,19 @@ onUnmounted(() => {
                       </span>
                     </li>
                   </ul>
+
+                  <!-- Per-line cancel control (reverses money for just this line) -->
+                  <button
+                    v-if="!isItemCancelled(item) && !orderFullyReversed"
+                    type="button"
+                    class="mt-2 inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50 active:scale-95 dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/30 print:hidden"
+                    @click="openCancelItemDialog(item.id)"
+                  >
+                    <span class="material-symbols-outlined text-[14px] leading-none"
+                      >remove_shopping_cart</span
+                    >
+                    {{ t('orderActions.cancelItem') }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -726,48 +773,46 @@ onUnmounted(() => {
                 <span>{{ t('orderDashboard.total') }}</span>
                 <span class="font-headline">{{ formatOrderTotal(selectedOrder) }}</span>
               </div>
+
+              <!-- Reversed (refunded) amount when the order was voided / had items cancelled -->
+              <div
+                v-if="refundedDisplay"
+                class="flex justify-between font-bold text-rose-600 dark:text-rose-500"
+              >
+                <span>{{ t('orderActions.refundedLine') }}</span>
+                <span>−{{ refundedDisplay }}</span>
+              </div>
+              <!-- Who voided the order, and when -->
+              <p
+                v-if="voidedByLabel"
+                class="pt-1 text-[11px] font-semibold text-stone-400 dark:text-stone-500"
+              >
+                {{ voidedByLabel }}
+              </p>
             </div>
           </div>
 
-          <!-- Change Status Action (Only shown when Order Management page is disabled) -->
+          <!-- Void action — always available. Voiding reverses the money (refund +
+               un-redeem promotions) so reports match the real cash drawer. -->
           <div
-            v-if="!shopSettingsStore.is_order_management_enabled"
             class="border-t border-stone-100 dark:border-stone-800 pt-6 shrink-0 print:hidden flex flex-col gap-3"
           >
-            <h4
-              class="font-extrabold text-sm text-stone-400 dark:text-stone-500 uppercase tracking-wider"
+            <button
+              v-if="!orderFullyReversed"
+              type="button"
+              :disabled="actionBusy"
+              class="flex items-center justify-center gap-2 rounded-2xl bg-rose-600 py-3 px-5 text-sm font-bold tracking-wide text-white shadow-sm transition-all hover:bg-rose-700 active:scale-[0.98] disabled:opacity-60"
+              @click="openVoidDialog"
             >
-              {{ t('orderDashboard.changeStatus') }}
-            </h4>
-            <div class="flex gap-3">
-              <button
-                class="flex-1 py-3 px-5 rounded-2xl font-bold text-sm tracking-wide text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                :class="
-                  selectedOrder.fulfillmentStatus === 'completed'
-                    ? confirmCancelActive
-                      ? 'bg-amber-600 hover:bg-amber-700 shadow-sm animate-pulse'
-                      : 'bg-rose-600 hover:bg-rose-700 shadow-sm'
-                    : 'bg-emerald-600 hover:bg-emerald-700 shadow-sm'
-                "
-                @click="handleToggleFulfillmentStatus"
-              >
-                <span class="material-symbols-outlined text-[18px]">
-                  {{
-                    selectedOrder.fulfillmentStatus === 'completed'
-                      ? confirmCancelActive
-                        ? 'warning'
-                        : 'cancel'
-                      : 'done_all'
-                  }}
-                </span>
-                {{
-                  selectedOrder.fulfillmentStatus === 'completed'
-                    ? confirmCancelActive
-                      ? t('orderHistory.actions.confirmCancel')
-                      : t('orderHistory.actions.cancelOrder')
-                    : t('orderHistory.actions.completeOrder')
-                }}
-              </button>
+              <span class="material-symbols-outlined text-[18px]">cancel</span>
+              {{ t('orderActions.voidOrder') }}
+            </button>
+            <div
+              v-else
+              class="flex items-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 dark:bg-rose-950/20 dark:text-rose-400"
+            >
+              <span class="material-symbols-outlined text-[18px]">block</span>
+              {{ t('orderActions.voidedNotice') }}
             </div>
           </div>
 
@@ -789,6 +834,30 @@ onUnmounted(() => {
         @click="closeOrderDetails"
       ></div>
     </transition>
+
+    <!-- Void confirmation (with optional reason) -->
+    <CancelActionDialog
+      v-model:open="voidDialogOpen"
+      :title="t('orderActions.voidTitle')"
+      :message="t('orderActions.voidMessage')"
+      :confirm-label="t('orderActions.voidConfirm')"
+      :cancel-label="t('orderActions.keep')"
+      :reason-placeholder="t('orderActions.voidReasonPlaceholder')"
+      with-reason
+      :busy="actionBusy"
+      @confirm="confirmVoid"
+    />
+
+    <!-- Cancel-item confirmation -->
+    <CancelActionDialog
+      v-model:open="cancelItemDialogOpen"
+      :title="t('orderActions.cancelItemTitle')"
+      :message="t('orderActions.cancelItemMessage')"
+      :confirm-label="t('orderActions.cancelItemConfirm')"
+      :cancel-label="t('orderActions.keep')"
+      :busy="actionBusy"
+      @confirm="confirmCancelItem"
+    />
   </div>
 </template>
 
