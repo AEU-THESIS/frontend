@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
 import type { PaymentCurrency, OrderResult } from '@/types/order.types'
+import { round2, roundRielDown } from '@/utils/money'
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
@@ -11,7 +12,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'success', result: OrderResult & { changeUSD: number; changeKHR: number }): void
+  (e: 'success', result: OrderResult): void
 }>()
 
 const { t } = useI18n()
@@ -51,26 +52,36 @@ const parsedInputAmount = computed(() => {
   return isNaN(val) ? 0 : val
 })
 
-// Validation: enough payment received
+// Validation: enough payment received, and — for riel — tendered in whole 100៛
+// notes (mirrors the server so change is always payable).
 const isAmountSufficient = computed(() => {
-  return parsedInputAmount.value >= currentTotalDue.value
+  if (parsedInputAmount.value < currentTotalDue.value) return false
+  if (paymentCurrency.value === 'KHR' && parsedInputAmount.value % 100 !== 0) return false
+  return true
 })
 
-// Calculate change in both currencies
-const changeUSD = computed(() => {
+// Change in the payment currency, mirroring the server: riel change is rounded
+// DOWN to the nearest 100៛ so only payable notes are handed back.
+const changeInPaymentCurrency = computed(() => {
   if (!isAmountSufficient.value) return 0
-  if (paymentCurrency.value === 'USD') {
-    return parsedInputAmount.value - totalUSD.value
-  } else {
-    // Paid KHR, calculate change in USD
-    const paidInUSD = parsedInputAmount.value / cartStore.exchangeRate
-    return Math.max(0, paidInUSD - totalUSD.value)
+  if (paymentCurrency.value === 'KHR') {
+    return roundRielDown(parsedInputAmount.value - totalKHR.value)
   }
+  return round2(parsedInputAmount.value - totalUSD.value)
 })
 
-const changeKHR = computed(() => {
-  return Math.ceil(changeUSD.value * cartStore.exchangeRate)
-})
+// Both currency views of the change, derived from the payment-currency figure.
+const changeUSD = computed(() =>
+  paymentCurrency.value === 'KHR'
+    ? round2(changeInPaymentCurrency.value / cartStore.exchangeRate)
+    : changeInPaymentCurrency.value
+)
+
+const changeKHR = computed(() =>
+  paymentCurrency.value === 'KHR'
+    ? changeInPaymentCurrency.value
+    : roundRielDown(changeInPaymentCurrency.value * cartStore.exchangeRate)
+)
 
 // Numpad input handlers
 const handleNumClick = (val: string) => {
@@ -99,17 +110,15 @@ const handleCheckoutSubmit = async () => {
     return
   }
 
-  // Capture current change values before checkout clears the cart
-  const finalChangeUSD = changeUSD.value
-  const finalChangeKHR = changeKHR.value
-
   try {
+    // The server recomputes the total, change and rate authoritatively and returns
+    // them; the receipt is built from that result, not from the browser's figures.
     const result = await cartStore.checkout(paymentCurrency.value, parsedInputAmount.value)
     toast.success(t('cart.orderCreatedSuccess', { num: result.orderNumber }))
-    emit('success', { ...result, changeUSD: finalChangeUSD, changeKHR: finalChangeKHR })
-  } catch (err) {
-    const error = err as Error
-    toast.error(error.message || t('cart.checkoutFailed'))
+    emit('success', result)
+  } catch {
+    // Never surface raw validation/server text to the cashier.
+    toast.error(t('cart.checkoutFailed'))
   }
 }
 </script>

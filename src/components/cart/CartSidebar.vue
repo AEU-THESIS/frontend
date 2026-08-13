@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { getImageUrl } from '@/utils/image'
 
 import type { CartItem, CartItemOption } from '@/types/order.types'
 
 const { t } = useI18n()
 const cartStore = useCartStore()
+const shopSettingsStore = useShopSettingsStore()
 
 const formatOptions = (options: CartItemOption[]) => {
   return options.map(o => o.optionName).join(', ')
@@ -151,7 +153,7 @@ const handlePayCash = async () => {
         <div
           class="w-16 text-right font-headline font-extrabold text-stone-800 dark:text-stone-50 text-sm shrink-0"
         >
-          ${{ item.itemTotal.toFixed(2) }}
+          {{ shopSettingsStore.formatAmount(item.itemTotal) }}
         </div>
       </div>
     </div>
@@ -164,7 +166,7 @@ const handlePayCash = async () => {
         class="flex justify-between items-center text-sm font-bold text-stone-400 dark:text-stone-500"
       >
         <span>{{ t('cart.subtotal') }}</span>
-        <span>${{ cartStore.cartTotal.toFixed(2) }}</span>
+        <span>{{ shopSettingsStore.formatAmount(cartStore.cartTotal) }}</span>
       </div>
 
       <!-- Discounts — total plus a per-promotion breakdown when several stack -->
@@ -176,7 +178,7 @@ const handlePayCash = async () => {
             <span class="material-symbols-outlined text-base">sell</span>
             <span>{{ t('cart.discount') }}</span>
           </span>
-          <span>−${{ cartStore.discountTotal.toFixed(2) }}</span>
+          <span>−{{ shopSettingsStore.formatAmount(cartStore.discountTotal) }}</span>
         </div>
         <div
           v-for="applied in cartStore.appliedPromotions"
@@ -184,7 +186,7 @@ const handlePayCash = async () => {
           class="flex justify-between items-center pl-5 text-[11px] font-medium text-stone-400 dark:text-stone-500"
         >
           <span class="truncate max-w-[150px]">· {{ applied.promotion.name }}</span>
-          <span>−${{ applied.discount.toFixed(2) }}</span>
+          <span>−{{ shopSettingsStore.formatAmount(applied.discount) }}</span>
         </div>
       </div>
 
@@ -200,10 +202,18 @@ const handlePayCash = async () => {
           <span
             class="text-4xl font-headline font-extrabold text-stone-900 dark:text-stone-50 leading-none tracking-tighter"
           >
-            ${{ cartStore.netTotal.toFixed(2) }}
+            <!-- A riel-configured shop shows the note-rounded amount due (matching the
+                 payment screen); a dollar shop shows the USD total via the formatter. -->
+            {{
+              shopSettingsStore.currency_code === 'KHR'
+                ? `${shopSettingsStore.currency_symbol}${cartStore.netTotalInRiel.toLocaleString()}`
+                : shopSettingsStore.formatAmount(cartStore.netTotal)
+            }}
           </span>
         </div>
-        <div class="text-right">
+        <!-- Secondary riel figure (note-rounded amount due) — shown as a helper
+             only for USD-configured shops; a riel shop already shows riel above. -->
+        <div v-if="shopSettingsStore.currency_code === 'USD'" class="text-right">
           <span
             class="text-[10px] font-bold text-amber-700 dark:text-amber-500 tracking-wider uppercase flex items-center justify-end gap-1 mb-0.5"
           >

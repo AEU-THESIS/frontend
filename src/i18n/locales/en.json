@@ -160,6 +160,8 @@
     "addToCart": "Add to Cart",
     "insufficientPayment": "Payment received is less than total amount due",
     "checkoutFailed": "Failed to complete transaction",
+    "selectRequiredOption": "Please choose all required options",
+    "sizeRequired": "Please choose a size for this item",
     "orderCreatedSuccess": "Order #{num} created successfully!",
     "paymentDetails": "Payment Details",
     "loadingCatalog": "Loading POS Catalog...",

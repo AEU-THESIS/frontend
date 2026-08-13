@@ -32,9 +32,9 @@ export interface CreateOrderPayload {
   orderType: OrderType
   paymentMethod: 'cash'
   paymentCurrency: PaymentCurrency
+  // Amount handed over, in the payment currency. The server owns the total and
+  // the exchange rate, so they are no longer part of the request.
   receivedAmount: number
-  exchangeRateSnapshot: number
-  totalAmount: number
   items: CartItemPayload[]
 }
 
@@ -43,11 +43,28 @@ export interface OrderResult {
   orderNumber: string
   totalAmount: number | string
   receivedAmount: number | string
+  // Received amount normalised to USD (for reporting).
+  receivedAmountUsd: number | string
   paymentCurrency: PaymentCurrency
+  // Change returned in the payment currency, computed and rounded by the server.
   changeAmount: number | string
+  // Server-resolved shop exchange rate applied to this order.
   exchangeRateSnapshot: number | string
   paymentStatus: string
   fulfillmentStatus: string
+}
+
+// The receipt contract passed from the POS view to the success modal after a
+// sale. Change is expressed in both currencies (derived from the server's figures).
+export interface CheckoutSuccessData {
+  orderId: number
+  orderNumber: string
+  totalAmount: number
+  receivedAmount: number
+  paymentCurrency: PaymentCurrency
+  exchangeRateSnapshot: number
+  changeUSD: number
+  changeKHR: number
 }
 
 // Lightweight promotion summary attached to an order for display in history.
@@ -133,6 +150,10 @@ export interface OrderRow {
   paymentStatus: string
   paymentMethod: 'cash' | 'khqr'
   totalAmount: string | number
+  // Per-order snapshot needed to display the exact riel figure the customer paid,
+  // independent of the shop's current rate.
+  exchangeRateSnapshot: string | number
+  changeAmount: string | number
   paymentCurrency: 'USD' | 'KHR'
   createdAt: string
 }
