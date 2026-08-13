@@ -5,7 +5,7 @@ import { useProductStore } from '@/store/useProductStore'
 import { useCartStore } from '@/store/useCartStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import type { Product } from '@/types/product.types'
-import type { OrderResult } from '@/types/order.types'
+import type { OrderResult, CheckoutSuccessData } from '@/types/order.types'
 import { PRICE_MODE } from '@/constants/product'
 import { round2, roundRielDown } from '@/utils/money'
 import ProductCard from '@/components/pos/ProductCard.vue'
@@ -24,16 +24,6 @@ const searchInput = ref('')
 const selectedProductForOptions = ref<Product | null>(null)
 const isModifiersModalOpen = ref(false)
 const isSuccessModalOpen = ref(false)
-interface CheckoutSuccessData {
-  orderId: number
-  orderNumber: string
-  totalAmount: number
-  receivedAmount: number
-  paymentCurrency: string
-  exchangeRateSnapshot: number
-  changeUSD: number
-  changeKHR: number
-}
 
 const checkoutResult = ref<CheckoutSuccessData | null>(null)
 

@@ -54,6 +54,19 @@ export interface OrderResult {
   fulfillmentStatus: string
 }
 
+// The receipt contract passed from the POS view to the success modal after a
+// sale. Change is expressed in both currencies (derived from the server's figures).
+export interface CheckoutSuccessData {
+  orderId: number
+  orderNumber: string
+  totalAmount: number
+  receivedAmount: number
+  paymentCurrency: PaymentCurrency
+  exchangeRateSnapshot: number
+  changeUSD: number
+  changeKHR: number
+}
+
 // Lightweight promotion summary attached to an order for display in history.
 export interface OrderPromotion {
   id: number

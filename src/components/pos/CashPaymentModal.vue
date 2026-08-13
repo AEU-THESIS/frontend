@@ -52,9 +52,12 @@ const parsedInputAmount = computed(() => {
   return isNaN(val) ? 0 : val
 })
 
-// Validation: enough payment received
+// Validation: enough payment received, and — for riel — tendered in whole 100៛
+// notes (mirrors the server so change is always payable).
 const isAmountSufficient = computed(() => {
-  return parsedInputAmount.value >= currentTotalDue.value
+  if (parsedInputAmount.value < currentTotalDue.value) return false
+  if (paymentCurrency.value === 'KHR' && parsedInputAmount.value % 100 !== 0) return false
+  return true
 })
 
 // Change in the payment currency, mirroring the server: riel change is rounded

@@ -202,7 +202,13 @@ const handlePayCash = async () => {
           <span
             class="text-4xl font-headline font-extrabold text-stone-900 dark:text-stone-50 leading-none tracking-tighter"
           >
-            {{ shopSettingsStore.formatAmount(cartStore.netTotal) }}
+            <!-- A riel-configured shop shows the note-rounded amount due (matching the
+                 payment screen); a dollar shop shows the USD total via the formatter. -->
+            {{
+              shopSettingsStore.currency_code === 'KHR'
+                ? `${shopSettingsStore.currency_symbol}${cartStore.netTotalInRiel.toLocaleString()}`
+                : shopSettingsStore.formatAmount(cartStore.netTotal)
+            }}
           </span>
         </div>
         <!-- Secondary riel figure (note-rounded amount due) — shown as a helper

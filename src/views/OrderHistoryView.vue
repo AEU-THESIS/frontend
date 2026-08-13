@@ -573,7 +573,7 @@ onUnmounted(() => {
               <p
                 class="font-extrabold text-sm text-[#b05a18] dark:text-amber-500 mt-1 font-headline"
               >
-                {{ shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount)) }}
+                {{ formatOrderTotal(selectedOrder) }}
               </p>
             </div>
           </div>

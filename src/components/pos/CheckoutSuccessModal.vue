@@ -2,19 +2,11 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { roundRielUp } from '@/utils/money'
+import type { CheckoutSuccessData } from '@/types/order.types'
 
 const props = defineProps<{
   isOpen: boolean
-  orderResult: {
-    orderId: number
-    orderNumber: string
-    totalAmount: number
-    receivedAmount: number
-    paymentCurrency: string
-    exchangeRateSnapshot: number
-    changeUSD: number
-    changeKHR: number
-  } | null
+  orderResult: CheckoutSuccessData | null
 }>()
 
 const emit = defineEmits<{
