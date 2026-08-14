@@ -21,12 +21,28 @@ import {
   Minus,
   Pencil,
   Plus,
+  SlidersHorizontal,
   Trash2,
   Wallet,
   X,
 } from 'lucide-vue-next'
+import {
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+  DropdownMenuPortal,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from 'reka-ui'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   Select,
   SelectContent,
@@ -178,6 +194,8 @@ const normalizeSupplyCounts = () => {
   supplyForm.minAlertThreshold = toDecimal(supplyForm.minAlertThreshold)
   supplyForm.unitCost = toDecimal(supplyForm.unitCost)
 }
+/** Stepper increment — matches the input's 2-decimal precision so fractional units are reachable. */
+const ADJUSTMENT_STEP = 0.01
 const isRemovingStock = computed(() => adjustmentForm.adjustmentType === 'remove')
 const adjustmentMaxAmount = computed(() => {
   if (!isRemovingStock.value) return Number.POSITIVE_INFINITY
@@ -524,149 +542,166 @@ onMounted(() => {
         </FilterPanel>
 
         <!-- Table  -->
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[820px] text-left">
-            <thead>
-              <tr
-                class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] dark:bg-stone-800 dark:text-stone-500"
+        <Table class="min-w-[820px] text-left">
+          <TableHeader>
+            <TableRow
+              class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
+            >
+              <TableHead class="px-6 py-4">{{ t('inventory.table.name') }}</TableHead>
+              <TableHead class="px-6 py-4">{{ t('inventory.table.stockLevel') }}</TableHead>
+              <TableHead class="px-6 py-4">{{ t('inventory.table.unit') }}</TableHead>
+              <TableHead class="px-6 py-4 text-right">
+                {{ t('inventory.table.unitCost') }}
+              </TableHead>
+              <TableHead class="px-6 py-4 text-right">
+                {{ t('inventory.table.totalValue') }}
+              </TableHead>
+              <TableHead class="px-6 py-4 text-center">
+                {{ t('inventory.table.status') }}
+              </TableHead>
+              <TableHead class="px-6 py-4 text-center">
+                {{ t('inventory.table.actions') }}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-if="isLoading" class="hover:bg-transparent">
+              <TableCell
+                colspan="7"
+                class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
               >
-                <th class="px-6 py-4">{{ t('inventory.table.name') }}</th>
-                <th class="px-6 py-4">{{ t('inventory.table.stockLevel') }}</th>
-                <th class="px-6 py-4">{{ t('inventory.table.unit') }}</th>
-                <th class="px-6 py-4 text-right">{{ t('inventory.table.unitCost') }}</th>
-                <th class="px-6 py-4 text-right">{{ t('inventory.table.totalValue') }}</th>
-                <th class="px-6 py-4 text-center">{{ t('inventory.table.status') }}</th>
-                <th class="px-6 py-4 text-center">{{ t('inventory.table.actions') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="isLoading">
-                <td
-                  colspan="7"
-                  class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-                >
-                  {{ t('inventory.messages.loading') }}
-                </td>
-              </tr>
-              <tr v-else-if="filteredItems.length === 0">
-                <td
-                  colspan="7"
-                  class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-                >
-                  {{ t('inventory.messages.empty') }}
-                </td>
-              </tr>
-              <tr
-                v-for="item in paginatedItems"
-                v-else
-                :key="item.id"
-                class="border-b border-slate-100 text-sm font-bold text-[#1A1C1C] last:border-0 dark:border-stone-800 dark:text-stone-100"
+                {{ t('inventory.messages.loading') }}
+              </TableCell>
+            </TableRow>
+            <TableRow v-else-if="filteredItems.length === 0" class="hover:bg-transparent">
+              <TableCell
+                colspan="7"
+                class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
               >
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800"
-                    >
-                      <img
-                        v-if="item.imageUrl"
-                        :src="getImageUrl(item.imageUrl)"
-                        :alt="item.name"
-                        class="h-full w-full object-cover"
-                      />
-                      <ImagePlus v-else class="size-5 text-stone-400 dark:text-stone-500" />
-                    </div>
-                    <div>
-                      <p class="text-[#1A1C1C] dark:text-stone-100">{{ item.name }}</p>
-                    </div>
-                  </div>
-                </td>
-                <td
-                  class="px-6 py-4"
-                  :class="
-                    item.status === 'out_of_stock'
-                      ? 'text-rose-600 dark:text-rose-500'
-                      : 'text-[#1A1C1C] dark:text-stone-100'
-                  "
-                >
-                  {{ formatNumber(item.quantity) }}
-                </td>
-                <td class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                  {{ item.unitOfMeasure }}
-                </td>
-                <td class="px-6 py-4 text-right text-[#1A1C1C] dark:text-stone-100">
-                  {{ formatMoney(item.unitCost) }}
-                </td>
-                <td class="px-6 py-4 text-right font-black text-[#1A1C1C] dark:text-stone-100">
-                  {{ formatMoney(item.totalValue) }}
-                </td>
-                <td class="px-6 py-4 text-center">
-                  <span
-                    class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black"
-                    :class="statusMeta[item.status].class"
+                {{ t('inventory.messages.empty') }}
+              </TableCell>
+            </TableRow>
+            <TableRow
+              v-for="item in paginatedItems"
+              v-else
+              :key="item.id"
+              class="border-slate-100 text-sm font-bold text-[#1A1C1C] dark:border-stone-800 dark:text-stone-100"
+            >
+              <TableCell class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800"
                   >
-                    <span class="size-1.5 rounded-full" :class="statusMeta[item.status].dotClass" />
-                    {{ t(statusMeta[item.status].labelKey) }}
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center justify-center gap-5">
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none hover:bg-transparent hover:no-underline"
-                      :title="t('inventory.actions.adjust')"
-                      @click="openAdjustmentModal(item)"
-                    >
-                      <i class="fa fa-window-maximize text-[#D66A1F]" aria-hidden="true">
-                        <svg viewBox="0 0 16 16" class="size-4 fill-current">
-                          <path
-                            d="M2.25 1.5h11.5c.41 0 .75.34.75.75v11.5c0 .41-.34.75-.75.75H2.25a.75.75 0 0 1-.75-.75V2.25c0-.41.34-.75.75-.75Zm1 2.25v8.5h9.5v-8.5h-9.5Zm1.25 1.5h4.25v1.5H4.5v-1.5Zm6.75 1.25-5.5 5.5h5.5v-5.5Z"
-                          />
-                        </svg>
-                      </i>
-                    </Button>
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none text-[#16A34A] hover:bg-transparent hover:no-underline dark:text-emerald-500"
-                      :title="t('inventory.actions.view')"
-                      @click="openSupplyModal('view', item)"
-                    >
-                      <Eye class="size-4 stroke-[2.4]" />
-                    </Button>
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none text-[#7C3AED] hover:bg-transparent hover:no-underline dark:text-violet-400"
-                      :title="t('inventory.actions.viewHistory')"
-                      @click="goToHistory(item)"
-                    >
-                      <History class="size-4 stroke-[2.4]" />
-                    </Button>
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none text-[#2563EB] hover:bg-transparent hover:no-underline dark:text-sky-500"
-                      :title="t('inventory.actions.edit')"
-                      @click="openSupplyModal('edit', item)"
-                    >
-                      <Pencil class="size-4 stroke-[2.4]" />
-                    </Button>
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none text-[#EF4444] hover:bg-transparent hover:no-underline dark:text-red-500 dark:hover:text-red-400"
-                      :title="t('inventory.actions.delete')"
-                      @click="openDeleteConfirm(item)"
-                    >
-                      <Trash2 class="size-4 stroke-[2.4]" />
-                    </Button>
+                    <img
+                      v-if="item.imageUrl"
+                      :src="getImageUrl(item.imageUrl)"
+                      :alt="item.name"
+                      class="h-full w-full object-cover"
+                    />
+                    <ImagePlus v-else class="size-5 text-stone-400 dark:text-stone-500" />
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  <div>
+                    <p class="text-[#1A1C1C] dark:text-stone-100">{{ item.name }}</p>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell
+                class="px-6 py-4"
+                :class="
+                  item.status === 'out_of_stock'
+                    ? 'text-rose-600 dark:text-rose-500'
+                    : 'text-[#1A1C1C] dark:text-stone-100'
+                "
+              >
+                {{ formatNumber(item.quantity) }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
+                {{ item.unitOfMeasure }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-right text-[#1A1C1C] dark:text-stone-100">
+                {{ formatMoney(item.unitCost) }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-right font-black text-[#1A1C1C] dark:text-stone-100">
+                {{ formatMoney(item.totalValue) }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-center">
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black"
+                  :class="statusMeta[item.status].class"
+                >
+                  <span class="size-1.5 rounded-full" :class="statusMeta[item.status].dotClass" />
+                  {{ t(statusMeta[item.status].labelKey) }}
+                </span>
+              </TableCell>
+              <TableCell class="px-6 py-4">
+                <div class="flex items-center justify-center">
+                  <DropdownMenuRoot>
+                    <DropdownMenuTrigger
+                      class="material-symbols-outlined cursor-pointer transition-opacity hover:text-[#974400] focus:outline-none"
+                      :title="t('inventory.table.actions')"
+                      @click.stop
+                    >
+                      more_vert
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuPortal>
+                      <DropdownMenuContent
+                        class="z-50 min-w-[160px] animate-in rounded-lg border border-[#edddd5] bg-white p-1 shadow-lg fade-in-0 zoom-in-95 dark:border-stone-800 dark:bg-stone-900"
+                        :side-offset="4"
+                        align="end"
+                      >
+                        <!-- Adjust -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                          @click.stop="openAdjustmentModal(item)"
+                        >
+                          <SlidersHorizontal class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.adjust') }}</span>
+                        </DropdownMenuItem>
+
+                        <!-- Edit -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                          @click.stop="openSupplyModal('edit', item)"
+                        >
+                          <Pencil class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.edit') }}</span>
+                        </DropdownMenuItem>
+
+                        <!-- View -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                          @click.stop="openSupplyModal('view', item)"
+                        >
+                          <Eye class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.view') }}</span>
+                        </DropdownMenuItem>
+
+                        <!-- History -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                          @click.stop="goToHistory(item)"
+                        >
+                          <History class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.viewHistory') }}</span>
+                        </DropdownMenuItem>
+
+                        <!-- Delete -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 focus:bg-red-50 focus:outline-none dark:hover:bg-red-950/40 dark:focus:bg-red-950/40"
+                          @click.stop="openDeleteConfirm(item)"
+                        >
+                          <Trash2 class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.delete') }}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuRoot>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
 
         <footer
           class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 dark:border-stone-800 sm:flex-row sm:items-center sm:justify-between"
@@ -1150,7 +1185,7 @@ onMounted(() => {
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
               :disabled="adjustmentForm.amount <= 0"
-              @click="setAdjustmentAmount(Number(adjustmentForm.amount) - 1)"
+              @click="setAdjustmentAmount(Number(adjustmentForm.amount) - ADJUSTMENT_STEP)"
             >
               <Minus class="size-4" />
             </Button>
@@ -1161,7 +1196,6 @@ onMounted(() => {
               :max="Number.isFinite(adjustmentMaxAmount) ? adjustmentMaxAmount : undefined"
               step="0.01"
               class="h-full border-0 bg-transparent px-0 text-right text-xl font-normal text-[#222222] shadow-none [appearance:textfield] focus-visible:ring-0 dark:text-stone-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              @input="setAdjustmentAmount(adjustmentForm.amount)"
               @blur="setAdjustmentAmount(adjustmentForm.amount)"
             />
             <span class="pl-4 text-sm font-normal text-[#B2B2B2] dark:text-stone-500">
@@ -1172,7 +1206,7 @@ onMounted(() => {
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
               :disabled="isRemovingStock && adjustmentForm.amount >= adjustmentMaxAmount"
-              @click="setAdjustmentAmount(Number(adjustmentForm.amount) + 1)"
+              @click="setAdjustmentAmount(Number(adjustmentForm.amount) + ADJUSTMENT_STEP)"
             >
               <Plus class="size-4" />
             </Button>

@@ -80,16 +80,39 @@ export const useInventoryStore = defineStore('inventory', () => {
     valuation.value = await getInventoryValuation()
   }
 
+  let currentHistoryRequestId = 0
+
+  // Changing the range or page fires a new request before the previous one
+  // settles, so a slower earlier response must not overwrite the newer
+  // selection's rows, pagination or totals.
   const fetchHistory = async (id: number, params: InventoryHistoryQuery = {}) => {
+    currentHistoryRequestId += 1
+    const requestId = currentHistoryRequestId
     isHistoryLoading.value = true
     try {
       const res = await getInventoryHistory(id, params)
-      historyItems.value = res.items
-      historyPagination.value = res.pagination
-      historyTotals.value = res.totals
+      if (requestId === currentHistoryRequestId) {
+        historyItems.value = res.items
+        historyPagination.value = res.pagination
+        historyTotals.value = res.totals
+      }
     } finally {
-      isHistoryLoading.value = false
+      if (requestId === currentHistoryRequestId) {
+        isHistoryLoading.value = false
+      }
     }
+  }
+
+  // Direct navigation to an item's history page has no cached list to read from,
+  // and a list narrowed by search/status filters can legitimately exclude the
+  // requested item. There is no by-ID endpoint, so refetch unfiltered and look
+  // again — reusing fetchItems keeps the stale-response guard in play.
+  const ensureItem = async (id: number) => {
+    const cached = items.value.find(current => current.id === id)
+    if (cached) return cached
+
+    await fetchItems().catch(() => {})
+    return items.value.find(current => current.id === id) ?? null
   }
 
   // Keep the whole-shop total in sync after any change, without blocking the
@@ -161,6 +184,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     outOfStockItems,
     stockHealthPercentage,
     fetchItems,
+    ensureItem,
     fetchValuation,
     fetchHistory,
     addItem,

@@ -7,7 +7,11 @@ import type {
   InventoryItemPayload,
   InventoryValuation,
 } from '@/types/inventory.types'
-import { inventoryAdjustmentSchema, inventoryItemSchema } from '@/validations/inventoryValidation'
+import {
+  inventoryAdjustmentSchema,
+  inventoryHistoryQuerySchema,
+  inventoryItemSchema,
+} from '@/validations/inventoryValidation'
 
 const INVENTORY_ENDPOINT = '/api/inventories'
 
@@ -45,7 +49,7 @@ export const getInventoryItems = async (
 }
 
 export const getInventoryValuation = async (): Promise<InventoryValuation> => {
-  const res = await http.get<InventoryValuation>(`${INVENTORY_ENDPOINT}/valuation`)
+  const res = await http.get<InventoryValuation>(`${INVENTORY_ENDPOINT}/valuations`)
   return res.data
 }
 
@@ -53,8 +57,9 @@ export const getInventoryHistory = async (
   id: number,
   params: InventoryHistoryQuery = {}
 ): Promise<InventoryHistoryResponse> => {
+  const parsedParams = inventoryHistoryQuerySchema.parse(params)
   const res = await http.get<InventoryHistoryResponse>(`${INVENTORY_ENDPOINT}/${id}/history`, {
-    params,
+    params: parsedParams,
   })
   return res.data
 }

@@ -6,6 +6,14 @@ import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-vue-next'
 import { Card } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import GlobalDateFilter from '@/components/analytics/GlobalDateFilter.vue'
 import { resolveGlobalRange } from '@/components/analytics/globalRange'
 import type { GlobalRangeKey, GlobalRangeValue } from '@/types/analytics.types'
@@ -77,8 +85,9 @@ const periodDays = computed(() => {
   const to = new Date(range.value.endDate).getTime()
   return Math.max(1, Math.round((to - from) / DAY_MS))
 })
-// Net stock change per day over the period (negative = being depleted).
-const avgDailyUsage = computed(() => round2((totalIn.value - totalOut.value) / periodDays.value))
+// Usage is stock *consumed* per day. Net change (in − out) is a different
+// figure: a restock would push it positive on a day stock was actually used up.
+const avgDailyUsage = computed(() => round2(totalOut.value / periodDays.value))
 
 const summaryStats = computed(() => [
   {
@@ -89,10 +98,7 @@ const summaryStats = computed(() => [
   {
     label: 'inventory.history.summary.averageDailyUsage',
     value: `${formatNumber(avgDailyUsage.value)} ${unitLabel.value}`,
-    valueClass:
-      avgDailyUsage.value < 0
-        ? 'text-rose-600 dark:text-rose-400'
-        : 'text-emerald-600 dark:text-emerald-400',
+    valueClass: 'text-[#1A1C1C] dark:text-stone-100',
   },
   {
     label: 'inventory.history.summary.totalIn',
@@ -168,10 +174,10 @@ watch(range, () => {
 const goBack = () => router.push({ name: APP_ROUTES.INVENTORY.name })
 
 onMounted(async () => {
-  // Ensure we can show the item's name/unit even on a direct page load.
-  if (!items.value.length) {
-    await inventoryStore.fetchItems().catch(() => {})
-  }
+  // Ensure we can show the item's name/unit even on a direct page load, or when
+  // the cached list is filtered and happens to exclude this item — a non-empty
+  // list is not proof the item is in it.
+  await inventoryStore.ensureItem(itemId.value)
   load()
 })
 </script>
@@ -245,76 +251,83 @@ onMounted(async () => {
       <Card
         class="gap-0 overflow-hidden rounded-xl border-none bg-white p-0 shadow-sm dark:border dark:border-stone-800 dark:bg-stone-900"
       >
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[640px] text-left">
-            <thead>
-              <tr
-                class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] dark:bg-stone-800 dark:text-stone-500"
+        <Table class="min-w-[640px] text-left">
+          <TableHeader>
+            <TableRow
+              class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
+            >
+              <TableHead class="px-6 py-4">{{ t('inventory.history.date') }}</TableHead>
+              <TableHead class="px-6 py-4">{{ t('inventory.history.change') }}</TableHead>
+              <TableHead class="px-6 py-4 text-right">
+                {{ t('inventory.history.unitCost') }}
+              </TableHead>
+              <TableHead class="px-6 py-4">{{ t('inventory.history.notes') }}</TableHead>
+              <TableHead class="px-6 py-4">{{ t('inventory.history.by') }}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-if="isHistoryLoading" class="hover:bg-transparent">
+              <TableCell
+                colspan="5"
+                class="px-6 py-14 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
               >
-                <th class="px-6 py-4">{{ t('inventory.history.date') }}</th>
-                <th class="px-6 py-4">{{ t('inventory.history.change') }}</th>
-                <th class="px-6 py-4 text-right">{{ t('inventory.history.unitCost') }}</th>
-                <th class="px-6 py-4">{{ t('inventory.history.notes') }}</th>
-                <th class="px-6 py-4">{{ t('inventory.history.by') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="isHistoryLoading">
-                <td
-                  colspan="5"
-                  class="px-6 py-14 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-                >
-                  {{ t('inventory.messages.loading') }}
-                </td>
-              </tr>
-              <tr v-else-if="historyItems.length === 0">
-                <td
-                  colspan="5"
-                  class="px-6 py-14 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-                >
-                  {{ t('inventory.history.empty') }}
-                </td>
-              </tr>
-              <tr
-                v-for="entry in historyItems"
-                v-else
-                :key="entry.id"
-                class="border-b border-slate-100 text-sm last:border-0 dark:border-stone-800"
+                {{ t('inventory.messages.loading') }}
+              </TableCell>
+            </TableRow>
+            <TableRow v-else-if="historyItems.length === 0" class="hover:bg-transparent">
+              <TableCell
+                colspan="5"
+                class="px-6 py-14 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
               >
-                <td class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                  {{ formatDate(entry.createdAt) }}
-                </td>
-                <td class="px-6 py-4 font-bold">
-                  <span
-                    :class="
-                      entry.type === 'add'
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-rose-600 dark:text-rose-400'
-                    "
-                  >
-                    {{ entry.type === 'add' ? '+' : '−' }}{{ formatNumber(entry.quantityChanged) }}
-                    {{ item?.unitOfMeasure }}
+                {{ t('inventory.history.empty') }}
+              </TableCell>
+            </TableRow>
+            <TableRow
+              v-for="entry in historyItems"
+              v-else
+              :key="entry.id"
+              class="border-slate-100 text-sm dark:border-stone-800"
+            >
+              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
+                {{ formatDate(entry.createdAt) }}
+              </TableCell>
+              <TableCell class="px-6 py-4 font-bold">
+                <span
+                  :class="
+                    entry.type === 'add'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-rose-600 dark:text-rose-400'
+                  "
+                >
+                  {{ entry.type === 'add' ? '+' : '−' }}{{ formatNumber(entry.quantityChanged) }}
+                  {{ item?.unitOfMeasure }}
+                </span>
+              </TableCell>
+              <TableCell class="px-6 py-4 text-right text-[#1A1C1C] dark:text-stone-100">
+                {{ entry.unitCost === null ? '—' : formatMoney(entry.unitCost) }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
+                {{ entry.notes || '—' }}
+              </TableCell>
+              <!-- The actor is the point of an audit trail, so the name leads
+                   and the role is secondary metadata. -->
+              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
+                <div v-if="entry.user || entry.userRole" class="flex flex-col gap-1">
+                  <span v-if="entry.user" class="font-semibold text-[#1A1C1C] dark:text-stone-100">
+                    {{ entry.user }}
                   </span>
-                </td>
-                <td class="px-6 py-4 text-right text-[#1A1C1C] dark:text-stone-100">
-                  {{ entry.unitCost === null ? '—' : formatMoney(entry.unitCost) }}
-                </td>
-                <td class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                  {{ entry.notes || '—' }}
-                </td>
-                <td class="px-6 py-4 text-[#737373] dark:text-stone-400">
                   <span
                     v-if="entry.userRole"
-                    class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#737373] dark:bg-stone-800 dark:text-stone-400"
+                    class="inline-flex w-fit rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#737373] dark:bg-stone-800 dark:text-stone-400"
                   >
                     {{ entry.userRole }}
                   </span>
-                  <span v-else>—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </div>
+                <span v-else>—</span>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
 
         <footer
           class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 dark:border-stone-800 sm:flex-row sm:items-center sm:justify-between"
