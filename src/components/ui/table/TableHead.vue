@@ -1,10 +1,8 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
+﻿<script setup lang="ts">
+import type { TablePrimitiveProps } from '@/types/table.types'
 import { cn } from '@/lib/utils'
 
-const props = defineProps<{
-  class?: HTMLAttributes['class']
-}>()
+const props = defineProps<TablePrimitiveProps>()
 </script>
 
 <template>

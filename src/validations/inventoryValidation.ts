@@ -19,10 +19,10 @@ export const inventoryAdjustmentSchema = z.object({
 // Mirrors the backend's inventoryHistoryQuerySchema: the view feeds user-picked
 // dates and pagination straight through, so catch a bad range here rather than
 // letting the server reject it (or silently return an empty page).
-const isoDateTime = z
-  .string()
-  .trim()
-  .refine(value => !Number.isNaN(Date.parse(value)), 'Must be an ISO 8601 date-time')
+// `Date.parse` is far looser than ISO 8601 — it accepts "Aug 14 2026" and other
+// engine-specific forms. The range values come from `toISOString()`, so hold the
+// input to the actual format.
+const isoDateTime = z.string().trim().pipe(z.iso.datetime())
 
 export const inventoryHistoryQuerySchema = z
   .object({
