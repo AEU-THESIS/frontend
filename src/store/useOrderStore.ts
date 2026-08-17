@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getOrders, getOrderDetails, updateOrderStatus } from '@/api/order'
+import {
+  getOrders,
+  getOrderDetails,
+  updateOrderStatus,
+  voidOrder as voidOrderApi,
+  cancelOrderItem as cancelOrderItemApi,
+} from '@/api/order'
 import { useAuthStore } from './useAuthStore'
 import type { OrderDetail } from '@/types/order.types'
 
@@ -181,6 +187,34 @@ export const useOrderStore = defineStore('orders', () => {
     }
   }
 
+  // Replace an order everywhere it is held (live board, history list, open drawer)
+  // with the server's recalculated version after a void/cancel.
+  const applyUpdatedOrder = (updated: OrderDetail) => {
+    const liveIdx = orders.value.findIndex(o => o.id === updated.id)
+    if (liveIdx !== -1) orders.value[liveIdx] = updated
+
+    const histIdx = historyOrders.value.findIndex(o => o.id === updated.id)
+    if (histIdx !== -1) historyOrders.value[histIdx] = updated
+
+    if (selectedOrder.value && selectedOrder.value.id === updated.id) {
+      selectedOrder.value = updated
+    }
+  }
+
+  // ── 4b. Void a whole order (reverses the money) ───────────────────
+  const voidOrder = async (id: number, reason?: string) => {
+    const updated = await voidOrderApi(id, reason)
+    applyUpdatedOrder(updated)
+    return updated
+  }
+
+  // ── 4c. Cancel a single line item (partial refund) ────────────────
+  const cancelItem = async (orderId: number, itemId: number) => {
+    const updated = await cancelOrderItemApi(orderId, itemId)
+    applyUpdatedOrder(updated)
+    return updated
+  }
+
   // ── 5. Server-Sent Events SSE Subscriber ─────────────────────────
   const subscribeToOrderStream = () => {
     if (sseController.value) {
@@ -349,6 +383,8 @@ export const useOrderStore = defineStore('orders', () => {
     fetchHistoryOrders,
     fetchSingleOrderDetail,
     changeStatus,
+    voidOrder,
+    cancelItem,
     subscribeToOrderStream,
     unsubscribeFromOrderStream,
   }

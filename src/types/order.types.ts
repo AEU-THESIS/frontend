@@ -104,6 +104,9 @@ export interface OrderItemDetail {
   price: number | string
   extraPrice: number | string
   subtotal: number | string
+  // Set when the line was cancelled (kept on the order, struck through in the UI).
+  canceledAt: string | null
+  canceledQuantity: number
   product: {
     id: number
     name: string
@@ -111,6 +114,17 @@ export interface OrderItemDetail {
     price: number | string
   }
   options: OrderItemOptionDetail[]
+}
+
+// A payment/refund record on an order. Refunds carry a negative amount.
+export interface OrderTransaction {
+  id: number
+  amount: number | string
+  currency: string
+  paymentMethod: string
+  status: string
+  verifiedAt: string | null
+  userId: number | null
 }
 
 export interface OrderDetail extends OrderResult {
@@ -130,6 +144,13 @@ export interface OrderDetail extends OrderResult {
   deliveryAddress: string | null
   paymentMethod: string
   khqrString: string | null
+  // Void audit — set once a whole order is voided (refunded + canceled).
+  voidedAt?: string | null
+  voidReason?: string | null
+  voidedByUserId?: number | null
+  voidedBy?: { id: number; name: string } | null
+  // Payment/refund records (refunds have a negative amount).
+  transactions?: OrderTransaction[]
   items: OrderItemDetail[]
 }
 

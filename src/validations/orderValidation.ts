@@ -39,7 +39,10 @@ export const createOrderSchema = z
     }
   })
 
-export const fulfillmentStatusSchema = z.enum(['preparing', 'ready', 'completed', 'canceled'])
+// Status transitions the board/history may push directly. Cancelling is NOT here:
+// it must reverse the money, so it goes through the void endpoint (see api/order.ts).
+// The backend's status endpoint rejects `canceled` too — keep these in lockstep.
+export const fulfillmentStatusSchema = z.enum(['preparing', 'ready', 'completed'])
 
 export const getOrdersParamsSchema = z.object({
   status: z.string().optional(),

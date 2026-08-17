@@ -3,9 +3,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useOrderStore } from '@/store/useOrderStore'
 import { storeToRefs } from 'pinia'
-import type { OrderDetail } from '@/types/order.types'
+import type { OrderDetail, OrderItemDetail } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import { formatDateTime } from '@/utils/datetime'
+import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
@@ -76,8 +78,97 @@ onUnmounted(() => {
 // ── 5. Status Transition Execution ────────────────────────────────
 const handleStatusChange = async (orderId: number, newStatus: string) => {
   closeDropdowns()
+  // Cancelling is not a plain status flip — it must reverse the money, so route it
+  // through the void confirmation flow instead of a direct status update.
+  if (newStatus === 'canceled') {
+    openVoidDialog(orderId)
+    return
+  }
   await orderStore.changeStatus(orderId, newStatus)
   toast.success(t('orderDashboard.statusUpdated'))
+}
+
+// ── 5b. Void / cancel-item actions (reverse money server-side) ─────
+const voidDialogOpen = ref(false)
+const voidTargetId = ref<number | null>(null)
+const cancelItemDialogOpen = ref(false)
+const pendingCancelItemId = ref<number | null>(null)
+const actionBusy = ref(false)
+
+const orderFullyReversed = computed(() => selectedOrder.value?.paymentStatus === 'refunded')
+const isItemCancelled = (item: OrderItemDetail) => item.canceledAt != null
+
+// Money can only be reversed on an order that actually collected money.
+const canReverseMoney = computed(() => {
+  const status = selectedOrder.value?.paymentStatus
+  return status === 'paid' || status === 'partially_refunded'
+})
+
+// Total refunded so far, from the reversing (negative-amount) transactions in the
+// order's own payment currency.
+const refundedDisplay = computed(() => {
+  const order = selectedOrder.value
+  if (!order?.transactions?.length) return null
+  const refunded = order.transactions.reduce(
+    (sum, txn) =>
+      Number(txn.amount) < 0 && txn.currency === order.paymentCurrency
+        ? sum + -Number(txn.amount)
+        : sum,
+    0
+  )
+  if (refunded <= 0) return null
+  return order.paymentCurrency === 'KHR'
+    ? `${refunded.toLocaleString()}៛`
+    : `$${refunded.toFixed(2)}`
+})
+
+const voidedByLabel = computed(() => {
+  const order = selectedOrder.value
+  if (!order?.voidedBy || !order.voidedAt) return null
+  return t('orderActions.voidedBy', {
+    name: order.voidedBy.name,
+    time: formatDateTime(order.voidedAt),
+  })
+})
+
+const openVoidDialog = (orderId: number) => {
+  voidTargetId.value = orderId
+  voidDialogOpen.value = true
+}
+
+const confirmVoid = async (reason?: string) => {
+  if (voidTargetId.value == null) return
+  actionBusy.value = true
+  try {
+    await orderStore.voidOrder(voidTargetId.value, reason)
+    toast.success(t('orderActions.orderVoided'))
+    voidDialogOpen.value = false
+    voidTargetId.value = null
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+const openCancelItemDialog = (itemId: number) => {
+  pendingCancelItemId.value = itemId
+  cancelItemDialogOpen.value = true
+}
+
+const confirmCancelItem = async () => {
+  if (!selectedOrder.value || pendingCancelItemId.value == null) return
+  actionBusy.value = true
+  try {
+    await orderStore.cancelItem(selectedOrder.value.id, pendingCancelItemId.value)
+    toast.success(t('orderActions.itemCanceled'))
+    cancelItemDialogOpen.value = false
+    pendingCancelItemId.value = null
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
 }
 
 // ── 6. Detail panel slide-in triggers ──────────────────────────────
@@ -350,10 +441,13 @@ const handlePrint = () => {
                     ? 'bg-rose-50 text-rose-800 border-rose-50 hover:bg-rose-100/50'
                     : '',
                 ]"
-                @click="toggleDropdown($event, order.id)"
+                @click="order.fulfillmentStatus !== 'canceled' && toggleDropdown($event, order.id)"
               >
                 {{ t(`orderDashboard.${order.fulfillmentStatus}`) }}
-                <span class="material-symbols-outlined text-[12px] font-extrabold leading-none"
+                <!-- A canceled/voided order is terminal — no status transitions offered. -->
+                <span
+                  v-if="order.fulfillmentStatus !== 'canceled'"
+                  class="material-symbols-outlined text-[12px] font-extrabold leading-none"
                   >arrow_drop_down</span
                 >
               </button>
@@ -361,7 +455,7 @@ const handlePrint = () => {
               <!-- Status Transition Selection Dropdown -->
               <transition name="pop">
                 <ul
-                  v-if="activeDropdownId === order.id"
+                  v-if="activeDropdownId === order.id && order.fulfillmentStatus !== 'canceled'"
                   class="absolute right-0 mt-2 w-36 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl rounded-2xl py-2 z-30 overflow-hidden font-semibold transition-all shrink-0"
                   @click.stop
                 >
@@ -572,6 +666,7 @@ const handlePrint = () => {
                 v-for="item in selectedOrder.items"
                 :key="item.id"
                 class="flex items-start gap-4 border-b border-stone-100 dark:border-stone-800 pb-4 last:border-0 last:pb-0"
+                :class="{ 'opacity-70': isItemCancelled(item) }"
               >
                 <!-- Populated Product image fallback in drawer -->
                 <div
@@ -592,13 +687,27 @@ const handlePrint = () => {
                 </div>
 
                 <div class="flex-1 min-w-0">
-                  <div class="flex justify-between items-start">
+                  <div class="flex justify-between items-start gap-2">
                     <p
                       class="font-bold text-stone-800 dark:text-stone-100 text-[15px] leading-tight"
+                      :class="{
+                        'line-through text-stone-400 dark:text-stone-600': isItemCancelled(item),
+                      }"
                     >
                       {{ item.product?.name }}
+                      <span
+                        v-if="isItemCancelled(item)"
+                        class="ml-1 inline-block align-middle rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-rose-600 no-underline dark:bg-rose-950/30 dark:text-rose-400"
+                      >
+                        {{ t('orderActions.cancelledBadge') }}
+                      </span>
                     </p>
-                    <p class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2">
+                    <p
+                      class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2"
+                      :class="{
+                        'line-through text-stone-400 dark:text-stone-600': isItemCancelled(item),
+                      }"
+                    >
                       {{
                         shopSettingsStore.formatAmount(Number(item.price) + Number(item.extraPrice))
                       }}
@@ -633,6 +742,19 @@ const handlePrint = () => {
                       </span>
                     </li>
                   </ul>
+
+                  <!-- Per-line cancel control (reverses money for just this line) -->
+                  <button
+                    v-if="!isItemCancelled(item) && canReverseMoney"
+                    type="button"
+                    class="mt-2 inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50 active:scale-95 dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/30 print:hidden"
+                    @click="openCancelItemDialog(item.id)"
+                  >
+                    <span class="material-symbols-outlined text-[14px] leading-none"
+                      >remove_shopping_cart</span
+                    >
+                    {{ t('orderActions.cancelItem') }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -709,6 +831,44 @@ const handlePrint = () => {
                   shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount))
                 }}</span>
               </div>
+
+              <!-- Reversed (refunded) amount when the order was voided / had items cancelled -->
+              <div
+                v-if="refundedDisplay"
+                class="flex justify-between font-bold text-rose-600 dark:text-rose-500"
+              >
+                <span>{{ t('orderActions.refundedLine') }}</span>
+                <span>−{{ refundedDisplay }}</span>
+              </div>
+              <p
+                v-if="voidedByLabel"
+                class="pt-1 text-[11px] font-semibold text-stone-400 dark:text-stone-500"
+              >
+                {{ voidedByLabel }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Void action — reverses the money (refund + un-redeem promotions). -->
+          <div
+            class="border-t border-stone-100 dark:border-stone-800 pt-6 shrink-0 print:hidden flex flex-col gap-3"
+          >
+            <button
+              v-if="canReverseMoney"
+              type="button"
+              :disabled="actionBusy"
+              class="flex items-center justify-center gap-2 rounded-2xl bg-rose-600 py-3 px-5 text-sm font-bold tracking-wide text-white shadow-sm transition-all hover:bg-rose-700 active:scale-[0.98] disabled:opacity-60"
+              @click="openVoidDialog(selectedOrder.id)"
+            >
+              <span class="material-symbols-outlined text-[18px]">cancel</span>
+              {{ t('orderActions.voidOrder') }}
+            </button>
+            <div
+              v-else-if="orderFullyReversed"
+              class="flex items-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 dark:bg-rose-950/20 dark:text-rose-400"
+            >
+              <span class="material-symbols-outlined text-[18px]">block</span>
+              {{ t('orderActions.voidedNotice') }}
             </div>
           </div>
 
@@ -730,6 +890,30 @@ const handlePrint = () => {
         @click="closeOrderDetails"
       ></div>
     </transition>
+
+    <!-- Void confirmation (with optional reason) -->
+    <CancelActionDialog
+      v-model:open="voidDialogOpen"
+      :title="t('orderActions.voidTitle')"
+      :message="t('orderActions.voidMessage')"
+      :confirm-label="t('orderActions.voidConfirm')"
+      :cancel-label="t('orderActions.keep')"
+      :reason-placeholder="t('orderActions.voidReasonPlaceholder')"
+      with-reason
+      :busy="actionBusy"
+      @confirm="confirmVoid"
+    />
+
+    <!-- Cancel-item confirmation -->
+    <CancelActionDialog
+      v-model:open="cancelItemDialogOpen"
+      :title="t('orderActions.cancelItemTitle')"
+      :message="t('orderActions.cancelItemMessage')"
+      :confirm-label="t('orderActions.cancelItemConfirm')"
+      :cancel-label="t('orderActions.keep')"
+      :busy="actionBusy"
+      @confirm="confirmCancelItem"
+    />
   </div>
 </template>
 
