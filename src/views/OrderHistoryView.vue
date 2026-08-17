@@ -7,6 +7,7 @@ import type { OrderDetail, OrderItemDetail } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { roundRielUp } from '@/utils/money'
+import { formatDateTime } from '@/utils/datetime'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
@@ -38,6 +39,12 @@ const actionBusy = ref(false)
 // A fully-voided (refunded) order can no longer be voided or have items cancelled.
 const orderFullyReversed = computed(() => selectedOrder.value?.paymentStatus === 'refunded')
 
+// Money can only be reversed on an order that actually collected money.
+const canReverseMoney = computed(() => {
+  const status = selectedOrder.value?.paymentStatus
+  return status === 'paid' || status === 'partially_refunded'
+})
+
 const isItemCancelled = (item: OrderItemDetail) => item.canceledAt != null
 
 // Total refunded so far, summed from the reversing (negative-amount) transactions and
@@ -46,7 +53,10 @@ const refundedDisplay = computed(() => {
   const order = selectedOrder.value
   if (!order?.transactions?.length) return null
   const refunded = order.transactions.reduce(
-    (sum, txn) => (Number(txn.amount) < 0 ? sum + -Number(txn.amount) : sum),
+    (sum, txn) =>
+      Number(txn.amount) < 0 && txn.currency === order.paymentCurrency
+        ? sum + -Number(txn.amount)
+        : sum,
     0
   )
   if (refunded <= 0) return null
@@ -185,22 +195,6 @@ const clearFilters = () => {
 onMounted(() => {
   fetchHistory()
 })
-
-// ── 4. Formatter Helpers ──────────────────────────────────────────
-const formatDateTime = (dateStr: string) => {
-  try {
-    const date = new Date(dateStr)
-    return date.toLocaleString([], {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  } catch {
-    return dateStr
-  }
-}
 
 // ── 5. Detail Modal side sheet triggers ───────────────────────────
 const openOrderDetails = async (order: OrderDetail) => {
@@ -395,12 +389,15 @@ const confirmCancelItem = async () => {
               <!-- Payment Status Badge -->
               <td class="py-3.5 px-6 text-center whitespace-nowrap">
                 <span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase shrink-0"
-                  :class="
-                    order.paymentStatus === 'paid'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30'
-                      : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200/30'
-                  "
+                  class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase shrink-0 border"
+                  :class="{
+                    'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200/30':
+                      order.paymentStatus === 'paid',
+                    'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200/30':
+                      order.paymentStatus === 'refunded',
+                    'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200/30':
+                      order.paymentStatus !== 'paid' && order.paymentStatus !== 'refunded',
+                  }"
                 >
                   {{ t(`orderDashboard.${order.paymentStatus}`) }}
                 </span>
@@ -688,7 +685,7 @@ const confirmCancelItem = async () => {
 
                   <!-- Per-line cancel control (reverses money for just this line) -->
                   <button
-                    v-if="!isItemCancelled(item) && !orderFullyReversed"
+                    v-if="!isItemCancelled(item) && canReverseMoney"
                     type="button"
                     class="mt-2 inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50 active:scale-95 dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/30 print:hidden"
                     @click="openCancelItemDialog(item.id)"
@@ -798,7 +795,7 @@ const confirmCancelItem = async () => {
             class="border-t border-stone-100 dark:border-stone-800 pt-6 shrink-0 print:hidden flex flex-col gap-3"
           >
             <button
-              v-if="!orderFullyReversed"
+              v-if="canReverseMoney"
               type="button"
               :disabled="actionBusy"
               class="flex items-center justify-center gap-2 rounded-2xl bg-rose-600 py-3 px-5 text-sm font-bold tracking-wide text-white shadow-sm transition-all hover:bg-rose-700 active:scale-[0.98] disabled:opacity-60"
@@ -808,7 +805,7 @@ const confirmCancelItem = async () => {
               {{ t('orderActions.voidOrder') }}
             </button>
             <div
-              v-else
+              v-else-if="orderFullyReversed"
               class="flex items-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 dark:bg-rose-950/20 dark:text-rose-400"
             >
               <span class="material-symbols-outlined text-[18px]">block</span>

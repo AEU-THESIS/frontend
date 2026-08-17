@@ -570,7 +570,6 @@
     "readyDesc": "Ready for pickup / table delivery",
     "canceledDesc": "Canceled orders today",
     "completedDesc": "Fulfilled orders today",
-    "changeStatus": "Change Status",
     "statusUpdated": "Order status updated successfully",
     "viewDetails": "View Details"
   },
@@ -616,11 +615,6 @@
     },
     "noHistory": "No historical transactions found matching criteria.",
     "reprintReceipt": "Reprint Receipt",
-    "actions": {
-      "cancelOrder": "Cancel Order",
-      "completeOrder": "Mark as Completed",
-      "confirmCancel": "Confirm Cancel?"
-    },
     "startDate": "Start Date",
     "endDate": "End Date",
     "applyFilters": "Apply Filters",

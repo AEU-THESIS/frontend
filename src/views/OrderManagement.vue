@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import type { OrderDetail, OrderItemDetail } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import { formatDateTime } from '@/utils/datetime'
 import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
 
 const { t } = useI18n()
@@ -97,13 +98,22 @@ const actionBusy = ref(false)
 const orderFullyReversed = computed(() => selectedOrder.value?.paymentStatus === 'refunded')
 const isItemCancelled = (item: OrderItemDetail) => item.canceledAt != null
 
-// Total refunded so far, from the reversing (negative-amount) transactions, in the
+// Money can only be reversed on an order that actually collected money.
+const canReverseMoney = computed(() => {
+  const status = selectedOrder.value?.paymentStatus
+  return status === 'paid' || status === 'partially_refunded'
+})
+
+// Total refunded so far, from the reversing (negative-amount) transactions in the
 // order's own payment currency.
 const refundedDisplay = computed(() => {
   const order = selectedOrder.value
   if (!order?.transactions?.length) return null
   const refunded = order.transactions.reduce(
-    (sum, txn) => (Number(txn.amount) < 0 ? sum + -Number(txn.amount) : sum),
+    (sum, txn) =>
+      Number(txn.amount) < 0 && txn.currency === order.paymentCurrency
+        ? sum + -Number(txn.amount)
+        : sum,
     0
   )
   if (refunded <= 0) return null
@@ -117,7 +127,7 @@ const voidedByLabel = computed(() => {
   if (!order?.voidedBy || !order.voidedAt) return null
   return t('orderActions.voidedBy', {
     name: order.voidedBy.name,
-    time: new Date(order.voidedAt).toLocaleString(),
+    time: formatDateTime(order.voidedAt),
   })
 })
 
@@ -431,10 +441,13 @@ const handlePrint = () => {
                     ? 'bg-rose-50 text-rose-800 border-rose-50 hover:bg-rose-100/50'
                     : '',
                 ]"
-                @click="toggleDropdown($event, order.id)"
+                @click="order.fulfillmentStatus !== 'canceled' && toggleDropdown($event, order.id)"
               >
                 {{ t(`orderDashboard.${order.fulfillmentStatus}`) }}
-                <span class="material-symbols-outlined text-[12px] font-extrabold leading-none"
+                <!-- A canceled/voided order is terminal — no status transitions offered. -->
+                <span
+                  v-if="order.fulfillmentStatus !== 'canceled'"
+                  class="material-symbols-outlined text-[12px] font-extrabold leading-none"
                   >arrow_drop_down</span
                 >
               </button>
@@ -442,7 +455,7 @@ const handlePrint = () => {
               <!-- Status Transition Selection Dropdown -->
               <transition name="pop">
                 <ul
-                  v-if="activeDropdownId === order.id"
+                  v-if="activeDropdownId === order.id && order.fulfillmentStatus !== 'canceled'"
                   class="absolute right-0 mt-2 w-36 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl rounded-2xl py-2 z-30 overflow-hidden font-semibold transition-all shrink-0"
                   @click.stop
                 >
@@ -732,7 +745,7 @@ const handlePrint = () => {
 
                   <!-- Per-line cancel control (reverses money for just this line) -->
                   <button
-                    v-if="!isItemCancelled(item) && !orderFullyReversed"
+                    v-if="!isItemCancelled(item) && canReverseMoney"
                     type="button"
                     class="mt-2 inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50 active:scale-95 dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/30 print:hidden"
                     @click="openCancelItemDialog(item.id)"
@@ -841,7 +854,7 @@ const handlePrint = () => {
             class="border-t border-stone-100 dark:border-stone-800 pt-6 shrink-0 print:hidden flex flex-col gap-3"
           >
             <button
-              v-if="!orderFullyReversed"
+              v-if="canReverseMoney"
               type="button"
               :disabled="actionBusy"
               class="flex items-center justify-center gap-2 rounded-2xl bg-rose-600 py-3 px-5 text-sm font-bold tracking-wide text-white shadow-sm transition-all hover:bg-rose-700 active:scale-[0.98] disabled:opacity-60"
@@ -851,7 +864,7 @@ const handlePrint = () => {
               {{ t('orderActions.voidOrder') }}
             </button>
             <div
-              v-else
+              v-else-if="orderFullyReversed"
               class="flex items-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 dark:bg-rose-950/20 dark:text-rose-400"
             >
               <span class="material-symbols-outlined text-[18px]">block</span>
