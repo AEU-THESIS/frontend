@@ -70,7 +70,9 @@ export const getTodayOrders = async (filters: TodayOrdersFilters = {}): Promise<
     params: {
       startDate: day,
       endDate: day,
-      paymentStatus: 'paid',
+      // Include partially-refunded orders so a partly-cancelled sale still shows its
+      // surviving amount in the report list (matches the daily-summary totals).
+      paymentStatus: 'paid,partially_refunded',
       ...(parsedFilters.paymentMethod ? { paymentMethod: parsedFilters.paymentMethod } : {}),
       limit: 200,
     },
