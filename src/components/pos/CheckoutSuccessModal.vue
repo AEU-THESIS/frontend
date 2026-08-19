@@ -236,6 +236,32 @@ const handlePrintReceipt = () => {
             </div>
           </div>
         </div>
+
+        <!-- Free items note — lists any loyalty-stamp redemptions on this order so the
+             customer sees the free drink was accounted for. -->
+        <template v-if="orderResult.freeItems && orderResult.freeItems.length > 0">
+          <div class="h-px bg-stone-200/50 dark:bg-stone-800/50 w-full"></div>
+          <div class="space-y-1.5">
+            <span
+              class="text-xs font-bold text-emerald-700 dark:text-emerald-500 uppercase tracking-wider"
+              >{{ t('cart.freeItemsReceipt') }}</span
+            >
+            <div
+              v-for="(free, idx) in orderResult.freeItems"
+              :key="idx"
+              class="flex justify-between items-center text-xs font-semibold text-stone-600 dark:text-stone-300"
+            >
+              <span class="truncate pr-2">
+                {{ free.name }}<span v-if="free.quantity > 1"> × {{ free.quantity }}</span>
+              </span>
+              <span
+                class="shrink-0 font-extrabold uppercase tracking-wide text-emerald-600 dark:text-emerald-500"
+              >
+                {{ t('cart.freeLoyaltyStamp') }}
+              </span>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Action Buttons -->

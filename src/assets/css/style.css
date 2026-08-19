@@ -5,6 +5,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Height-based variant: applies only on tall viewports (desktop monitors), so
+   full-height pages (e.g. the auth screens) can use roomy spacing on big screens
+   while staying compact and scroll-free on short laptop/tablet viewports. */
+@custom-variant tall (@media (min-height: 800px));
+
 @theme {
   --animate-overlay-show: overlayShow 200ms ease;
   --animate-overlay-hide: overlayHide 200ms ease forwards;

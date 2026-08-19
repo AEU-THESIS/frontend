@@ -55,7 +55,7 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "authorizedOnly": "Authorized personnel only",
-    "copyright": "(c) 2024 Routine Hospitality Group",
+    "copyright": "© 2026 Routine Café & Bakery",
     "logoutSuccess": "You have been logged out."
   },
   "sidebar": {
@@ -165,7 +165,17 @@
     "orderCreatedSuccess": "Order #{num} created successfully!",
     "paymentDetails": "Payment Details",
     "loadingCatalog": "Loading POS Catalog...",
-    "discount": "Discounts"
+    "discount": "Discounts",
+    "free": "Free",
+    "freeLoyaltyStamp": "Free · loyalty stamp",
+    "freeItemsReceipt": "Free Items",
+    "lineActions": "Item actions",
+    "makeFreeTitle": "Mark as free?",
+    "makeFreeMessage": "Mark as free — this item won't be charged? Use this for a loyalty-stamp redemption.",
+    "makeFreeConfirm": "Mark Free",
+    "removeFreeTitle": "Remove free?",
+    "removeFreeMessage": "Charge for this item again? It will no longer be free.",
+    "removeFreeConfirm": "Remove Free"
   },
   "maintenance": {
     "title": "Under Maintenance",
@@ -550,6 +560,7 @@
     "paid": "PAID",
     "refunded": "REFUNDED",
     "partially_refunded": "PARTIAL REFUND",
+    "comp": "COMP",
     "items": "Items",
     "noIce": "No Ice",
     "oatMilk": "Oat Milk",
@@ -601,6 +612,8 @@
     "datePreset": "Date Preset",
     "allStatuses": "All Statuses",
     "allPayments": "All Payments",
+    "compFree": "Comp / Free",
+    "freeBadge": "Free",
     "today": "Today",
     "yesterday": "Yesterday",
     "last7Days": "Last 7 Days",

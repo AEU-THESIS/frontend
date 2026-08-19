@@ -55,7 +55,7 @@
     "showPassword": "បង្ហាញពាក្យសម្ងាត់",
     "hidePassword": "លាក់ពាក្យសម្ងាត់",
     "authorizedOnly": "សម្រាប់តែបុគ្គលិកដែលមានការអនុញ្ញាតប៉ុណ្ណោះ",
-    "copyright": "(c) ២០២៤ Routine Hospitality Group",
+    "copyright": "© ២០២៦ Routine Café & Bakery",
     "logoutSuccess": "អ្នកបានចាកចេញដោយជោគជ័យ។"
   },
   "sidebar": {
@@ -165,7 +165,17 @@
     "orderCreatedSuccess": "ការបញ្ជាទិញ #{num} ត្រូវបានបង្កើតដោយជោគជ័យ!",
     "paymentDetails": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "loadingCatalog": "កំពុងផ្ទុកទិន្នន័យ POS...",
-    "discount": "បញ្ចុះតម្លៃ"
+    "discount": "បញ្ចុះតម្លៃ",
+    "free": "ឥតគិតថ្លៃ",
+    "freeLoyaltyStamp": "ឥតគិតថ្លៃ · កាតបញ្ចុះតម្លៃ",
+    "freeItemsReceipt": "មុខទំនិញឥតគិតថ្លៃ",
+    "lineActions": "សកម្មភាពមុខទំនិញ",
+    "makeFreeTitle": "កំណត់ជាឥតគិតថ្លៃ?",
+    "makeFreeMessage": "កំណត់ជាឥតគិតថ្លៃ — មុខទំនិញនេះនឹងមិនគិតថ្លៃទេ? ប្រើសម្រាប់ការប្តូរកាតបញ្ចុះតម្លៃ។",
+    "makeFreeConfirm": "កំណត់ឥតគិតថ្លៃ",
+    "removeFreeTitle": "ដកឥតគិតថ្លៃ?",
+    "removeFreeMessage": "គិតថ្លៃមុខទំនិញនេះឡើងវិញ? វានឹងលែងឥតគិតថ្លៃទៀតហើយ។",
+    "removeFreeConfirm": "ដកឥតគិតថ្លៃ"
   },
   "maintenance": {
     "title": "កំពុងថែទាំប្រព័ន្ធ",
@@ -529,6 +539,7 @@
     "paid": "បានបង់ប្រាក់",
     "refunded": "បានសងប្រាក់",
     "partially_refunded": "សងប្រាក់ខ្លះ",
+    "comp": "ឥតគិតថ្លៃ",
     "items": "មុខទំនិញ",
     "noIce": "គ្មានទឹកកក",
     "oatMilk": "ទឹកដោះគោ Oat",
@@ -580,6 +591,8 @@
     "datePreset": "កម្រិតកំណត់ស្រាប់",
     "allStatuses": "ស្ថានភាពទាំងអស់",
     "allPayments": "ការទូទាត់ទាំងអស់",
+    "compFree": "ឥតគិតថ្លៃ",
+    "freeBadge": "ឥតគិតថ្លៃ",
     "today": "ថ្ងៃនេះ",
     "yesterday": "ម្សិលមិញ",
     "last7Days": "៧ ថ្ងៃចុងក្រោយ",

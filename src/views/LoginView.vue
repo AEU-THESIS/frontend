@@ -81,7 +81,7 @@ const handleLogin = async () => {
 
 <template>
   <main
-    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F8FAFC] px-6 py-10 text-foreground"
+    class="relative flex min-h-screen items-center justify-center bg-[#F8FAFC] px-6 py-6 tall:py-10 text-foreground"
   >
     <!-- Premium Background Orbs -->
     <div class="pointer-events-none fixed inset-0 overflow-hidden">
@@ -97,14 +97,14 @@ const handleLogin = async () => {
     <Card
       class="relative z-10 w-full max-w-[440px] border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[32px] bg-white/80 backdrop-blur-xl p-2"
     >
-      <CardContent class="p-10 md:p-12">
+      <CardContent class="p-6 tall:p-12">
         <div class="flex flex-col items-center text-center">
           <img
             :src="logoImg"
-            class="mb-8 size-20 rounded-[28px] object-cover shadow-2xl hover:rotate-6 transition-transform duration-500"
+            class="mb-5 tall:mb-8 size-16 tall:size-20 rounded-[28px] object-cover shadow-2xl hover:rotate-6 transition-transform duration-500"
             :alt="t('login.shopLogoAlt')"
           />
-          <h1 class="text-3xl font-black tracking-tight text-slate-900 mb-2">
+          <h1 class="text-2xl tall:text-3xl font-black tracking-tight text-slate-900 mb-2">
             {{ t('auth.title') }}
           </h1>
           <p class="text-[15px] font-semibold text-slate-400">
@@ -112,7 +112,7 @@ const handleLogin = async () => {
           </p>
         </div>
 
-        <form class="mt-12 space-y-6" @submit.prevent="handleLogin">
+        <form class="mt-6 tall:mt-12 space-y-5 tall:space-y-6" @submit.prevent="handleLogin">
           <div class="space-y-2">
             <Label
               class="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1"
@@ -208,7 +208,7 @@ const handleLogin = async () => {
           </Button>
         </form>
 
-        <footer class="mt-12 text-center">
+        <footer class="mt-6 tall:mt-12 text-center">
           <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 opacity-60">
             {{ t('auth.authorizedOnly') }}
           </p>

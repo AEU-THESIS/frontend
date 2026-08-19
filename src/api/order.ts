@@ -23,6 +23,7 @@ export const placeOrder = async (payload: CreateOrderPayload): Promise<OrderResu
 export const getOrders = async (params?: {
   status?: string
   paymentStatus?: string
+  hasComp?: boolean
   date?: string
   search?: string
   startDate?: string

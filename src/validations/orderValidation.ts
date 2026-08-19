@@ -12,6 +12,11 @@ const cartItemPayloadSchema = z.object({
   productId: z.number().int().positive(),
   quantity: z.number().int().min(1).max(99),
   selectedOptions: z.array(selectedOptionSchema),
+  // Complimentary line (loyalty-stamp redemption). Optional so ordinary lines are
+  // unchanged; the server owns the pricing and records the reason.
+  isComplimentary: z.boolean().optional(),
+  // Matches the backend/DB cap (comp_reason VARCHAR(191)).
+  compReason: z.string().trim().max(191).optional(),
 })
 
 export const createOrderSchema = z
@@ -48,6 +53,8 @@ export const getOrdersParamsSchema = z.object({
   status: z.string().optional(),
   paymentStatus: z.string().optional(),
   paymentMethod: z.string().optional(),
+  // "Free items only" reconciliation filter; serialized to ?hasComp=true.
+  hasComp: z.boolean().optional(),
   date: z.string().optional(),
   search: z.string().optional(),
   startDate: z.string().optional(),
