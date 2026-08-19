@@ -17,6 +17,10 @@ export interface CartItem {
   quantity: number
   selectedOptions: CartItemOption[]
   itemTotal: number // (basePrice + sum(extraPrices)) × qty
+  // Complimentary line (loyalty-stamp redemption). When true the line is not charged:
+  // it contributes 0 to the cart totals but its itemTotal is still shown struck through.
+  isComplimentary?: boolean
+  compReason?: string
 }
 
 export type PaymentCurrency = 'USD' | 'KHR'
@@ -26,6 +30,10 @@ export interface CartItemPayload {
   productId: number
   quantity: number
   selectedOptions: CartItemOption[]
+  // Marks the line free (loyalty-stamp redemption); the server persists it with
+  // subtotal 0 and records compReason for the audit trail.
+  isComplimentary?: boolean
+  compReason?: string
 }
 
 export interface CreateOrderPayload {
@@ -65,6 +73,9 @@ export interface CheckoutSuccessData {
   exchangeRateSnapshot: number
   changeUSD: number
   changeKHR: number
+  // Complimentary (free) lines on this order, captured for the receipt's free-items
+  // note. Empty/undefined for an ordinary order.
+  freeItems?: { name: string; quantity: number }[]
 }
 
 // Lightweight promotion summary attached to an order for display in history.
@@ -104,6 +115,10 @@ export interface OrderItemDetail {
   price: number | string
   extraPrice: number | string
   subtotal: number | string
+  // Complimentary line (loyalty-stamp redemption): stored with subtotal 0 and a
+  // compReason for the audit trail; the receipt/history keep the struck price.
+  isComplimentary: boolean
+  compReason: string | null
   // Set when the line was cancelled (kept on the order, struck through in the UI).
   canceledAt: string | null
   canceledQuantity: number

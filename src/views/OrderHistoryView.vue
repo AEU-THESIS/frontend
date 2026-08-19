@@ -47,6 +47,10 @@ const canReverseMoney = computed(() => {
 
 const isItemCancelled = (item: OrderItemDetail) => item.canceledAt != null
 
+// Whether an order carries at least one complimentary (loyalty-stamp) line — drives
+// the "Free" badge in the list and detail drawer.
+const orderHasComp = (order: OrderDetail) => order.items.some(item => item.isComplimentary)
+
 // Total refunded so far, summed from the reversing (negative-amount) transactions and
 // shown in the order's own payment currency.
 const refundedDisplay = computed(() => {
@@ -77,6 +81,9 @@ const voidedByLabel = computed(() => {
 // ── 1. Search and Filtering States ────────────────────────────────
 const search = ref('')
 const fulfillmentStatus = ref('all')
+// Payment-status filter. The special value 'comp' is a reconciliation filter that
+// matches any order containing a complimentary line (incl. mixed paid+free orders),
+// not the literal payment_status enum — see fetchHistory below.
 const paymentStatus = ref('all')
 const page = ref(1)
 const limit = ref(10)
@@ -91,6 +98,8 @@ const fulfillmentStatusOptions = computed(() => [
 const paymentStatusOptions = computed(() => [
   { value: 'paid', label: t('orderDashboard.paid') },
   { value: 'unpaid', label: t('orderDashboard.unpaid') },
+  // Reconciliation filter: any order with a free/loyalty-stamp line (see fetchHistory).
+  { value: 'comp', label: t('orderHistory.compFree') },
 ])
 
 // Date preset selection: today, yesterday, last7Days, customRange
@@ -156,10 +165,14 @@ const dateFilters = computed(() => {
 // ── 3. Fetch Trigger (Includes previously missing paymentStatus parameter) ──
 const fetchHistory = async () => {
   const dates = dateFilters.value
+  // 'comp' is a reconciliation pseudo-status: filter by presence of a free line
+  // (hasComp) rather than the literal payment_status, so mixed paid+free orders match too.
+  const isCompFilter = paymentStatus.value === 'comp'
   await orderStore.fetchHistoryOrders({
     search: search.value.trim() || undefined,
     status: fulfillmentStatus.value !== 'all' ? fulfillmentStatus.value : undefined,
-    paymentStatus: paymentStatus.value !== 'all' ? paymentStatus.value : undefined,
+    paymentStatus: paymentStatus.value !== 'all' && !isCompFilter ? paymentStatus.value : undefined,
+    hasComp: isCompFilter ? true : undefined,
     startDate: dates.startDate,
     endDate: dates.endDate,
     page: page.value,
@@ -380,7 +393,15 @@ const confirmCancelItem = async () => {
             >
               <td class="py-3.5 px-6 whitespace-nowrap">{{ formatDateTime(order.createdAt) }}</td>
               <td class="py-3.5 px-6 font-bold text-stone-900 dark:text-stone-50 font-headline">
-                #{{ order.orderNumber }}
+                <span class="inline-flex items-center gap-1.5">
+                  #{{ order.orderNumber }}
+                  <span
+                    v-if="orderHasComp(order)"
+                    class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
+                  >
+                    {{ t('orderHistory.freeBadge') }}
+                  </span>
+                </span>
               </td>
               <td class="py-3.5 px-6 capitalize">
                 {{ order.customerName || t(`cart.${order.orderType}`) }}
@@ -395,8 +416,12 @@ const confirmCancelItem = async () => {
                       order.paymentStatus === 'paid',
                     'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200/30':
                       order.paymentStatus === 'refunded',
+                    'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border-indigo-200/30':
+                      order.paymentStatus === 'comp',
                     'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200/30':
-                      order.paymentStatus !== 'paid' && order.paymentStatus !== 'refunded',
+                      order.paymentStatus !== 'paid' &&
+                      order.paymentStatus !== 'refunded' &&
+                      order.paymentStatus !== 'comp',
                   }"
                 >
                   {{ t(`orderDashboard.${order.paymentStatus}`) }}
@@ -642,11 +667,21 @@ const confirmCancelItem = async () => {
                       >
                         {{ t('orderActions.cancelledBadge') }}
                       </span>
+                      <span
+                        v-if="item.isComplimentary"
+                        class="ml-1 inline-flex items-center gap-0.5 align-middle rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700 no-underline dark:bg-emerald-950/30 dark:text-emerald-400"
+                      >
+                        <span class="material-symbols-outlined text-[11px] leading-none"
+                          >loyalty</span
+                        >
+                        {{ t('cart.free') }}
+                      </span>
                     </p>
                     <p
                       class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2"
                       :class="{
-                        'line-through text-stone-400 dark:text-stone-600': isItemCancelled(item),
+                        'line-through text-stone-400 dark:text-stone-600':
+                          isItemCancelled(item) || item.isComplimentary,
                       }"
                     >
                       {{
@@ -657,6 +692,15 @@ const confirmCancelItem = async () => {
 
                   <p class="text-xs text-stone-500 font-extrabold mt-1">
                     {{ t('cart.quantity') }} : {{ item.quantity }}
+                  </p>
+
+                  <!-- Complimentary line note (audit trail: why it was free) -->
+                  <p
+                    v-if="item.isComplimentary"
+                    class="mt-1 flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-500"
+                  >
+                    <span class="material-symbols-outlined text-[13px] leading-none">redeem</span>
+                    {{ t('cart.freeLoyaltyStamp') }}
                   </p>
 
                   <ul

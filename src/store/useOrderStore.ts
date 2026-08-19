@@ -101,6 +101,7 @@ export const useOrderStore = defineStore('orders', () => {
     search?: string
     status?: string
     paymentStatus?: string
+    hasComp?: boolean
     startDate?: string
     endDate?: string
     page?: number
@@ -112,6 +113,7 @@ export const useOrderStore = defineStore('orders', () => {
         search: filters.search || undefined,
         status: filters.status || undefined,
         paymentStatus: filters.paymentStatus || undefined,
+        hasComp: filters.hasComp || undefined,
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined,
         page: filters.page || 1,

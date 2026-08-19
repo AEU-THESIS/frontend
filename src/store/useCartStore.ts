@@ -24,15 +24,22 @@ export const useCartStore = defineStore('cart', () => {
   const isSubmitting = ref(false)
   const isCashModalOpen = ref(false)
   const activePromotions = ref<Promotion[]>([])
+  // Snapshot of the complimentary lines from the last completed checkout, so the
+  // success receipt can list them after the cart has been cleared.
+  const lastCompItems = ref<{ name: string; quantity: number }[]>([])
 
   // Getters
-  // Gross subtotal (before any promotion discount).
+  // Only chargeable (non-complimentary) lines drive the money. A comp line still
+  // appears in the cart (struck through) but contributes $0 to every total.
+  const chargeableItems = computed(() => items.value.filter(item => !item.isComplimentary))
+
+  // Gross subtotal (before any promotion discount), over chargeable lines only.
   const cartTotal = computed(() => {
-    return items.value.reduce((sum, item) => sum + item.itemTotal, 0)
+    return chargeableItems.value.reduce((sum, item) => sum + item.itemTotal, 0)
   })
 
   const cartLines = computed<CartLineForCalc[]>(() =>
-    items.value.map(item => ({
+    chargeableItems.value.map(item => ({
       productId: item.productId,
       categoryId: item.categoryId,
       quantity: item.quantity,
@@ -78,7 +85,7 @@ export const useCartStore = defineStore('cart', () => {
     for (const { promotion } of appliedPromotions.value) {
       if (promotion.discountType !== 'BOGO') continue
 
-      const units = items.value
+      const units = chargeableItems.value
         .filter(item => lineInScope(promotion, item))
         .flatMap(item => {
           const unitPrice = item.quantity > 0 ? item.itemTotal / item.quantity : item.itemTotal
@@ -124,9 +131,11 @@ export const useCartStore = defineStore('cart', () => {
       .map(o => `${o.elementId}`)
       .join('-')
 
-    // Find if identical item already in cart
+    // Find if identical item already in cart. A complimentary line is never merged
+    // into — adding a normal unit of the same drink must not join the freed line.
     const existing = items.value.find(
       item =>
+        !item.isComplimentary &&
         item.productId === productId &&
         [...item.selectedOptions]
           .sort((a, b) => a.elementId - b.elementId)
@@ -172,6 +181,24 @@ export const useCartStore = defineStore('cart', () => {
     items.value = items.value.filter(i => i.cartId !== cartId)
   }
 
+  // Loyalty-stamp redemption: mark a whole line free. It stays in the cart with its
+  // price struck through but no longer counts toward any total. The reason is fixed
+  // (the only redemption type today) and stored for the order's audit trail.
+  const markLineFree = (cartId: string) => {
+    const item = items.value.find(i => i.cartId === cartId)
+    if (!item) return
+    item.isComplimentary = true
+    item.compReason = 'loyalty stamp'
+  }
+
+  // Undo a free mark — the line becomes a normal charged line again.
+  const unmarkLineFree = (cartId: string) => {
+    const item = items.value.find(i => i.cartId === cartId)
+    if (!item) return
+    item.isComplimentary = false
+    item.compReason = undefined
+  }
+
   const clearCart = () => {
     items.value = []
   }
@@ -204,8 +231,14 @@ export const useCartStore = defineStore('cart', () => {
           productId: item.productId,
           quantity: item.quantity,
           selectedOptions: item.selectedOptions,
+          ...(item.isComplimentary ? { isComplimentary: true, compReason: item.compReason } : {}),
         })),
       }
+
+      // Capture the free lines before the cart is cleared so the receipt can list them.
+      lastCompItems.value = items.value
+        .filter(item => item.isComplimentary)
+        .map(item => ({ name: item.productName, quantity: item.quantity }))
 
       const result = await placeOrder(payload)
       clearCart()
@@ -224,6 +257,7 @@ export const useCartStore = defineStore('cart', () => {
     isSubmitting,
     isCashModalOpen,
     activePromotions,
+    lastCompItems,
     cartTotal,
     cartTotalInRiel,
     appliedPromotions,
@@ -234,6 +268,8 @@ export const useCartStore = defineStore('cart', () => {
     addToCart,
     updateQuantity,
     removeFromCart,
+    markLineFree,
+    unmarkLineFree,
     clearCart,
     setOrderType,
     fetchActivePromotions,

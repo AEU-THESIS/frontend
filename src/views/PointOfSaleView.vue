@@ -111,6 +111,8 @@ const handlePaymentSuccess = (result: OrderResult) => {
     exchangeRateSnapshot: rate,
     changeUSD,
     changeKHR,
+    // Free (loyalty-stamp) lines captured at checkout, for the receipt's free-items note.
+    freeItems: cartStore.lastCompItems,
   }
   isSuccessModalOpen.value = true
 }
