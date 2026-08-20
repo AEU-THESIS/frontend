@@ -6,6 +6,7 @@ import {
   updateOrderStatus,
   voidOrder as voidOrderApi,
   cancelOrderItem as cancelOrderItemApi,
+  rejectPreOrder as rejectPreOrderApi,
 } from '@/api/order'
 import { useAuthStore } from './useAuthStore'
 import type { OrderDetail } from '@/types/order.types'
@@ -217,6 +218,13 @@ export const useOrderStore = defineStore('orders', () => {
     return updated
   }
 
+  // ── 4d. Reject a pending customer pre-order (unpaid → canceled) ────
+  const rejectPreOrder = async (id: number) => {
+    const updated = await rejectPreOrderApi(id)
+    applyUpdatedOrder(updated)
+    return updated
+  }
+
   // ── 5. Server-Sent Events SSE Subscriber ─────────────────────────
   const subscribeToOrderStream = () => {
     if (sseController.value) {
@@ -387,6 +395,7 @@ export const useOrderStore = defineStore('orders', () => {
     changeStatus,
     voidOrder,
     cancelItem,
+    rejectPreOrder,
     subscribeToOrderStream,
     unsubscribeFromOrderStream,
   }

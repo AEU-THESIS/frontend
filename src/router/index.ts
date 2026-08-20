@@ -32,6 +32,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/OrderHistoryView.vue'),
       },
       {
+        // Admin/Manager block-list management (anti-spam for pre-orders).
+        path: APP_ROUTES.BLOCKED_CUSTOMERS.path,
+        name: APP_ROUTES.BLOCKED_CUSTOMERS.name,
+        component: () => import('@/views/BlockedCustomersView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      },
+      {
         path: APP_ROUTES.PRODUCT.path,
         name: APP_ROUTES.PRODUCT.name,
         component: () => import('@/views/ProductManagement.vue'),
@@ -86,6 +93,40 @@ const routes: RouteRecordRaw[] = [
     name: APP_ROUTES.LOGIN.name,
     component: () => import('@/views/LoginView.vue'),
     meta: { requiresAuth: false },
+  },
+  {
+    // Public customer Telegram Mini App (no login). Children inherit requiresAuth:false.
+    path: APP_ROUTES.PUBLIC_ORDER.path,
+    component: () => import('@/views/public/PublicOrderLayout.vue'),
+    meta: { requiresAuth: false },
+    children: [
+      {
+        path: APP_ROUTES.PUBLIC_MENU.path,
+        name: APP_ROUTES.PUBLIC_MENU.name,
+        component: () => import('@/views/public/PublicMenuView.vue'),
+      },
+      {
+        path: APP_ROUTES.PUBLIC_CHECKOUT.path,
+        name: APP_ROUTES.PUBLIC_CHECKOUT.name,
+        component: () => import('@/views/public/PublicCheckoutView.vue'),
+      },
+      {
+        path: APP_ROUTES.PUBLIC_CONFIRMATION.path,
+        name: APP_ROUTES.PUBLIC_CONFIRMATION.name,
+        component: () => import('@/views/public/PublicConfirmationView.vue'),
+      },
+      {
+        path: APP_ROUTES.PUBLIC_MY_ORDERS.path,
+        name: APP_ROUTES.PUBLIC_MY_ORDERS.name,
+        component: () => import('@/views/public/PublicMyOrdersView.vue'),
+      },
+      {
+        // Mini App 404 for any unknown path under /order/:slug.
+        path: ':pathMatch(.*)*',
+        name: 'PublicNotFound',
+        component: () => import('@/views/public/PublicNotFoundView.vue'),
+      },
+    ],
   },
   {
     path: '/:pathMatch(.*)*',

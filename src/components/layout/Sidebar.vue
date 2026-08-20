@@ -117,13 +117,22 @@ const navSections = computed(() => {
       ],
     },
     {
+      // Section is visible to Managers too, but Shop Settings itself stays
+      // Admin-only via the item's own roles; Managers see only Blocked Customers.
       titleKey: 'sidebar.sections.settings',
-      roles: [ROLES.ADMIN],
+      roles: [ROLES.ADMIN, ROLES.MANAGER],
       items: [
         {
           nameKey: 'sidebar.items.config',
           route: APP_ROUTES.SETTINGS,
           icon: 'settings',
+          roles: [ROLES.ADMIN],
+        },
+        {
+          nameKey: 'sidebar.items.blockedCustomers',
+          route: APP_ROUTES.BLOCKED_CUSTOMERS,
+          icon: 'block',
+          roles: [ROLES.ADMIN, ROLES.MANAGER],
         },
       ],
     },

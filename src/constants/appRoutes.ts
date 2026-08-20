@@ -15,4 +15,12 @@ export const APP_ROUTES = {
   RESET_PASSWORD: { path: '/reset-password', name: 'ResetPassword' },
   MENU: { path: '/menu', name: 'Menu' },
   PRODUCT: { path: '/product', name: 'Product' },
+  // Staff: Admin/Manager block-list (anti-spam for Telegram pre-orders)
+  BLOCKED_CUSTOMERS: { path: '/blocked-customers', name: 'BlockedCustomers' },
+  // Public customer Telegram Mini App (no auth). Children are relative to PUBLIC_ORDER.
+  PUBLIC_ORDER: { path: '/order/:slug', name: 'PublicOrder' },
+  PUBLIC_MENU: { path: '', name: 'PublicMenu' },
+  PUBLIC_CHECKOUT: { path: 'checkout', name: 'PublicCheckout' },
+  PUBLIC_CONFIRMATION: { path: 'confirmation/:orderNumber', name: 'PublicConfirmation' },
+  PUBLIC_MY_ORDERS: { path: 'my-orders', name: 'PublicMyOrders' },
 } as const

@@ -12,10 +12,14 @@ import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
 import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
+import BlockCustomerDialog from '@/components/order/BlockCustomerDialog.vue'
+import { useAuthStore } from '@/store/useAuthStore'
+import { ROLES } from '@/constants/roles'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
 const shopSettingsStore = useShopSettingsStore()
+const authStore = useAuthStore()
 const { historyOrders, historyPagination, loading, selectedOrder } = storeToRefs(orderStore)
 
 // Order total shown in the currency the customer actually paid in. A riel order
@@ -93,6 +97,7 @@ const fulfillmentStatusOptions = computed(() => [
   { value: 'ready', label: t('orderDashboard.ready') },
   { value: 'completed', label: t('orderDashboard.completed') },
   { value: 'canceled', label: t('orderDashboard.canceled') },
+  { value: 'rejected', label: t('orderDashboard.rejected') },
 ])
 
 const paymentStatusOptions = computed(() => [
@@ -260,6 +265,92 @@ const confirmCancelItem = async () => {
     toast.success(t('orderActions.itemCanceled'))
     cancelItemDialogOpen.value = false
     pendingCancelItemId.value = null
+    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+// ── Pre-order actions in the detail panel ─────────────────────────
+// Shown ONLY when Order Management is OFF — otherwise pre-orders are handled on
+// the Order Management board. Accept moves pending → preparing; then staff advance
+// the status step by step; Reject declines the (unpaid) pre-order.
+const isPreOrderActionable = computed(
+  () =>
+    !shopSettingsStore.is_order_management_enabled && selectedOrder.value?.orderType === 'pre_order'
+)
+
+const preOrderMapsLink = computed<string | null>(() => {
+  const o = selectedOrder.value
+  return o && o.deliveryLat != null && o.deliveryLng != null
+    ? `https://maps.google.com/?q=${o.deliveryLat},${o.deliveryLng}`
+    : null
+})
+
+// The next fulfillment step for an accepted pre-order, or null if none/terminal.
+const preOrderNextStatus = computed<{ value: string; label: string } | null>(() => {
+  switch (selectedOrder.value?.fulfillmentStatus) {
+    case 'preparing':
+      return { value: 'ready', label: t('orderDashboard.ready') }
+    case 'ready':
+      return { value: 'completed', label: t('orderDashboard.completed') }
+    default:
+      return null
+  }
+})
+
+const rejectDialogOpen = ref(false)
+
+// Block customer (Admin/Manager only) — anti-spam. Available for any pre-order
+// carrying a Telegram identity, regardless of its status.
+const blockDialogOpen = ref(false)
+const canBlockCustomer = computed(() => {
+  const role = authStore.user?.role
+  const o = selectedOrder.value
+  return (
+    (role === ROLES.ADMIN || role === ROLES.MANAGER) &&
+    o?.orderType === 'pre_order' &&
+    !!o?.telegramUserId
+  )
+})
+
+const acceptPreOrder = async () => {
+  if (!selectedOrder.value) return
+  actionBusy.value = true
+  try {
+    await orderStore.changeStatus(selectedOrder.value.id, 'preparing')
+    toast.success(t('preOrders.accepted'))
+    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+const advancePreOrder = async () => {
+  if (!selectedOrder.value || !preOrderNextStatus.value) return
+  actionBusy.value = true
+  try {
+    await orderStore.changeStatus(selectedOrder.value.id, preOrderNextStatus.value.value)
+    toast.success(t('orderDashboard.statusUpdated'))
+    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+const confirmRejectPreOrder = async () => {
+  if (!selectedOrder.value) return
+  actionBusy.value = true
+  try {
+    await orderStore.rejectPreOrder(selectedOrder.value.id)
+    toast.success(t('preOrders.rejected'))
+    rejectDialogOpen.value = false
     fetchHistory()
   } catch {
     toast.error(t('orderActions.actionFailed'))
@@ -444,6 +535,9 @@ const confirmCancelItem = async () => {
                       : '',
                     order.fulfillmentStatus === 'canceled'
                       ? 'bg-rose-50 text-rose-800 border border-rose-200/30'
+                      : '',
+                    order.fulfillmentStatus === 'rejected'
+                      ? 'bg-stone-100 text-stone-600 border border-stone-200/60 dark:bg-stone-800 dark:text-stone-300'
                       : '',
                   ]"
                 >
@@ -833,6 +927,88 @@ const confirmCancelItem = async () => {
             </div>
           </div>
 
+          <!-- Pre-order actions — shown only when Order Management is OFF (otherwise
+               pre-orders are handled on the Order Management board). Accept/Reject
+               while pending; advance the status once accepted. -->
+          <div
+            v-if="
+              isPreOrderActionable &&
+              ['pending', 'preparing', 'ready'].includes(selectedOrder.fulfillmentStatus)
+            "
+            class="border-t border-stone-100 dark:border-stone-800 pt-6 shrink-0 print:hidden flex flex-col gap-3"
+          >
+            <!-- Contact shortcuts -->
+            <div
+              v-if="
+                selectedOrder.customerPhone || selectedOrder.telegramUsername || preOrderMapsLink
+              "
+              class="flex flex-wrap items-center gap-2 text-xs font-bold"
+            >
+              <a
+                v-if="selectedOrder.customerPhone"
+                :href="`tel:${selectedOrder.customerPhone}`"
+                class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-1 text-stone-600 dark:bg-stone-800 dark:text-stone-300"
+              >
+                <span class="material-symbols-outlined text-[14px] leading-none">call</span
+                >{{ selectedOrder.customerPhone }}
+              </a>
+              <a
+                v-if="selectedOrder.telegramUsername"
+                :href="`https://t.me/${selectedOrder.telegramUsername}`"
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400"
+              >
+                <span class="material-symbols-outlined text-[14px] leading-none">send</span>@{{
+                  selectedOrder.telegramUsername
+                }}
+              </a>
+              <a
+                v-if="preOrderMapsLink"
+                :href="preOrderMapsLink"
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+              >
+                <span class="material-symbols-outlined text-[14px] leading-none">location_on</span
+                >{{ t('preOrders.map') }}
+              </a>
+            </div>
+
+            <!-- Pending → Accept / Reject -->
+            <div v-if="selectedOrder.fulfillmentStatus === 'pending'" class="flex gap-2">
+              <button
+                type="button"
+                :disabled="actionBusy"
+                class="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-600 py-3 px-5 text-sm font-bold text-white shadow-sm transition-all hover:bg-amber-700 active:scale-[0.98] disabled:opacity-60"
+                @click="acceptPreOrder"
+              >
+                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                {{ t('preOrders.accept') }}
+              </button>
+              <button
+                type="button"
+                :disabled="actionBusy"
+                class="inline-flex items-center justify-center rounded-2xl border border-stone-200 px-5 py-3 text-sm font-bold text-stone-600 transition-all hover:bg-stone-50 active:scale-95 disabled:opacity-60 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+                @click="rejectDialogOpen = true"
+              >
+                {{ t('preOrders.reject') }}
+              </button>
+            </div>
+
+            <!-- Accepted → advance to the next status -->
+            <button
+              v-else-if="preOrderNextStatus"
+              type="button"
+              :disabled="actionBusy"
+              class="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3 px-5 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-60"
+              @click="advancePreOrder"
+            >
+              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+              {{ t('orderActions.markAs', { status: preOrderNextStatus.label }) }}
+            </button>
+          </div>
+
           <!-- Void action — always available. Voiding reverses the money (refund +
                un-redeem promotions) so reports match the real cash drawer. -->
           <div
@@ -855,6 +1031,21 @@ const confirmCancelItem = async () => {
               <span class="material-symbols-outlined text-[18px]">block</span>
               {{ t('orderActions.voidedNotice') }}
             </div>
+          </div>
+
+          <!-- Block customer (Admin/Manager) — anti-spam for pre-orders. -->
+          <div
+            v-if="canBlockCustomer"
+            class="border-t border-stone-100 dark:border-stone-800 pt-4 shrink-0 print:hidden"
+          >
+            <button
+              type="button"
+              class="flex w-full items-center justify-center gap-2 rounded-2xl border border-rose-200 py-2.5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-50 active:scale-[0.98] dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/30"
+              @click="blockDialogOpen = true"
+            >
+              <span class="material-symbols-outlined text-[18px]">block</span>
+              {{ t('blockedCustomers.blockCustomer') }}
+            </button>
           </div>
 
           <div
@@ -898,6 +1089,24 @@ const confirmCancelItem = async () => {
       :cancel-label="t('orderActions.keep')"
       :busy="actionBusy"
       @confirm="confirmCancelItem"
+    />
+
+    <!-- Reject pre-order confirmation (unpaid — no refund needed) -->
+    <CancelActionDialog
+      v-model:open="rejectDialogOpen"
+      :title="t('preOrders.reject')"
+      :message="t('preOrders.confirmReject')"
+      :confirm-label="t('preOrders.reject')"
+      :cancel-label="t('orderActions.keep')"
+      :busy="actionBusy"
+      @confirm="confirmRejectPreOrder"
+    />
+
+    <!-- Block customer dialog (forever / until date-time) -->
+    <BlockCustomerDialog
+      v-model:open="blockDialogOpen"
+      :telegram-user-id="selectedOrder?.telegramUserId ?? null"
+      :telegram-username="selectedOrder?.telegramUsername ?? null"
     />
   </div>
 </template>
