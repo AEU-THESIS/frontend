@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { useI18n } from 'vue-i18n'
+import { APP_ROUTES } from '@/constants/appRoutes'
 import {
   AlertTriangle,
   Archive,
@@ -14,15 +16,33 @@ import {
   CircleMinus,
   CirclePlus,
   Eye,
+  History,
   ImagePlus,
   Minus,
   Pencil,
   Plus,
+  SlidersHorizontal,
   Trash2,
+  Wallet,
   X,
 } from 'lucide-vue-next'
+import {
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+  DropdownMenuPortal,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from 'reka-ui'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   Select,
   SelectContent,
@@ -36,23 +56,33 @@ import { AppInput } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import ImageUpload from '@/components/common/ImageUpload.vue'
 import { useInventoryStore } from '@/store/useInventoryStore'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import type { AdjustmentType, InventoryItem, InventoryStatus } from '@/types/inventory.types'
 import { getImageUrl } from '@/utils/image'
+import { getCategories } from '@/api/product'
+import type { Category } from '@/types/product.types'
 
 type SupplyModalMode = 'add' | 'edit' | 'view'
 type InventoryFilterStatus = 'all' | InventoryStatus
 
 const { t, locale } = useI18n()
+const router = useRouter()
 const inventoryStore = useInventoryStore()
+const shopSettingsStore = useShopSettingsStore()
 const {
   items,
   isLoading,
   isSaving,
   totalSupplies,
+  totalInventoryValue,
   lowStockItems,
   outOfStockItems,
   stockHealthPercentage,
 } = storeToRefs(inventoryStore)
+
+// Cost/value figures render in the shop's configured currency (USD symbol or
+// KHR-converted), matching the rest of the app.
+const formatMoney = (amount: number) => shopSettingsStore.formatAmount(amount)
 
 const unitOptions = [
   { value: 'Packs', labelKey: 'inventory.units.packs' },
@@ -79,13 +109,21 @@ const supplyForm = reactive({
   name: '',
   quantity: 0,
   unitOfMeasure: 'Packs',
+  categoryId: null as number | null,
   minAlertThreshold: 5,
+  unitCost: 0,
   imageUrl: null as string | null,
 })
+
+const categories = ref<Category[]>([])
+const categoryOptions = computed(() =>
+  categories.value.map(category => ({ value: category.id, label: category.name }))
+)
 
 const adjustmentForm = reactive({
   adjustmentType: 'add' as AdjustmentType,
   amount: 0,
+  unitCost: 0,
   notes: '',
 })
 
@@ -151,31 +189,52 @@ const formatNumber = (value: number) => value.toLocaleString(numberLocale.value)
 const hasSupplyNameError = computed(
   () => supplyNameTouched.value && supplyForm.name.trim().length === 0
 )
-const toWholeNumber = (value: unknown, min = 0) => {
+// Stock is stored to two decimal places, so quantities and costs are handled as
+// decimals (rounded to 2 dp) rather than whole numbers — this is what lets 0.5 kg
+// be entered and 2.4 kg be fully removed.
+const toDecimal = (value: unknown, min = 0) => {
   const numberValue = Number(value)
   if (!Number.isFinite(numberValue)) return min
-  return Math.max(min, Math.round(numberValue))
+  return Math.max(min, Math.round(numberValue * 100) / 100)
 }
 const normalizeSupplyCounts = () => {
-  supplyForm.quantity = toWholeNumber(supplyForm.quantity)
-  supplyForm.minAlertThreshold = toWholeNumber(supplyForm.minAlertThreshold)
+  supplyForm.quantity = toDecimal(supplyForm.quantity)
+  supplyForm.minAlertThreshold = toDecimal(supplyForm.minAlertThreshold)
+  supplyForm.unitCost = toDecimal(supplyForm.unitCost)
 }
+// Only kg is a continuously-measured unit here — Packs/Liters/Units are
+// discrete items, so an adjustment amount for them must stay a whole number.
+const isFractionalUnit = computed(() => selectedItem.value?.unitOfMeasure === 'kg')
+/** Stepper increment — 0.01 for kg (matches its 2-decimal precision), 1 for whole-number units. */
+const ADJUSTMENT_STEP = computed(() => (isFractionalUnit.value ? 0.01 : 1))
 const isRemovingStock = computed(() => adjustmentForm.adjustmentType === 'remove')
 const adjustmentMaxAmount = computed(() => {
   if (!isRemovingStock.value) return Number.POSITIVE_INFINITY
-  return selectedItem.value ? Math.max(0, Math.floor(selectedItem.value.quantity)) : 0
+  // Full stock is removable — no flooring, so a 2.4 kg item can be cleared to 0.
+  return selectedItem.value ? Math.max(0, selectedItem.value.quantity) : 0
+})
+// For whole-number units the max must also be floored: clamping a rounded
+// (whole) amount to a fractional max (e.g. 4.9 Units left over from a past
+// fractional entry) would silently reintroduce a fraction.
+const effectiveMaxAmount = computed(() => {
+  const max = adjustmentMaxAmount.value
+  if (!Number.isFinite(max)) return max
+  return isFractionalUnit.value ? max : Math.floor(max)
 })
 const isAdjustmentAmountInvalid = computed(() => {
   if (!selectedItem.value) return true
-  if (adjustmentForm.amount < 1) return true
-  return isRemovingStock.value && adjustmentForm.amount > adjustmentMaxAmount.value
+  if (adjustmentForm.amount <= 0) return true
+  return isRemovingStock.value && adjustmentForm.amount > effectiveMaxAmount.value
 })
 const setAdjustmentAmount = (value: unknown) => {
-  const amount = toWholeNumber(
-    value,
-    isRemovingStock.value && adjustmentMaxAmount.value === 0 ? 0 : 1
-  )
-  adjustmentForm.amount = Math.min(amount, adjustmentMaxAmount.value)
+  const numberValue = Number(value)
+  const nonNegative = Number.isFinite(numberValue) ? Math.max(0, numberValue) : 0
+  // Floor (never round up) whole-number units, so an amount can never overshoot
+  // past what's actually available just by rounding to the nearest integer.
+  const rounded = isFractionalUnit.value
+    ? Math.round(nonNegative * 100) / 100
+    : Math.floor(nonNegative)
+  adjustmentForm.amount = Math.min(rounded, effectiveMaxAmount.value)
 }
 const setAdjustmentType = (type: AdjustmentType) => {
   adjustmentForm.adjustmentType = type
@@ -201,6 +260,13 @@ const statusMeta = {
 }
 
 const summaryCards = computed(() => [
+  {
+    label: t('inventory.summary.totalValue'),
+    value: formatMoney(totalInventoryValue.value),
+    detail: t('inventory.summary.acrossSupplies', { count: totalSupplies.value }),
+    icon: Wallet,
+    class: 'text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30',
+  },
   {
     label: t('inventory.summary.totalSupplies'),
     value: formatNumber(totalSupplies.value),
@@ -228,7 +294,9 @@ const resetSupplyForm = () => {
   supplyForm.name = ''
   supplyForm.quantity = 0
   supplyForm.unitOfMeasure = 'Packs'
+  supplyForm.categoryId = null
   supplyForm.minAlertThreshold = 5
+  supplyForm.unitCost = 0
   supplyForm.imageUrl = null
   selectedImageFile.value = null
   supplyNameTouched.value = false
@@ -243,7 +311,9 @@ const openSupplyModal = (mode: SupplyModalMode, item?: InventoryItem) => {
     supplyForm.name = item.name
     supplyForm.quantity = item.quantity
     supplyForm.unitOfMeasure = item.unitOfMeasure
+    supplyForm.categoryId = item.category?.id ?? null
     supplyForm.minAlertThreshold = item.minAlertThreshold
+    supplyForm.unitCost = item.unitCost
     supplyForm.imageUrl = item.imageUrl
   } else {
     resetSupplyForm()
@@ -262,6 +332,9 @@ const openAdjustmentModal = (item: InventoryItem) => {
   selectedItem.value = item
   adjustmentForm.adjustmentType = 'add'
   adjustmentForm.amount = 1
+  // Prefill with the item's current cost so "adding at the same price" leaves the
+  // weighted average unchanged; the user overrides it when they paid a new price.
+  adjustmentForm.unitCost = item.unitCost
   adjustmentForm.notes = ''
   isAdjustmentModalOpen.value = true
 }
@@ -269,6 +342,10 @@ const openAdjustmentModal = (item: InventoryItem) => {
 const closeAdjustmentModal = () => {
   isAdjustmentModalOpen.value = false
   selectedItem.value = null
+}
+
+const goToHistory = (item: InventoryItem) => {
+  router.push({ name: APP_ROUTES.INVENTORY_HISTORY.name, params: { id: String(item.id) } })
 }
 
 const handleImageChange = (file: File | null) => {
@@ -292,8 +369,10 @@ const saveSupply = async () => {
     const payload = {
       name: supplyForm.name.trim(),
       unit_of_measure: supplyForm.unitOfMeasure,
+      category_id: supplyForm.categoryId,
       quantity: supplyForm.quantity,
       min_alert_threshold: supplyForm.minAlertThreshold,
+      unit_cost: supplyForm.unitCost,
       image: selectedImageFile.value,
     }
 
@@ -351,6 +430,9 @@ const saveAdjustment = async () => {
     await inventoryStore.adjustItem(selectedItem.value.id, {
       adjustment_type: adjustmentForm.adjustmentType,
       change_amount: adjustmentForm.amount,
+      // Purchase price only applies when adding stock (drives the weighted average).
+      unit_cost:
+        adjustmentForm.adjustmentType === 'add' ? toDecimal(adjustmentForm.unitCost) : null,
       notes: adjustmentForm.notes.trim() || null,
     })
     toast.success(t('inventory.messages.adjustSuccess'))
@@ -392,6 +474,14 @@ onMounted(() => {
   inventoryStore.fetchItems(inventoryQueryFilters.value).catch(() => {
     toast.error(t('inventory.messages.loadError'))
   })
+  inventoryStore.fetchValuation().catch(() => {
+    toast.error(t('inventory.messages.loadError'))
+  })
+  getCategories()
+    .then(result => {
+      categories.value = result
+    })
+    .catch(() => toast.error(t('inventory.messages.loadError')))
 })
 </script>
 
@@ -402,9 +492,6 @@ onMounted(() => {
     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex gap-3 items-center">
         <div class="w-auto">
-          <h1 class="font-headline-lg text-xl font-bold text-on-background mb-[4px]">
-            {{ t('menuManagement.title') }}
-          </h1>
           <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p>
         </div>
       </div>
@@ -418,7 +505,7 @@ onMounted(() => {
     </div>
 
     <div class="flex w-full flex-col gap-5">
-      <div class="grid gap-5 md:grid-cols-3">
+      <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <Card
           v-for="card in summaryCards"
           :key="card.label"
@@ -485,132 +572,166 @@ onMounted(() => {
         </FilterPanel>
 
         <!-- Table  -->
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[820px] text-left">
-            <thead>
-              <tr
-                class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] dark:bg-stone-800 dark:text-stone-500"
+        <Table class="min-w-[820px] text-left">
+          <TableHeader>
+            <TableRow
+              class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
+            >
+              <TableHead class="px-6 py-4">{{ t('inventory.table.name') }}</TableHead>
+              <TableHead class="px-6 py-4">{{ t('inventory.table.stockLevel') }}</TableHead>
+              <TableHead class="px-6 py-4">{{ t('inventory.table.unit') }}</TableHead>
+              <TableHead class="px-6 py-4 text-right">
+                {{ t('inventory.table.unitCost') }}
+              </TableHead>
+              <TableHead class="px-6 py-4 text-right">
+                {{ t('inventory.table.totalValue') }}
+              </TableHead>
+              <TableHead class="px-6 py-4 text-center">
+                {{ t('inventory.table.status') }}
+              </TableHead>
+              <TableHead class="px-6 py-4 text-center">
+                {{ t('inventory.table.actions') }}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-if="isLoading" class="hover:bg-transparent">
+              <TableCell
+                colspan="7"
+                class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
               >
-                <th class="px-6 py-4">{{ t('inventory.table.name') }}</th>
-                <th class="px-6 py-4">{{ t('inventory.table.stockLevel') }}</th>
-                <th class="px-6 py-4">{{ t('inventory.table.unit') }}</th>
-                <th class="px-6 py-4 text-center">{{ t('inventory.table.status') }}</th>
-                <th class="px-6 py-4 text-center">{{ t('inventory.table.actions') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="isLoading">
-                <td
-                  colspan="5"
-                  class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-                >
-                  {{ t('inventory.messages.loading') }}
-                </td>
-              </tr>
-              <tr v-else-if="filteredItems.length === 0">
-                <td
-                  colspan="5"
-                  class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-                >
-                  {{ t('inventory.messages.empty') }}
-                </td>
-              </tr>
-              <tr
-                v-for="item in paginatedItems"
-                v-else
-                :key="item.id"
-                class="border-b border-slate-100 text-sm font-bold text-[#1A1C1C] last:border-0 dark:border-stone-800 dark:text-stone-100"
+                {{ t('inventory.messages.loading') }}
+              </TableCell>
+            </TableRow>
+            <TableRow v-else-if="filteredItems.length === 0" class="hover:bg-transparent">
+              <TableCell
+                colspan="7"
+                class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
               >
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800"
-                    >
-                      <img
-                        v-if="item.imageUrl"
-                        :src="getImageUrl(item.imageUrl)"
-                        :alt="item.name"
-                        class="h-full w-full object-cover"
-                      />
-                      <ImagePlus v-else class="size-5 text-stone-400 dark:text-stone-500" />
-                    </div>
-                    <div>
-                      <p class="text-[#1A1C1C] dark:text-stone-100">{{ item.name }}</p>
-                    </div>
-                  </div>
-                </td>
-                <td
-                  class="px-6 py-4"
-                  :class="
-                    item.status === 'out_of_stock'
-                      ? 'text-rose-600 dark:text-rose-500'
-                      : 'text-[#1A1C1C] dark:text-stone-100'
-                  "
-                >
-                  {{ formatNumber(item.quantity) }}
-                </td>
-                <td class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                  {{ item.unitOfMeasure }}
-                </td>
-                <td class="px-6 py-4 text-center">
-                  <span
-                    class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black"
-                    :class="statusMeta[item.status].class"
+                {{ t('inventory.messages.empty') }}
+              </TableCell>
+            </TableRow>
+            <TableRow
+              v-for="item in paginatedItems"
+              v-else
+              :key="item.id"
+              class="border-slate-100 text-sm font-bold text-[#1A1C1C] dark:border-stone-800 dark:text-stone-100"
+            >
+              <TableCell class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800"
                   >
-                    <span class="size-1.5 rounded-full" :class="statusMeta[item.status].dotClass" />
-                    {{ t(statusMeta[item.status].labelKey) }}
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center justify-center gap-5">
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none hover:bg-transparent hover:no-underline"
-                      :title="t('inventory.actions.adjust')"
-                      @click="openAdjustmentModal(item)"
-                    >
-                      <i class="fa fa-window-maximize text-[#D66A1F]" aria-hidden="true">
-                        <svg viewBox="0 0 16 16" class="size-4 fill-current">
-                          <path
-                            d="M2.25 1.5h11.5c.41 0 .75.34.75.75v11.5c0 .41-.34.75-.75.75H2.25a.75.75 0 0 1-.75-.75V2.25c0-.41.34-.75.75-.75Zm1 2.25v8.5h9.5v-8.5h-9.5Zm1.25 1.5h4.25v1.5H4.5v-1.5Zm6.75 1.25-5.5 5.5h5.5v-5.5Z"
-                          />
-                        </svg>
-                      </i>
-                    </Button>
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none text-[#16A34A] hover:bg-transparent hover:no-underline dark:text-emerald-500"
-                      :title="t('inventory.actions.view')"
-                      @click="openSupplyModal('view', item)"
-                    >
-                      <Eye class="size-4 stroke-[2.4]" />
-                    </Button>
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none text-[#2563EB] hover:bg-transparent hover:no-underline dark:text-sky-500"
-                      :title="t('inventory.actions.edit')"
-                      @click="openSupplyModal('edit', item)"
-                    >
-                      <Pencil class="size-4 stroke-[2.4]" />
-                    </Button>
-                    <Button
-                      variant="tertiary"
-                      size="icon"
-                      class="size-5 rounded-none text-[#EF4444] hover:bg-transparent hover:no-underline dark:text-red-500 dark:hover:text-red-400"
-                      :title="t('inventory.actions.delete')"
-                      @click="openDeleteConfirm(item)"
-                    >
-                      <Trash2 class="size-4 stroke-[2.4]" />
-                    </Button>
+                    <img
+                      v-if="item.imageUrl"
+                      :src="getImageUrl(item.imageUrl)"
+                      :alt="item.name"
+                      class="h-full w-full object-cover"
+                    />
+                    <ImagePlus v-else class="size-5 text-stone-400 dark:text-stone-500" />
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  <div>
+                    <p class="text-[#1A1C1C] dark:text-stone-100">{{ item.name }}</p>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell
+                class="px-6 py-4"
+                :class="
+                  item.status === 'out_of_stock'
+                    ? 'text-rose-600 dark:text-rose-500'
+                    : 'text-[#1A1C1C] dark:text-stone-100'
+                "
+              >
+                {{ formatNumber(item.quantity) }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
+                {{ item.unitOfMeasure }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-right text-[#1A1C1C] dark:text-stone-100">
+                {{ formatMoney(item.unitCost) }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-right font-black text-[#1A1C1C] dark:text-stone-100">
+                {{ formatMoney(item.totalValue) }}
+              </TableCell>
+              <TableCell class="px-6 py-4 text-center">
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black"
+                  :class="statusMeta[item.status].class"
+                >
+                  <span class="size-1.5 rounded-full" :class="statusMeta[item.status].dotClass" />
+                  {{ t(statusMeta[item.status].labelKey) }}
+                </span>
+              </TableCell>
+              <TableCell class="px-6 py-4">
+                <div class="flex items-center justify-center">
+                  <DropdownMenuRoot>
+                    <DropdownMenuTrigger
+                      class="material-symbols-outlined cursor-pointer transition-opacity hover:text-[#974400] focus:outline-none"
+                      :title="t('inventory.table.actions')"
+                      @click.stop
+                    >
+                      more_vert
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuPortal>
+                      <DropdownMenuContent
+                        class="z-50 min-w-[160px] animate-in rounded-lg border border-[#edddd5] bg-white p-1 shadow-lg fade-in-0 zoom-in-95 dark:border-stone-800 dark:bg-stone-900"
+                        :side-offset="4"
+                        align="end"
+                      >
+                        <!-- Adjust -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                          @click.stop="openAdjustmentModal(item)"
+                        >
+                          <SlidersHorizontal class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.adjust') }}</span>
+                        </DropdownMenuItem>
+
+                        <!-- Edit -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                          @click.stop="openSupplyModal('edit', item)"
+                        >
+                          <Pencil class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.edit') }}</span>
+                        </DropdownMenuItem>
+
+                        <!-- View -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                          @click.stop="openSupplyModal('view', item)"
+                        >
+                          <Eye class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.view') }}</span>
+                        </DropdownMenuItem>
+
+                        <!-- History -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                          @click.stop="goToHistory(item)"
+                        >
+                          <History class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.viewHistory') }}</span>
+                        </DropdownMenuItem>
+
+                        <!-- Delete -->
+                        <DropdownMenuItem
+                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 focus:bg-red-50 focus:outline-none dark:hover:bg-red-950/40 dark:focus:bg-red-950/40"
+                          @click.stop="openDeleteConfirm(item)"
+                        >
+                          <Trash2 class="size-4 shrink-0" />
+                          <span>{{ t('inventory.actions.delete') }}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuRoot>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
 
         <footer
           class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 dark:border-stone-800 sm:flex-row sm:items-center sm:justify-between"
@@ -854,9 +975,9 @@ onMounted(() => {
                 :disabled="supplyModalMode === 'view'"
                 type="number"
                 min="0"
-                step="1"
+                step="0.01"
                 class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold dark:bg-stone-800"
-                @blur="supplyForm.quantity = toWholeNumber(supplyForm.quantity)"
+                @blur="supplyForm.quantity = toDecimal(supplyForm.quantity)"
               />
             </Label>
             <Label
@@ -879,17 +1000,60 @@ onMounted(() => {
           <Label
             class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
           >
+            {{ t('inventory.form.category') }}
+            <Select
+              :model-value="supplyForm.categoryId ?? undefined"
+              :disabled="supplyModalMode === 'view'"
+              @update:model-value="value => (supplyForm.categoryId = Number(value))"
+            >
+              <SelectTrigger class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
+                <SelectValue :placeholder="t('inventory.form.categoryPlaceholder')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="category in categoryOptions"
+                  :key="category.value"
+                  :value="category.value"
+                >
+                  {{ category.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </Label>
+
+          <Label
+            class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+          >
             {{ t('inventory.form.minAlert') }}
             <AppInput
               v-model="supplyForm.minAlertThreshold"
               :disabled="supplyModalMode === 'view'"
               type="number"
               min="0"
-              step="1"
+              step="0.01"
               :placeholder="t('inventory.form.minAlertPlaceholder')"
               class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800"
-              @blur="supplyForm.minAlertThreshold = toWholeNumber(supplyForm.minAlertThreshold)"
+              @blur="supplyForm.minAlertThreshold = toDecimal(supplyForm.minAlertThreshold)"
             />
+          </Label>
+
+          <Label
+            class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+          >
+            {{ t('inventory.form.unitCost', { currency: shopSettingsStore.currency_symbol }) }}
+            <AppInput
+              v-model="supplyForm.unitCost"
+              :disabled="supplyModalMode === 'view'"
+              type="number"
+              min="0"
+              step="0.01"
+              :placeholder="t('inventory.form.unitCostPlaceholder')"
+              class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold dark:bg-stone-800"
+              @blur="supplyForm.unitCost = toDecimal(supplyForm.unitCost)"
+            />
+            <span class="text-[11px] font-semibold normal-case text-[#A3A3A3] dark:text-stone-500">
+              {{ t('inventory.form.unitCostHint') }}
+            </span>
           </Label>
 
           <ImageUpload
@@ -1074,22 +1238,20 @@ onMounted(() => {
               variant="tertiary"
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
-              :disabled="
-                adjustmentForm.amount <= (isRemovingStock && adjustmentMaxAmount === 0 ? 0 : 1)
-              "
-              @click="setAdjustmentAmount(Number(adjustmentForm.amount) - 1)"
+              :disabled="adjustmentForm.amount <= 0"
+              @click="setAdjustmentAmount(Number(adjustmentForm.amount) - ADJUSTMENT_STEP)"
             >
               <Minus class="size-4" />
             </Button>
             <AppInput
-              v-model="adjustmentForm.amount"
+              :model-value="adjustmentForm.amount"
               type="number"
-              min="1"
-              :max="Number.isFinite(adjustmentMaxAmount) ? adjustmentMaxAmount : undefined"
-              step="1"
+              min="0"
+              :max="Number.isFinite(effectiveMaxAmount) ? effectiveMaxAmount : undefined"
+              :step="ADJUSTMENT_STEP"
+              :aria-invalid="isAdjustmentAmountInvalid"
               class="h-full border-0 bg-transparent px-0 text-right text-xl font-normal text-[#222222] shadow-none [appearance:textfield] focus-visible:ring-0 dark:text-stone-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              @input="setAdjustmentAmount(adjustmentForm.amount)"
-              @blur="setAdjustmentAmount(adjustmentForm.amount)"
+              @update:model-value="setAdjustmentAmount"
             />
             <span class="pl-4 text-sm font-normal text-[#B2B2B2] dark:text-stone-500">
               {{ selectedItem.unitOfMeasure }}
@@ -1098,12 +1260,46 @@ onMounted(() => {
               variant="tertiary"
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
-              :disabled="isRemovingStock && adjustmentForm.amount >= adjustmentMaxAmount"
-              @click="setAdjustmentAmount(Number(adjustmentForm.amount) + 1)"
+              :disabled="isRemovingStock && adjustmentForm.amount >= effectiveMaxAmount"
+              @click="setAdjustmentAmount(Number(adjustmentForm.amount) + ADJUSTMENT_STEP)"
             >
               <Plus class="size-4" />
             </Button>
           </div>
+          <p
+            v-if="isAdjustmentAmountInvalid"
+            class="-mt-3 text-xs font-bold text-rose-600 dark:text-rose-500"
+          >
+            {{
+              adjustmentForm.amount <= 0
+                ? t('inventory.adjustment.amountRequired')
+                : t('inventory.adjustment.amountExceedsStock', {
+                    quantity: formatNumber(effectiveMaxAmount),
+                    unit: selectedItem.unitOfMeasure,
+                  })
+            }}
+          </p>
+
+          <Label
+            v-if="!isRemovingStock"
+            class="flex flex-col items-start gap-3 text-sm font-normal uppercase text-[#8A8A8A] dark:text-stone-500"
+          >
+            {{
+              t('inventory.adjustment.unitCost', { currency: shopSettingsStore.currency_symbol })
+            }}
+            <AppInput
+              v-model="adjustmentForm.unitCost"
+              type="number"
+              min="0"
+              step="0.01"
+              :placeholder="t('inventory.form.unitCostPlaceholder')"
+              class="h-11 w-full rounded-xl border border-[#E1E1E1] bg-[#FAFAFA] px-4 text-right text-base font-normal text-[#222222] shadow-sm focus-visible:ring-0 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+              @blur="adjustmentForm.unitCost = toDecimal(adjustmentForm.unitCost)"
+            />
+            <span class="text-[11px] font-normal normal-case text-[#B2B2B2] dark:text-stone-500">
+              {{ t('inventory.adjustment.unitCostHint') }}
+            </span>
+          </Label>
 
           <Label
             class="flex flex-col items-start gap-3 text-sm font-normal uppercase text-[#8A8A8A] dark:text-stone-500"

@@ -51,6 +51,12 @@ const routes: RouteRecordRaw[] = [
         meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {
+        path: APP_ROUTES.INVENTORY_HISTORY.path,
+        name: APP_ROUTES.INVENTORY_HISTORY.name,
+        component: () => import('@/views/InventoryHistoryView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      },
+      {
         path: APP_ROUTES.CATEGORIES.path,
         name: APP_ROUTES.CATEGORIES.name,
         component: () => import('@/views/CategoryManagement.vue'),
