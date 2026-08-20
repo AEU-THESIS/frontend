@@ -153,10 +153,15 @@ export interface OrderDetail extends OrderResult {
   discountAmount: number | string
   promotion?: OrderPromotion | null
   appliedPromotions?: AppliedOrderPromotion[]
-  orderType: OrderType
+  orderType: OrderType | 'pre_order'
   customerName: string | null
   customerPhone: string | null
   deliveryAddress: string | null
+  // Customer pre-order (Telegram Mini App) fields — null for staff POS orders.
+  deliveryLat?: number | string | null
+  deliveryLng?: number | string | null
+  telegramUserId?: string | null
+  telegramUsername?: string | null
   paymentMethod: string
   khqrString: string | null
   // Void audit — set once a whole order is voided (refunded + canceled).

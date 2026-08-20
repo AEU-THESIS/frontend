@@ -80,3 +80,9 @@ export const getTodayOrders = async (filters: TodayOrdersFilters = {}): Promise<
   })
   return res.data
 }
+
+// Reject a pending pre-order (unpaid → rejected). Board counterpart to accept.
+export const rejectPreOrder = async (id: number): Promise<OrderDetail> => {
+  const res = await http.put<OrderDetail>(`/api/orders/${id}/reject`, {})
+  return res.data
+}

@@ -69,6 +69,12 @@ const navSections = computed(() => {
           ? [{ nameKey: 'sidebar.items.orders', route: APP_ROUTES.ORDERS, icon: 'receipt_long' }]
           : []),
         { nameKey: 'sidebar.items.orderHistory', route: APP_ROUTES.ORDER_HISTORY, icon: 'history' },
+        {
+          nameKey: 'sidebar.items.blockedCustomers',
+          route: APP_ROUTES.BLOCKED_CUSTOMERS,
+          icon: 'block',
+          roles: [ROLES.ADMIN, ROLES.MANAGER],
+        },
       ],
     },
     {

@@ -8,14 +8,19 @@ import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { formatDateTime } from '@/utils/datetime'
 import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
+import BlockCustomerDialog from '@/components/order/BlockCustomerDialog.vue'
+import { useAuthStore } from '@/store/useAuthStore'
+import { ROLES } from '@/constants/roles'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
 const shopSettingsStore = useShopSettingsStore()
+const authStore = useAuthStore()
 const { orders, loading, selectedOrder, isConnected } = storeToRefs(orderStore)
 
-// Active filter tab: default to operational "preparing" tab
-const activeTab = ref<'preparing' | 'ready' | 'completed' | 'canceled'>('preparing')
+// Active filter tab. 'pending' surfaces incoming customer pre-orders awaiting
+// acceptance; the rest are the normal kitchen lifecycle.
+const activeTab = ref<'pending' | 'preparing' | 'ready' | 'completed' | 'canceled'>('preparing')
 
 // Dropdown active popover id tracker (inline select status change)
 const activeDropdownId = ref<number | null>(null)
@@ -33,12 +38,20 @@ onUnmounted(() => {
 // ── 2. Metrics & Live Filtering Computations ───────────────────────
 const counts = computed(() => {
   return {
+    // Pending = customer pre-orders awaiting staff acceptance.
+    pending: orders.value.filter(o => o.fulfillmentStatus === 'pending').length,
     preparing: orders.value.filter(o => o.fulfillmentStatus === 'preparing').length,
     ready: orders.value.filter(o => o.fulfillmentStatus === 'ready').length,
     completed: orders.value.filter(o => o.fulfillmentStatus === 'completed').length,
     canceled: orders.value.filter(o => o.fulfillmentStatus === 'canceled').length,
   }
 })
+
+// Google Maps link from a pre-order's shared coordinates (delivery), or null.
+const mapsLink = (order: OrderDetail): string | null =>
+  order.deliveryLat != null && order.deliveryLng != null
+    ? `https://maps.google.com/?q=${order.deliveryLat},${order.deliveryLng}`
+    : null
 
 const filteredOrders = computed(() => {
   return orders.value.filter(o => o.fulfillmentStatus === activeTab.value)
@@ -171,6 +184,57 @@ const confirmCancelItem = async () => {
   }
 }
 
+// ── 5c. Pre-order accept / reject (customer Telegram pre-orders) ──
+// Accept moves the pre-order straight into the kitchen flow (pending → preparing)
+// — one tap doubles as "start preparing". Reject declines the unpaid pre-order.
+const rejectDialogOpen = ref(false)
+
+// Block customer (Admin/Manager only) — anti-spam. Any pre-order with a Telegram
+// identity, regardless of status.
+const blockDialogOpen = ref(false)
+const canBlockCustomer = computed(() => {
+  const role = authStore.user?.role
+  const o = selectedOrder.value
+  return (
+    (role === ROLES.ADMIN || role === ROLES.MANAGER) &&
+    o?.orderType === 'pre_order' &&
+    !!o?.telegramUserId
+  )
+})
+const rejectTargetId = ref<number | null>(null)
+
+const handleAccept = async (orderId: number) => {
+  actionBusy.value = true
+  try {
+    await orderStore.changeStatus(orderId, 'preparing')
+    toast.success(t('preOrders.accepted'))
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+const openRejectDialog = (orderId: number) => {
+  rejectTargetId.value = orderId
+  rejectDialogOpen.value = true
+}
+
+const confirmReject = async () => {
+  if (rejectTargetId.value == null) return
+  actionBusy.value = true
+  try {
+    await orderStore.rejectPreOrder(rejectTargetId.value)
+    toast.success(t('preOrders.rejected'))
+    rejectDialogOpen.value = false
+    rejectTargetId.value = null
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
 // ── 6. Detail panel slide-in triggers ──────────────────────────────
 const openOrderDetails = async (order: OrderDetail) => {
   await orderStore.fetchSingleOrderDetail(order.id)
@@ -195,7 +259,41 @@ const handlePrint = () => {
 <template>
   <div class="flex-1 overflow-hidden flex flex-col p-6 gap-6 h-full relative receipt-print-wrapper">
     <!-- ── TOP COUNTERS / METRIC CARDS ── -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
+    <section class="grid grid-cols-2 lg:grid-cols-5 gap-4 shrink-0">
+      <!-- Pre-Orders Card (incoming customer pre-orders awaiting acceptance) -->
+      <div
+        class="bg-white dark:bg-stone-900/50 backdrop-blur-sm rounded-xl px-5 py-3 flex items-center gap-4 shadow-sm border group transition-all hover:shadow-md cursor-pointer"
+        :class="
+          activeTab === 'pending'
+            ? 'border-amber-500 dark:border-amber-500/60 ring-2 ring-amber-500/20'
+            : 'border-transparent dark:border-stone-800'
+        "
+        @click="activeTab = 'pending'"
+      >
+        <div
+          class="size-12 rounded-lg bg-amber-50 dark:bg-amber-950/20 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0 relative"
+        >
+          <span
+            class="material-symbols-outlined text-[24px] text-amber-600 leading-none select-none"
+            >notifications_active</span
+          >
+          <span
+            v-if="counts.pending > 0"
+            class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-500 ring-2 ring-white dark:ring-stone-900 animate-pulse"
+          ></span>
+        </div>
+        <div>
+          <p
+            class="text-[11px] font-bold text-[#737373] dark:text-stone-400 uppercase tracking-wider mb-0.5"
+          >
+            {{ t('orderDashboard.pending') }}
+          </p>
+          <h3 class="text-2xl font-bold text-[#1A1C1C] dark:text-stone-100">
+            {{ counts.pending }}
+          </h3>
+        </div>
+      </div>
+
       <!-- Preparing Card -->
       <div
         class="bg-white dark:bg-stone-900/50 backdrop-blur-sm rounded-xl px-5 py-3 flex items-center gap-4 shadow-sm border group transition-all hover:shadow-md cursor-pointer"
@@ -327,7 +425,7 @@ const handlePrint = () => {
     >
       <nav class="flex gap-6">
         <button
-          v-for="tab in ['preparing', 'ready', 'completed', 'canceled'] as const"
+          v-for="tab in ['pending', 'preparing', 'ready', 'completed', 'canceled'] as const"
           :key="tab"
           class="pb-4 font-bold text-sm tracking-wide transition-all border-b-2 relative active:scale-98 shrink-0 flex items-center gap-2"
           :class="[
@@ -388,6 +486,7 @@ const handlePrint = () => {
           :key="order.id"
           class="flex flex-col bg-white dark:bg-stone-900 rounded-3xl border border-stone-200/60 dark:border-stone-800/60 shadow-sm cursor-pointer relative min-h-[224px] transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] group"
           :class="[
+            activeTab === 'pending' ? 'border-t-4 border-t-amber-500' : '',
             activeTab === 'preparing' ? 'border-t-4 border-t-amber-500' : '',
             activeTab === 'ready' ? 'border-t-4 border-t-emerald-500' : '',
             activeTab === 'completed' ? 'border-t-4 border-t-teal-500' : '',
@@ -428,6 +527,9 @@ const handlePrint = () => {
               <button
                 class="flex items-center gap-1 py-1 px-2.5 border rounded-xl text-[11px] font-extrabold uppercase transition-colors shrink-0"
                 :class="[
+                  order.fulfillmentStatus === 'pending'
+                    ? 'bg-amber-50 text-amber-700 border-amber-50'
+                    : '',
                   order.fulfillmentStatus === 'preparing'
                     ? 'bg-[#fcf3eb] text-[#b05a18] border-[#fcf3eb] hover:bg-orange-100/50'
                     : '',
@@ -441,12 +543,15 @@ const handlePrint = () => {
                     ? 'bg-rose-50 text-rose-800 border-rose-50 hover:bg-rose-100/50'
                     : '',
                 ]"
-                @click="order.fulfillmentStatus !== 'canceled' && toggleDropdown($event, order.id)"
+                @click="
+                  !['canceled', 'pending'].includes(order.fulfillmentStatus) &&
+                  toggleDropdown($event, order.id)
+                "
               >
                 {{ t(`orderDashboard.${order.fulfillmentStatus}`) }}
                 <!-- A canceled/voided order is terminal — no status transitions offered. -->
                 <span
-                  v-if="order.fulfillmentStatus !== 'canceled'"
+                  v-if="!['canceled', 'pending'].includes(order.fulfillmentStatus)"
                   class="material-symbols-outlined text-[12px] font-extrabold leading-none"
                   >arrow_drop_down</span
                 >
@@ -455,7 +560,10 @@ const handlePrint = () => {
               <!-- Status Transition Selection Dropdown -->
               <transition name="pop">
                 <ul
-                  v-if="activeDropdownId === order.id && order.fulfillmentStatus !== 'canceled'"
+                  v-if="
+                    activeDropdownId === order.id &&
+                    !['canceled', 'pending'].includes(order.fulfillmentStatus)
+                  "
                   class="absolute right-0 mt-2 w-36 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl rounded-2xl py-2 z-30 overflow-hidden font-semibold transition-all shrink-0"
                   @click.stop
                 >
@@ -522,6 +630,66 @@ const handlePrint = () => {
                   {{ item.options.map(o => o.optionName).join(', ') }}
                 </p>
               </div>
+            </div>
+          </div>
+
+          <!-- Pre-order actions: Accept straight into the kitchen (pending →
+               preparing) or Reject; plus delivery contact shortcuts. -->
+          <div
+            v-if="order.fulfillmentStatus === 'pending'"
+            class="p-5 pt-0 flex flex-col gap-3"
+            @click.stop
+          >
+            <div
+              v-if="order.customerPhone || order.telegramUsername || mapsLink(order)"
+              class="flex flex-wrap items-center gap-2 text-[11px] font-bold"
+            >
+              <a
+                v-if="order.customerPhone"
+                :href="`tel:${order.customerPhone}`"
+                class="inline-flex items-center gap-1 rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-stone-600 dark:text-stone-300"
+              >
+                <span class="material-symbols-outlined text-[14px] leading-none">call</span
+                >{{ order.customerPhone }}
+              </a>
+              <a
+                v-if="order.telegramUsername"
+                :href="`https://t.me/${order.telegramUsername}`"
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-1 rounded-full bg-sky-50 dark:bg-sky-950/30 px-2.5 py-1 text-sky-700 dark:text-sky-400"
+              >
+                <span class="material-symbols-outlined text-[14px] leading-none">send</span>@{{
+                  order.telegramUsername
+                }}
+              </a>
+              <a
+                v-if="mapsLink(order)"
+                :href="mapsLink(order)!"
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 text-emerald-700 dark:text-emerald-400"
+              >
+                <span class="material-symbols-outlined text-[14px] leading-none">location_on</span
+                >{{ t('preOrders.map') }}
+              </a>
+            </div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-amber-700 active:scale-[0.98]"
+                @click="handleAccept(order.id)"
+              >
+                <span class="material-symbols-outlined text-[18px] leading-none">check_circle</span>
+                {{ t('preOrders.accept') }}
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-xl border border-stone-200 px-4 py-2.5 text-sm font-bold text-stone-600 transition-all hover:bg-stone-50 active:scale-95 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+                @click="openRejectDialog(order.id)"
+              >
+                {{ t('preOrders.reject') }}
+              </button>
             </div>
           </div>
         </article>
@@ -872,6 +1040,21 @@ const handlePrint = () => {
             </div>
           </div>
 
+          <!-- Block customer (Admin/Manager) — anti-spam for pre-orders. -->
+          <div
+            v-if="canBlockCustomer"
+            class="border-t border-stone-100 dark:border-stone-800 pt-4 shrink-0 print:hidden"
+          >
+            <button
+              type="button"
+              class="flex w-full items-center justify-center gap-2 rounded-2xl border border-rose-200 py-2.5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-50 active:scale-[0.98] dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/30"
+              @click="blockDialogOpen = true"
+            >
+              <span class="material-symbols-outlined text-[18px]">block</span>
+              {{ t('blockedCustomers.blockCustomer') }}
+            </button>
+          </div>
+
           <div
             class="hidden print:block text-center mt-12 border-t pt-4 text-[10px] text-stone-400 font-medium"
           >
@@ -913,6 +1096,24 @@ const handlePrint = () => {
       :cancel-label="t('orderActions.keep')"
       :busy="actionBusy"
       @confirm="confirmCancelItem"
+    />
+
+    <!-- Reject pre-order confirmation (unpaid — no refund needed) -->
+    <CancelActionDialog
+      v-model:open="rejectDialogOpen"
+      :title="t('preOrders.reject')"
+      :message="t('preOrders.confirmReject')"
+      :confirm-label="t('preOrders.reject')"
+      :cancel-label="t('orderActions.keep')"
+      :busy="actionBusy"
+      @confirm="confirmReject"
+    />
+
+    <!-- Block customer dialog (forever / until date-time) -->
+    <BlockCustomerDialog
+      v-model:open="blockDialogOpen"
+      :telegram-user-id="selectedOrder?.telegramUserId ?? null"
+      :telegram-username="selectedOrder?.telegramUsername ?? null"
     />
   </div>
 </template>
