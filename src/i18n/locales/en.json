@@ -264,7 +264,7 @@
       "name": "Name",
       "stockLevel": "Stock Level",
       "unit": "Unit",
-      "unitCost": "Unit Cost",
+      "unitCost": "Average Unit Cost",
       "totalValue": "Total Value",
       "status": "Status",
       "actions": "Actions"
@@ -322,6 +322,8 @@
       "itemNamePlaceholder": "e.g. Double Wall Glassware",
       "numberOfItems": "Number of Items",
       "unitOfMeasure": "Unit of Measure",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category (optional)",
       "minAlert": "Min Low Stock Alert",
       "minAlertPlaceholder": "e.g. 5",
       "unitCost": "Cost Price per Unit ({currency})",
@@ -345,7 +347,9 @@
       "unitCost": "Purchase Price per Unit ({currency})",
       "unitCostHint": "The price you paid this time — updates the item's average cost.",
       "notes": "Notes",
-      "notesPlaceholder": "Add additional details about this adjustment..."
+      "notesPlaceholder": "Add additional details about this adjustment...",
+      "amountRequired": "Enter an amount greater than 0.",
+      "amountExceedsStock": "Amount exceeds available stock ({quantity} {unit})."
     },
     "history": {
       "title": "Stock History",
@@ -353,6 +357,7 @@
       "empty": "No stock movements for this period.",
       "date": "Date",
       "change": "Change",
+      "value": "Value",
       "unitCost": "Unit Cost",
       "notes": "Notes",
       "by": "By",

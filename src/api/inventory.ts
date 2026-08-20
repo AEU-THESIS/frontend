@@ -27,6 +27,7 @@ const toInventoryFormData = (payload: InventoryItemPayload) => {
 
   formData.append('name', parsed.name)
   formData.append('unit_of_measure', parsed.unit_of_measure)
+  if (parsed.category_id) formData.append('category_id', String(parsed.category_id))
   formData.append('quantity', String(parsed.quantity))
   formData.append('min_alert_threshold', String(parsed.min_alert_threshold))
   formData.append('unit_cost', String(parsed.unit_cost))

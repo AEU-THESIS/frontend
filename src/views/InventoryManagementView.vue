@@ -59,6 +59,8 @@ import { useInventoryStore } from '@/store/useInventoryStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import type { AdjustmentType, InventoryItem, InventoryStatus } from '@/types/inventory.types'
 import { getImageUrl } from '@/utils/image'
+import { getCategories } from '@/api/product'
+import type { Category } from '@/types/product.types'
 
 type SupplyModalMode = 'add' | 'edit' | 'view'
 type InventoryFilterStatus = 'all' | InventoryStatus
@@ -107,10 +109,16 @@ const supplyForm = reactive({
   name: '',
   quantity: 0,
   unitOfMeasure: 'Packs',
+  categoryId: null as number | null,
   minAlertThreshold: 5,
   unitCost: 0,
   imageUrl: null as string | null,
 })
+
+const categories = ref<Category[]>([])
+const categoryOptions = computed(() =>
+  categories.value.map(category => ({ value: category.id, label: category.name }))
+)
 
 const adjustmentForm = reactive({
   adjustmentType: 'add' as AdjustmentType,
@@ -194,22 +202,39 @@ const normalizeSupplyCounts = () => {
   supplyForm.minAlertThreshold = toDecimal(supplyForm.minAlertThreshold)
   supplyForm.unitCost = toDecimal(supplyForm.unitCost)
 }
-/** Stepper increment — matches the input's 2-decimal precision so fractional units are reachable. */
-const ADJUSTMENT_STEP = 0.01
+// Only kg is a continuously-measured unit here — Packs/Liters/Units are
+// discrete items, so an adjustment amount for them must stay a whole number.
+const isFractionalUnit = computed(() => selectedItem.value?.unitOfMeasure === 'kg')
+/** Stepper increment — 0.01 for kg (matches its 2-decimal precision), 1 for whole-number units. */
+const ADJUSTMENT_STEP = computed(() => (isFractionalUnit.value ? 0.01 : 1))
 const isRemovingStock = computed(() => adjustmentForm.adjustmentType === 'remove')
 const adjustmentMaxAmount = computed(() => {
   if (!isRemovingStock.value) return Number.POSITIVE_INFINITY
   // Full stock is removable — no flooring, so a 2.4 kg item can be cleared to 0.
   return selectedItem.value ? Math.max(0, selectedItem.value.quantity) : 0
 })
+// For whole-number units the max must also be floored: clamping a rounded
+// (whole) amount to a fractional max (e.g. 4.9 Units left over from a past
+// fractional entry) would silently reintroduce a fraction.
+const effectiveMaxAmount = computed(() => {
+  const max = adjustmentMaxAmount.value
+  if (!Number.isFinite(max)) return max
+  return isFractionalUnit.value ? max : Math.floor(max)
+})
 const isAdjustmentAmountInvalid = computed(() => {
   if (!selectedItem.value) return true
   if (adjustmentForm.amount <= 0) return true
-  return isRemovingStock.value && adjustmentForm.amount > adjustmentMaxAmount.value
+  return isRemovingStock.value && adjustmentForm.amount > effectiveMaxAmount.value
 })
 const setAdjustmentAmount = (value: unknown) => {
-  const amount = toDecimal(value)
-  adjustmentForm.amount = Math.min(amount, adjustmentMaxAmount.value)
+  const numberValue = Number(value)
+  const nonNegative = Number.isFinite(numberValue) ? Math.max(0, numberValue) : 0
+  // Floor (never round up) whole-number units, so an amount can never overshoot
+  // past what's actually available just by rounding to the nearest integer.
+  const rounded = isFractionalUnit.value
+    ? Math.round(nonNegative * 100) / 100
+    : Math.floor(nonNegative)
+  adjustmentForm.amount = Math.min(rounded, effectiveMaxAmount.value)
 }
 const setAdjustmentType = (type: AdjustmentType) => {
   adjustmentForm.adjustmentType = type
@@ -269,6 +294,7 @@ const resetSupplyForm = () => {
   supplyForm.name = ''
   supplyForm.quantity = 0
   supplyForm.unitOfMeasure = 'Packs'
+  supplyForm.categoryId = null
   supplyForm.minAlertThreshold = 5
   supplyForm.unitCost = 0
   supplyForm.imageUrl = null
@@ -285,6 +311,7 @@ const openSupplyModal = (mode: SupplyModalMode, item?: InventoryItem) => {
     supplyForm.name = item.name
     supplyForm.quantity = item.quantity
     supplyForm.unitOfMeasure = item.unitOfMeasure
+    supplyForm.categoryId = item.category?.id ?? null
     supplyForm.minAlertThreshold = item.minAlertThreshold
     supplyForm.unitCost = item.unitCost
     supplyForm.imageUrl = item.imageUrl
@@ -342,6 +369,7 @@ const saveSupply = async () => {
     const payload = {
       name: supplyForm.name.trim(),
       unit_of_measure: supplyForm.unitOfMeasure,
+      category_id: supplyForm.categoryId,
       quantity: supplyForm.quantity,
       min_alert_threshold: supplyForm.minAlertThreshold,
       unit_cost: supplyForm.unitCost,
@@ -449,6 +477,11 @@ onMounted(() => {
   inventoryStore.fetchValuation().catch(() => {
     toast.error(t('inventory.messages.loadError'))
   })
+  getCategories()
+    .then(result => {
+      categories.value = result
+    })
+    .catch(() => toast.error(t('inventory.messages.loadError')))
 })
 </script>
 
@@ -459,9 +492,6 @@ onMounted(() => {
     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex gap-3 items-center">
         <div class="w-auto">
-          <h1 class="font-headline-lg text-xl font-bold text-on-background mb-[4px]">
-            {{ t('menuManagement.title') }}
-          </h1>
           <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p>
         </div>
       </div>
@@ -970,6 +1000,30 @@ onMounted(() => {
           <Label
             class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
           >
+            {{ t('inventory.form.category') }}
+            <Select
+              :model-value="supplyForm.categoryId ?? undefined"
+              :disabled="supplyModalMode === 'view'"
+              @update:model-value="value => (supplyForm.categoryId = Number(value))"
+            >
+              <SelectTrigger class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
+                <SelectValue :placeholder="t('inventory.form.categoryPlaceholder')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="category in categoryOptions"
+                  :key="category.value"
+                  :value="category.value"
+                >
+                  {{ category.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </Label>
+
+          <Label
+            class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
+          >
             {{ t('inventory.form.minAlert') }}
             <AppInput
               v-model="supplyForm.minAlertThreshold"
@@ -1190,13 +1244,14 @@ onMounted(() => {
               <Minus class="size-4" />
             </Button>
             <AppInput
-              v-model="adjustmentForm.amount"
+              :model-value="adjustmentForm.amount"
               type="number"
               min="0"
-              :max="Number.isFinite(adjustmentMaxAmount) ? adjustmentMaxAmount : undefined"
-              step="0.01"
+              :max="Number.isFinite(effectiveMaxAmount) ? effectiveMaxAmount : undefined"
+              :step="ADJUSTMENT_STEP"
+              :aria-invalid="isAdjustmentAmountInvalid"
               class="h-full border-0 bg-transparent px-0 text-right text-xl font-normal text-[#222222] shadow-none [appearance:textfield] focus-visible:ring-0 dark:text-stone-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              @blur="setAdjustmentAmount(adjustmentForm.amount)"
+              @update:model-value="setAdjustmentAmount"
             />
             <span class="pl-4 text-sm font-normal text-[#B2B2B2] dark:text-stone-500">
               {{ selectedItem.unitOfMeasure }}
@@ -1205,12 +1260,25 @@ onMounted(() => {
               variant="tertiary"
               size="icon"
               class="size-full rounded-none text-[#A64E05] hover:bg-transparent"
-              :disabled="isRemovingStock && adjustmentForm.amount >= adjustmentMaxAmount"
+              :disabled="isRemovingStock && adjustmentForm.amount >= effectiveMaxAmount"
               @click="setAdjustmentAmount(Number(adjustmentForm.amount) + ADJUSTMENT_STEP)"
             >
               <Plus class="size-4" />
             </Button>
           </div>
+          <p
+            v-if="isAdjustmentAmountInvalid"
+            class="-mt-3 text-xs font-bold text-rose-600 dark:text-rose-500"
+          >
+            {{
+              adjustmentForm.amount <= 0
+                ? t('inventory.adjustment.amountRequired')
+                : t('inventory.adjustment.amountExceedsStock', {
+                    quantity: formatNumber(effectiveMaxAmount),
+                    unit: selectedItem.unitOfMeasure,
+                  })
+            }}
+          </p>
 
           <Label
             v-if="!isRemovingStock"

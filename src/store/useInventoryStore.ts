@@ -27,7 +27,7 @@ export const useInventoryStore = defineStore('inventory', () => {
   const historyPagination = ref<InventoryHistoryResponse['pagination']>({
     total: 0,
     page: 1,
-    limit: 5,
+    limit: 10,
     totalPages: 1,
   })
   const historyTotals = ref<InventoryHistoryResponse['totals']>({ totalIn: 0, totalOut: 0 })

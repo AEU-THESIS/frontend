@@ -263,7 +263,7 @@
       "name": "ឈ្មោះ",
       "stockLevel": "កម្រិតស្តុក",
       "unit": "ឯកតា",
-      "unitCost": "តម្លៃក្នុងមួយឯកតា",
+      "unitCost": "តម្លៃមធ្យមក្នុងមួយឯកតា",
       "totalValue": "តម្លៃសរុប",
       "status": "ស្ថានភាព",
       "actions": "សកម្មភាព"
@@ -321,6 +321,8 @@
       "itemNamePlaceholder": "ឧ. Double Wall Glassware",
       "numberOfItems": "ចំនួនមុខទំនិញ",
       "unitOfMeasure": "ឯកតារង្វាស់",
+      "category": "ប្រភេទ",
+      "categoryPlaceholder": "ជ្រើសរើសប្រភេទ (ស្រេចចិត្ត)",
       "minAlert": "ការព្រមានស្តុកទាបអប្បបរមា",
       "minAlertPlaceholder": "ឧ. 5",
       "unitCost": "តម្លៃដើមក្នុងមួយឯកតា ({currency})",
@@ -344,7 +346,9 @@
       "unitCost": "តម្លៃទិញក្នុងមួយឯកតា ({currency})",
       "unitCostHint": "តម្លៃដែលអ្នកបានបង់លើកនេះ — នឹងធ្វើបច្ចុប្បន្នភាពតម្លៃដើមជាមធ្យម។",
       "notes": "កំណត់ចំណាំ",
-      "notesPlaceholder": "បន្ថែមព័ត៌មានលម្អិតអំពីការកែសម្រួលនេះ..."
+      "notesPlaceholder": "បន្ថែមព័ត៌មានលម្អិតអំពីការកែសម្រួលនេះ...",
+      "amountRequired": "សូមបញ្ចូលចំនួនធំជាង 0។",
+      "amountExceedsStock": "ចំនួនលើសពីស្តុកដែលមាន ({quantity} {unit})។"
     },
     "history": {
       "title": "ប្រវត្តិស្តុក",
@@ -352,6 +356,7 @@
       "empty": "គ្មានចលនាស្តុកសម្រាប់រយៈពេលនេះទេ។",
       "date": "កាលបរិច្ឆេទ",
       "change": "ការផ្លាស់ប្តូរ",
+      "value": "តម្លៃ",
       "unitCost": "តម្លៃក្នុងមួយឯកតា",
       "notes": "កំណត់ចំណាំ",
       "by": "ដោយ",

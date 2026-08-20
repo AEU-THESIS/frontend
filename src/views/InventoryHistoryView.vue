@@ -117,7 +117,7 @@ const summaryStats = computed(() => [
   },
   {
     label: 'inventory.history.summary.category',
-    value: '—',
+    value: item.value?.category?.name || '—',
     valueClass: 'text-[#737373] dark:text-stone-400',
   },
   {
@@ -135,7 +135,7 @@ const summaryStats = computed(() => [
 ])
 
 // --- Pagination (server-driven) ---
-const PAGE_SIZE = 5
+const PAGE_SIZE = 10
 const currentPage = ref(1)
 const totalPages = computed(() => historyPagination.value.totalPages)
 const totalItems = computed(() => historyPagination.value.total)
@@ -146,6 +146,16 @@ const paginationEnd = computed(
   () =>
     (historyPagination.value.page - 1) * historyPagination.value.limit + historyItems.value.length
 )
+// Sliding window of at most 3 page numbers, centered on the current page once
+// there are more pages than fit — so page 7 of 20 shows 6/7/8, not 1/2/3.
+const visiblePaginationPages = computed(() => {
+  const pages = totalPages.value
+  const maxVisible = 3
+  if (pages <= maxVisible) return Array.from({ length: pages }, (_, index) => index + 1)
+
+  const start = Math.min(Math.max(currentPage.value - 1, 1), pages - maxVisible + 1)
+  return Array.from({ length: maxVisible }, (_, index) => start + index)
+})
 
 // Fetch the current page for the selected range. The server does the date
 // filtering + pagination and returns the period's in/out totals.
@@ -259,6 +269,9 @@ onMounted(async () => {
               <TableHead class="px-6 py-4">{{ t('inventory.history.date') }}</TableHead>
               <TableHead class="px-6 py-4">{{ t('inventory.history.change') }}</TableHead>
               <TableHead class="px-6 py-4 text-right">
+                {{ t('inventory.history.value') }}
+              </TableHead>
+              <TableHead class="px-6 py-4 text-right">
                 {{ t('inventory.history.unitCost') }}
               </TableHead>
               <TableHead class="px-6 py-4">{{ t('inventory.history.notes') }}</TableHead>
@@ -268,7 +281,7 @@ onMounted(async () => {
           <TableBody>
             <TableRow v-if="isHistoryLoading" class="hover:bg-transparent">
               <TableCell
-                colspan="5"
+                colspan="6"
                 class="px-6 py-14 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
               >
                 {{ t('inventory.messages.loading') }}
@@ -276,7 +289,7 @@ onMounted(async () => {
             </TableRow>
             <TableRow v-else-if="historyItems.length === 0" class="hover:bg-transparent">
               <TableCell
-                colspan="5"
+                colspan="6"
                 class="px-6 py-14 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
               >
                 {{ t('inventory.history.empty') }}
@@ -303,27 +316,27 @@ onMounted(async () => {
                   {{ item?.unitOfMeasure }}
                 </span>
               </TableCell>
+              <TableCell class="px-6 py-4 text-right font-bold">
+                <span
+                  v-if="entry.value !== null"
+                  :class="
+                    entry.type === 'add'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-rose-600 dark:text-rose-400'
+                  "
+                >
+                  {{ entry.type === 'add' ? '+' : '−' }}{{ formatMoney(entry.value) }}
+                </span>
+                <span v-else class="font-normal text-[#A3A3A3] dark:text-stone-500">—</span>
+              </TableCell>
               <TableCell class="px-6 py-4 text-right text-[#1A1C1C] dark:text-stone-100">
                 {{ entry.unitCost === null ? '—' : formatMoney(entry.unitCost) }}
               </TableCell>
               <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
                 {{ entry.notes || '—' }}
               </TableCell>
-              <!-- The actor is the point of an audit trail, so the name leads
-                   and the role is secondary metadata. -->
-              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                <div v-if="entry.user || entry.userRole" class="flex flex-col gap-1">
-                  <span v-if="entry.user" class="font-semibold text-[#1A1C1C] dark:text-stone-100">
-                    {{ entry.user }}
-                  </span>
-                  <span
-                    v-if="entry.userRole"
-                    class="inline-flex w-fit rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#737373] dark:bg-stone-800 dark:text-stone-400"
-                  >
-                    {{ entry.userRole }}
-                  </span>
-                </div>
-                <span v-else>—</span>
+              <TableCell class="px-6 py-4 font-semibold text-[#1A1C1C] dark:text-stone-100">
+                {{ entry.user || '—' }}
               </TableCell>
             </TableRow>
           </TableBody>
@@ -360,11 +373,21 @@ onMounted(async () => {
             >
               <ChevronLeft class="size-4" />
             </Button>
-            <span
-              class="flex size-8 items-center justify-center rounded-lg border border-[#D2691E] bg-[#D2691E] text-xs font-black text-white"
+            <Button
+              v-for="page in visiblePaginationPages"
+              :key="page"
+              variant="tertiary"
+              size="icon"
+              class="size-8 rounded-lg border text-xs font-black"
+              :class="
+                page === currentPage
+                  ? 'border-[#D2691E] bg-[#D2691E] text-white'
+                  : 'border-slate-200 text-[#737373] dark:border-stone-700 dark:text-stone-400'
+              "
+              @click="goToPage(page)"
             >
-              {{ currentPage }}
-            </span>
+              {{ page }}
+            </Button>
             <Button
               variant="tertiary"
               size="icon"

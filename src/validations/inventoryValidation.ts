@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const inventoryItemSchema = z.object({
   name: z.string().trim().min(1, 'Item name is required'),
   unit_of_measure: z.string().trim().min(1, 'Unit of measure is required'),
+  category_id: z.number().int().positive().optional().nullable(),
   quantity: z.number().finite().min(0, 'Stock cannot be negative'),
   min_alert_threshold: z.number().finite().min(0, 'Low stock threshold cannot be negative'),
   unit_cost: z.number().finite().min(0, 'Cost price cannot be negative'),
