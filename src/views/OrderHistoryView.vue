@@ -1,26 +1,93 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useOrderStore } from '@/store/useOrderStore'
 import { storeToRefs } from 'pinia'
-import type { OrderDetail } from '@/types/order.types'
+import type { OrderDetail, OrderItemDetail } from '@/types/order.types'
 import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import { roundRielUp } from '@/utils/money'
+import { formatDateTime } from '@/utils/datetime'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
+import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
+import BlockCustomerDialog from '@/components/order/BlockCustomerDialog.vue'
+import { useAuthStore } from '@/store/useAuthStore'
+import { ROLES } from '@/constants/roles'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
 const shopSettingsStore = useShopSettingsStore()
+const authStore = useAuthStore()
 const { historyOrders, historyPagination, loading, selectedOrder } = storeToRefs(orderStore)
 
-const confirmCancelActive = ref(false)
-let confirmCancelTimeout: ReturnType<typeof setTimeout> | null = null
+// Order total shown in the currency the customer actually paid in. A riel order
+// shows the exact note-rounded riel figure (using the order's OWN snapshot rate),
+// so Order History matches the receipt and reconciles even if the shop later
+// changed its exchange rate. USD orders show dollars.
+const formatOrderTotal = (order: OrderDetail) => {
+  if (order.paymentCurrency === 'KHR') {
+    const riel = roundRielUp(Number(order.totalAmount) * Number(order.exchangeRateSnapshot))
+    return `${riel.toLocaleString()}៛`
+  }
+  return `$${Number(order.totalAmount).toFixed(2)}`
+}
+
+// ── Void / cancel-item action state ───────────────────────────────
+const voidDialogOpen = ref(false)
+const cancelItemDialogOpen = ref(false)
+const pendingCancelItemId = ref<number | null>(null)
+const actionBusy = ref(false)
+
+// A fully-voided (refunded) order can no longer be voided or have items cancelled.
+const orderFullyReversed = computed(() => selectedOrder.value?.paymentStatus === 'refunded')
+
+// Money can only be reversed on an order that actually collected money.
+const canReverseMoney = computed(() => {
+  const status = selectedOrder.value?.paymentStatus
+  return status === 'paid' || status === 'partially_refunded'
+})
+
+const isItemCancelled = (item: OrderItemDetail) => item.canceledAt != null
+
+// Whether an order carries at least one complimentary (loyalty-stamp) line — drives
+// the "Free" badge in the list and detail drawer.
+const orderHasComp = (order: OrderDetail) => order.items.some(item => item.isComplimentary)
+
+// Total refunded so far, summed from the reversing (negative-amount) transactions and
+// shown in the order's own payment currency.
+const refundedDisplay = computed(() => {
+  const order = selectedOrder.value
+  if (!order?.transactions?.length) return null
+  const refunded = order.transactions.reduce(
+    (sum, txn) =>
+      Number(txn.amount) < 0 && txn.currency === order.paymentCurrency
+        ? sum + -Number(txn.amount)
+        : sum,
+    0
+  )
+  if (refunded <= 0) return null
+  return order.paymentCurrency === 'KHR'
+    ? `${refunded.toLocaleString()}៛`
+    : `$${refunded.toFixed(2)}`
+})
+
+const voidedByLabel = computed(() => {
+  const order = selectedOrder.value
+  if (!order?.voidedBy || !order.voidedAt) return null
+  return t('orderActions.voidedBy', {
+    name: order.voidedBy.name,
+    time: formatDateTime(order.voidedAt),
+  })
+})
 
 // ── 1. Search and Filtering States ────────────────────────────────
 const search = ref('')
 const fulfillmentStatus = ref('all')
+// Payment-status filter. The special value 'comp' is a reconciliation filter that
+// matches any order containing a complimentary line (incl. mixed paid+free orders),
+// not the literal payment_status enum — see fetchHistory below.
 const paymentStatus = ref('all')
 const page = ref(1)
 const limit = ref(10)
@@ -30,11 +97,14 @@ const fulfillmentStatusOptions = computed(() => [
   { value: 'ready', label: t('orderDashboard.ready') },
   { value: 'completed', label: t('orderDashboard.completed') },
   { value: 'canceled', label: t('orderDashboard.canceled') },
+  { value: 'rejected', label: t('orderDashboard.rejected') },
 ])
 
 const paymentStatusOptions = computed(() => [
   { value: 'paid', label: t('orderDashboard.paid') },
   { value: 'unpaid', label: t('orderDashboard.unpaid') },
+  // Reconciliation filter: any order with a free/loyalty-stamp line (see fetchHistory).
+  { value: 'comp', label: t('orderHistory.compFree') },
 ])
 
 // Date preset selection: today, yesterday, last7Days, customRange
@@ -100,10 +170,14 @@ const dateFilters = computed(() => {
 // ── 3. Fetch Trigger (Includes previously missing paymentStatus parameter) ──
 const fetchHistory = async () => {
   const dates = dateFilters.value
+  // 'comp' is a reconciliation pseudo-status: filter by presence of a free line
+  // (hasComp) rather than the literal payment_status, so mixed paid+free orders match too.
+  const isCompFilter = paymentStatus.value === 'comp'
   await orderStore.fetchHistoryOrders({
     search: search.value.trim() || undefined,
     status: fulfillmentStatus.value !== 'all' ? fulfillmentStatus.value : undefined,
-    paymentStatus: paymentStatus.value !== 'all' ? paymentStatus.value : undefined,
+    paymentStatus: paymentStatus.value !== 'all' && !isCompFilter ? paymentStatus.value : undefined,
+    hasComp: isCompFilter ? true : undefined,
     startDate: dates.startDate,
     endDate: dates.endDate,
     page: page.value,
@@ -140,39 +214,13 @@ onMounted(() => {
   fetchHistory()
 })
 
-// ── 4. Formatter Helpers ──────────────────────────────────────────
-const formatDateTime = (dateStr: string) => {
-  try {
-    const date = new Date(dateStr)
-    return date.toLocaleString([], {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  } catch {
-    return dateStr
-  }
-}
-
 // ── 5. Detail Modal side sheet triggers ───────────────────────────
 const openOrderDetails = async (order: OrderDetail) => {
-  confirmCancelActive.value = false
-  if (confirmCancelTimeout) {
-    clearTimeout(confirmCancelTimeout)
-    confirmCancelTimeout = null
-  }
   await orderStore.fetchSingleOrderDetail(order.id)
 }
 
 const closeOrderDetails = () => {
   selectedOrder.value = null
-  confirmCancelActive.value = false
-  if (confirmCancelTimeout) {
-    clearTimeout(confirmCancelTimeout)
-    confirmCancelTimeout = null
-  }
 }
 
 const getSelectedOrderTotalQty = computed(() => {
@@ -184,50 +232,132 @@ const handlePrint = () => {
   window.print()
 }
 
-const handleToggleFulfillmentStatus = async () => {
+// ── Void & cancel-item actions (both reverse money server-side) ────
+const openVoidDialog = () => {
+  voidDialogOpen.value = true
+}
+
+const confirmVoid = async (reason?: string) => {
   if (!selectedOrder.value) return
-
-  const currentStatus = selectedOrder.value.fulfillmentStatus
-
-  if (currentStatus === 'completed') {
-    if (!confirmCancelActive.value) {
-      confirmCancelActive.value = true
-      if (confirmCancelTimeout) clearTimeout(confirmCancelTimeout)
-      confirmCancelTimeout = setTimeout(() => {
-        confirmCancelActive.value = false
-      }, 3000)
-      return
-    }
-
-    if (confirmCancelTimeout) {
-      clearTimeout(confirmCancelTimeout)
-      confirmCancelTimeout = null
-    }
-    confirmCancelActive.value = false
-
-    await orderStore.changeStatus(selectedOrder.value.id, 'canceled')
-    selectedOrder.value.fulfillmentStatus = 'canceled'
-    toast.success(t('orderDashboard.statusUpdated'))
+  actionBusy.value = true
+  try {
+    await orderStore.voidOrder(selectedOrder.value.id, reason)
+    toast.success(t('orderActions.orderVoided'))
+    voidDialogOpen.value = false
     fetchHistory()
-  } else {
-    confirmCancelActive.value = false
-    if (confirmCancelTimeout) {
-      clearTimeout(confirmCancelTimeout)
-      confirmCancelTimeout = null
-    }
-
-    await orderStore.changeStatus(selectedOrder.value.id, 'completed')
-    selectedOrder.value.fulfillmentStatus = 'completed'
-    toast.success(t('orderDashboard.statusUpdated'))
-    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
   }
 }
 
-onUnmounted(() => {
-  if (confirmCancelTimeout) {
-    clearTimeout(confirmCancelTimeout)
+const openCancelItemDialog = (itemId: number) => {
+  pendingCancelItemId.value = itemId
+  cancelItemDialogOpen.value = true
+}
+
+const confirmCancelItem = async () => {
+  if (!selectedOrder.value || pendingCancelItemId.value == null) return
+  actionBusy.value = true
+  try {
+    await orderStore.cancelItem(selectedOrder.value.id, pendingCancelItemId.value)
+    toast.success(t('orderActions.itemCanceled'))
+    cancelItemDialogOpen.value = false
+    pendingCancelItemId.value = null
+    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+// ── Pre-order actions in the detail panel ─────────────────────────
+// Shown ONLY when Order Management is OFF — otherwise pre-orders are handled on
+// the Order Management board. Accept moves pending → preparing; then staff advance
+// the status step by step; Reject declines the (unpaid) pre-order.
+const isPreOrderActionable = computed(
+  () =>
+    !shopSettingsStore.is_order_management_enabled && selectedOrder.value?.orderType === 'pre_order'
+)
+
+const preOrderMapsLink = computed<string | null>(() => {
+  const o = selectedOrder.value
+  return o && o.deliveryLat != null && o.deliveryLng != null
+    ? `https://maps.google.com/?q=${o.deliveryLat},${o.deliveryLng}`
+    : null
+})
+
+// The next fulfillment step for an accepted pre-order, or null if none/terminal.
+const preOrderNextStatus = computed<{ value: string; label: string } | null>(() => {
+  switch (selectedOrder.value?.fulfillmentStatus) {
+    case 'preparing':
+      return { value: 'ready', label: t('orderDashboard.ready') }
+    case 'ready':
+      return { value: 'completed', label: t('orderDashboard.completed') }
+    default:
+      return null
   }
 })
+
+const rejectDialogOpen = ref(false)
+
+// Block customer (Admin/Manager only) — anti-spam. Available for any pre-order
+// carrying a Telegram identity, regardless of its status.
+const blockDialogOpen = ref(false)
+const canBlockCustomer = computed(() => {
+  const role = authStore.user?.role
+  const o = selectedOrder.value
+  return (
+    (role === ROLES.ADMIN || role === ROLES.MANAGER) &&
+    o?.orderType === 'pre_order' &&
+    !!o?.telegramUserId
+  )
+})
+
+const acceptPreOrder = async () => {
+  if (!selectedOrder.value) return
+  actionBusy.value = true
+  try {
+    await orderStore.changeStatus(selectedOrder.value.id, 'preparing')
+    toast.success(t('preOrders.accepted'))
+    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+const advancePreOrder = async () => {
+  if (!selectedOrder.value || !preOrderNextStatus.value) return
+  actionBusy.value = true
+  try {
+    await orderStore.changeStatus(selectedOrder.value.id, preOrderNextStatus.value.value)
+    toast.success(t('orderDashboard.statusUpdated'))
+    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
+
+const confirmRejectPreOrder = async () => {
+  if (!selectedOrder.value) return
+  actionBusy.value = true
+  try {
+    await orderStore.rejectPreOrder(selectedOrder.value.id)
+    toast.success(t('preOrders.rejected'))
+    rejectDialogOpen.value = false
+    fetchHistory()
+  } catch {
+    toast.error(t('orderActions.actionFailed'))
+  } finally {
+    actionBusy.value = false
+  }
+}
 </script>
 
 <template>
@@ -354,7 +484,15 @@ onUnmounted(() => {
             >
               <td class="py-3.5 px-6 whitespace-nowrap">{{ formatDateTime(order.createdAt) }}</td>
               <td class="py-3.5 px-6 font-bold text-stone-900 dark:text-stone-50 font-headline">
-                #{{ order.orderNumber }}
+                <span class="inline-flex items-center gap-1.5">
+                  #{{ order.orderNumber }}
+                  <span
+                    v-if="orderHasComp(order)"
+                    class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
+                  >
+                    {{ t('orderHistory.freeBadge') }}
+                  </span>
+                </span>
               </td>
               <td class="py-3.5 px-6 capitalize">
                 {{ order.customerName || t(`cart.${order.orderType}`) }}
@@ -363,12 +501,19 @@ onUnmounted(() => {
               <!-- Payment Status Badge -->
               <td class="py-3.5 px-6 text-center whitespace-nowrap">
                 <span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase shrink-0"
-                  :class="
-                    order.paymentStatus === 'paid'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30'
-                      : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200/30'
-                  "
+                  class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase shrink-0 border"
+                  :class="{
+                    'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200/30':
+                      order.paymentStatus === 'paid',
+                    'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200/30':
+                      order.paymentStatus === 'refunded',
+                    'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border-indigo-200/30':
+                      order.paymentStatus === 'comp',
+                    'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200/30':
+                      order.paymentStatus !== 'paid' &&
+                      order.paymentStatus !== 'refunded' &&
+                      order.paymentStatus !== 'comp',
+                  }"
                 >
                   {{ t(`orderDashboard.${order.paymentStatus}`) }}
                 </span>
@@ -391,6 +536,9 @@ onUnmounted(() => {
                     order.fulfillmentStatus === 'canceled'
                       ? 'bg-rose-50 text-rose-800 border border-rose-200/30'
                       : '',
+                    order.fulfillmentStatus === 'rejected'
+                      ? 'bg-stone-100 text-stone-600 border border-stone-200/60 dark:bg-stone-800 dark:text-stone-300'
+                      : '',
                   ]"
                 >
                   {{ t(`orderDashboard.${order.fulfillmentStatus}`) }}
@@ -401,7 +549,7 @@ onUnmounted(() => {
               <td
                 class="py-3.5 px-6 text-right font-extrabold text-stone-900 dark:text-stone-50 font-headline"
               >
-                {{ shopSettingsStore.formatAmount(Number(order.totalAmount)) }}
+                {{ formatOrderTotal(order) }}
               </td>
             </tr>
 
@@ -560,7 +708,7 @@ onUnmounted(() => {
               <p
                 class="font-extrabold text-sm text-[#b05a18] dark:text-amber-500 mt-1 font-headline"
               >
-                {{ shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount)) }}
+                {{ formatOrderTotal(selectedOrder) }}
               </p>
             </div>
           </div>
@@ -578,6 +726,7 @@ onUnmounted(() => {
                 v-for="item in selectedOrder.items"
                 :key="item.id"
                 class="flex items-start gap-4 border-b border-stone-100 dark:border-stone-800 pb-4 last:border-0 last:pb-0"
+                :class="{ 'opacity-70': isItemCancelled(item) }"
               >
                 <!-- Thumbnail -->
                 <div
@@ -598,13 +747,37 @@ onUnmounted(() => {
                 </div>
 
                 <div class="flex-1 min-w-0">
-                  <div class="flex justify-between items-start">
+                  <div class="flex justify-between items-start gap-2">
                     <p
                       class="font-bold text-stone-800 dark:text-stone-100 text-[15px] leading-tight"
+                      :class="{
+                        'line-through text-stone-400 dark:text-stone-600': isItemCancelled(item),
+                      }"
                     >
                       {{ item.product?.name }}
+                      <span
+                        v-if="isItemCancelled(item)"
+                        class="ml-1 inline-block align-middle rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-rose-600 no-underline dark:bg-rose-950/30 dark:text-rose-400"
+                      >
+                        {{ t('orderActions.cancelledBadge') }}
+                      </span>
+                      <span
+                        v-if="item.isComplimentary"
+                        class="ml-1 inline-flex items-center gap-0.5 align-middle rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700 no-underline dark:bg-emerald-950/30 dark:text-emerald-400"
+                      >
+                        <span class="material-symbols-outlined text-[11px] leading-none"
+                          >loyalty</span
+                        >
+                        {{ t('cart.free') }}
+                      </span>
                     </p>
-                    <p class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2">
+                    <p
+                      class="font-bold text-stone-700 dark:text-stone-300 text-xs shrink-0 pl-2"
+                      :class="{
+                        'line-through text-stone-400 dark:text-stone-600':
+                          isItemCancelled(item) || item.isComplimentary,
+                      }"
+                    >
                       {{
                         shopSettingsStore.formatAmount(Number(item.price) + Number(item.extraPrice))
                       }}
@@ -613,6 +786,15 @@ onUnmounted(() => {
 
                   <p class="text-xs text-stone-500 font-extrabold mt-1">
                     {{ t('cart.quantity') }} : {{ item.quantity }}
+                  </p>
+
+                  <!-- Complimentary line note (audit trail: why it was free) -->
+                  <p
+                    v-if="item.isComplimentary"
+                    class="mt-1 flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-500"
+                  >
+                    <span class="material-symbols-outlined text-[13px] leading-none">redeem</span>
+                    {{ t('cart.freeLoyaltyStamp') }}
                   </p>
 
                   <ul
@@ -638,6 +820,19 @@ onUnmounted(() => {
                       </span>
                     </li>
                   </ul>
+
+                  <!-- Per-line cancel control (reverses money for just this line) -->
+                  <button
+                    v-if="!isItemCancelled(item) && canReverseMoney"
+                    type="button"
+                    class="mt-2 inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50 active:scale-95 dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/30 print:hidden"
+                    @click="openCancelItemDialog(item.id)"
+                  >
+                    <span class="material-symbols-outlined text-[14px] leading-none"
+                      >remove_shopping_cart</span
+                    >
+                    {{ t('orderActions.cancelItem') }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -711,53 +906,146 @@ onUnmounted(() => {
                 class="flex justify-between font-extrabold text-lg text-[#b05a18] dark:text-amber-500 pt-3 border-t border-stone-100 dark:border-stone-800 print:text-sm print:pt-2"
               >
                 <span>{{ t('orderDashboard.total') }}</span>
-                <span class="font-headline">{{
-                  shopSettingsStore.formatAmount(Number(selectedOrder.totalAmount))
-                }}</span>
+                <span class="font-headline">{{ formatOrderTotal(selectedOrder) }}</span>
               </div>
+
+              <!-- Reversed (refunded) amount when the order was voided / had items cancelled -->
+              <div
+                v-if="refundedDisplay"
+                class="flex justify-between font-bold text-rose-600 dark:text-rose-500"
+              >
+                <span>{{ t('orderActions.refundedLine') }}</span>
+                <span>−{{ refundedDisplay }}</span>
+              </div>
+              <!-- Who voided the order, and when -->
+              <p
+                v-if="voidedByLabel"
+                class="pt-1 text-[11px] font-semibold text-stone-400 dark:text-stone-500"
+              >
+                {{ voidedByLabel }}
+              </p>
             </div>
           </div>
 
-          <!-- Change Status Action (Only shown when Order Management page is disabled) -->
+          <!-- Pre-order actions — shown only when Order Management is OFF (otherwise
+               pre-orders are handled on the Order Management board). Accept/Reject
+               while pending; advance the status once accepted. -->
           <div
-            v-if="!shopSettingsStore.is_order_management_enabled"
+            v-if="
+              isPreOrderActionable &&
+              ['pending', 'preparing', 'ready'].includes(selectedOrder.fulfillmentStatus)
+            "
             class="border-t border-stone-100 dark:border-stone-800 pt-6 shrink-0 print:hidden flex flex-col gap-3"
           >
-            <h4
-              class="font-extrabold text-sm text-stone-400 dark:text-stone-500 uppercase tracking-wider"
+            <!-- Contact shortcuts -->
+            <div
+              v-if="
+                selectedOrder.customerPhone || selectedOrder.telegramUsername || preOrderMapsLink
+              "
+              class="flex flex-wrap items-center gap-2 text-xs font-bold"
             >
-              {{ t('orderDashboard.changeStatus') }}
-            </h4>
-            <div class="flex gap-3">
-              <button
-                class="flex-1 py-3 px-5 rounded-2xl font-bold text-sm tracking-wide text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                :class="
-                  selectedOrder.fulfillmentStatus === 'completed'
-                    ? confirmCancelActive
-                      ? 'bg-amber-600 hover:bg-amber-700 shadow-sm animate-pulse'
-                      : 'bg-rose-600 hover:bg-rose-700 shadow-sm'
-                    : 'bg-emerald-600 hover:bg-emerald-700 shadow-sm'
-                "
-                @click="handleToggleFulfillmentStatus"
+              <a
+                v-if="selectedOrder.customerPhone"
+                :href="`tel:${selectedOrder.customerPhone}`"
+                class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-1 text-stone-600 dark:bg-stone-800 dark:text-stone-300"
               >
-                <span class="material-symbols-outlined text-[18px]">
-                  {{
-                    selectedOrder.fulfillmentStatus === 'completed'
-                      ? confirmCancelActive
-                        ? 'warning'
-                        : 'cancel'
-                      : 'done_all'
-                  }}
-                </span>
-                {{
-                  selectedOrder.fulfillmentStatus === 'completed'
-                    ? confirmCancelActive
-                      ? t('orderHistory.actions.confirmCancel')
-                      : t('orderHistory.actions.cancelOrder')
-                    : t('orderHistory.actions.completeOrder')
+                <span class="material-symbols-outlined text-[14px] leading-none">call</span
+                >{{ selectedOrder.customerPhone }}
+              </a>
+              <a
+                v-if="selectedOrder.telegramUsername"
+                :href="`https://t.me/${selectedOrder.telegramUsername}`"
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400"
+              >
+                <span class="material-symbols-outlined text-[14px] leading-none">send</span>@{{
+                  selectedOrder.telegramUsername
                 }}
+              </a>
+              <a
+                v-if="preOrderMapsLink"
+                :href="preOrderMapsLink"
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+              >
+                <span class="material-symbols-outlined text-[14px] leading-none">location_on</span
+                >{{ t('preOrders.map') }}
+              </a>
+            </div>
+
+            <!-- Pending → Accept / Reject -->
+            <div v-if="selectedOrder.fulfillmentStatus === 'pending'" class="flex gap-2">
+              <button
+                type="button"
+                :disabled="actionBusy"
+                class="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-600 py-3 px-5 text-sm font-bold text-white shadow-sm transition-all hover:bg-amber-700 active:scale-[0.98] disabled:opacity-60"
+                @click="acceptPreOrder"
+              >
+                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                {{ t('preOrders.accept') }}
+              </button>
+              <button
+                type="button"
+                :disabled="actionBusy"
+                class="inline-flex items-center justify-center rounded-2xl border border-stone-200 px-5 py-3 text-sm font-bold text-stone-600 transition-all hover:bg-stone-50 active:scale-95 disabled:opacity-60 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+                @click="rejectDialogOpen = true"
+              >
+                {{ t('preOrders.reject') }}
               </button>
             </div>
+
+            <!-- Accepted → advance to the next status -->
+            <button
+              v-else-if="preOrderNextStatus"
+              type="button"
+              :disabled="actionBusy"
+              class="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3 px-5 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-60"
+              @click="advancePreOrder"
+            >
+              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+              {{ t('orderActions.markAs', { status: preOrderNextStatus.label }) }}
+            </button>
+          </div>
+
+          <!-- Void action — always available. Voiding reverses the money (refund +
+               un-redeem promotions) so reports match the real cash drawer. -->
+          <div
+            class="border-t border-stone-100 dark:border-stone-800 pt-6 shrink-0 print:hidden flex flex-col gap-3"
+          >
+            <button
+              v-if="canReverseMoney"
+              type="button"
+              :disabled="actionBusy"
+              class="flex items-center justify-center gap-2 rounded-2xl bg-rose-600 py-3 px-5 text-sm font-bold tracking-wide text-white shadow-sm transition-all hover:bg-rose-700 active:scale-[0.98] disabled:opacity-60"
+              @click="openVoidDialog"
+            >
+              <span class="material-symbols-outlined text-[18px]">cancel</span>
+              {{ t('orderActions.voidOrder') }}
+            </button>
+            <div
+              v-else-if="orderFullyReversed"
+              class="flex items-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 dark:bg-rose-950/20 dark:text-rose-400"
+            >
+              <span class="material-symbols-outlined text-[18px]">block</span>
+              {{ t('orderActions.voidedNotice') }}
+            </div>
+          </div>
+
+          <!-- Block customer (Admin/Manager) — anti-spam for pre-orders. -->
+          <div
+            v-if="canBlockCustomer"
+            class="border-t border-stone-100 dark:border-stone-800 pt-4 shrink-0 print:hidden"
+          >
+            <button
+              type="button"
+              class="flex w-full items-center justify-center gap-2 rounded-2xl border border-rose-200 py-2.5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-50 active:scale-[0.98] dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/30"
+              @click="blockDialogOpen = true"
+            >
+              <span class="material-symbols-outlined text-[18px]">block</span>
+              {{ t('blockedCustomers.blockCustomer') }}
+            </button>
           </div>
 
           <div
@@ -778,6 +1066,48 @@ onUnmounted(() => {
         @click="closeOrderDetails"
       ></div>
     </transition>
+
+    <!-- Void confirmation (with optional reason) -->
+    <CancelActionDialog
+      v-model:open="voidDialogOpen"
+      :title="t('orderActions.voidTitle')"
+      :message="t('orderActions.voidMessage')"
+      :confirm-label="t('orderActions.voidConfirm')"
+      :cancel-label="t('orderActions.keep')"
+      :reason-placeholder="t('orderActions.voidReasonPlaceholder')"
+      with-reason
+      :busy="actionBusy"
+      @confirm="confirmVoid"
+    />
+
+    <!-- Cancel-item confirmation -->
+    <CancelActionDialog
+      v-model:open="cancelItemDialogOpen"
+      :title="t('orderActions.cancelItemTitle')"
+      :message="t('orderActions.cancelItemMessage')"
+      :confirm-label="t('orderActions.cancelItemConfirm')"
+      :cancel-label="t('orderActions.keep')"
+      :busy="actionBusy"
+      @confirm="confirmCancelItem"
+    />
+
+    <!-- Reject pre-order confirmation (unpaid — no refund needed) -->
+    <CancelActionDialog
+      v-model:open="rejectDialogOpen"
+      :title="t('preOrders.reject')"
+      :message="t('preOrders.confirmReject')"
+      :confirm-label="t('preOrders.reject')"
+      :cancel-label="t('orderActions.keep')"
+      :busy="actionBusy"
+      @confirm="confirmRejectPreOrder"
+    />
+
+    <!-- Block customer dialog (forever / until date-time) -->
+    <BlockCustomerDialog
+      v-model:open="blockDialogOpen"
+      :telegram-user-id="selectedOrder?.telegramUserId ?? null"
+      :telegram-username="selectedOrder?.telegramUsername ?? null"
+    />
   </div>
 </template>
 

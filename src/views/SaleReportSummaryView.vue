@@ -50,14 +50,14 @@
         <Card
           class="gap-0 overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm flex flex-col"
         >
-          <!-- Filter -->
+          <!-- Filter Panel -->
           <FilterPanel
             :has-active-filters="hasActiveFilters"
             actions-class="col-span-12 sm:col-span-4"
             @submit="applyFilters"
             @clear="clearFilters"
           >
-            <!-- Date -->
+            <!-- Date Filter -->
             <div class="flex flex-col gap-1 col-span-12 sm:col-span-4">
               <label
                 for="report-filter-date"
@@ -74,7 +74,7 @@
               />
             </div>
 
-            <!-- Payment method -->
+            <!-- Payment Method Filter -->
             <AppSelect
               v-model="reportStore.selectedPaymentMethod"
               :options="paymentMethodOptions"
@@ -106,7 +106,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-if="reportStore.chronologicalOrders.length === 0">
+                  <tr v-if="filteredOrders.length === 0">
                     <td colspan="6" class="p-10 text-center text-sm text-[#A3A3A3]">
                       {{ t('reports.table.empty') }}
                     </td>
@@ -144,7 +144,7 @@
             </div>
 
             <div
-              v-if="reportStore.chronologicalOrders.length > 0"
+              v-if="filteredOrders.length > 0"
               class="flex items-center justify-between border-t border-[#F2F2F2] px-6 py-4 text-xs font-semibold text-[#A3A3A3]"
             >
               <div>
@@ -152,7 +152,7 @@
                   t('reports.table.pagination', {
                     startIndex,
                     endIndex,
-                    chronologicalOrders: reportStore.chronologicalOrders.length,
+                    chronologicalOrders: filteredOrders.length,
                   })
                 }}
               </div>
@@ -205,28 +205,42 @@ const formatUsd = (amount: number | string) => `$${Number(amount).toFixed(2)}`
 const paymentMethodOptions = computed(() => [
   { value: 'cash', label: t('reports.filters.cash') },
   { value: 'khqr', label: t('reports.filters.khqr') },
+  { value: 'cod', label: t('reports.filters.cod') },
 ])
 
 const hasActiveFilters = computed(
   () => reportStore.selectedDate !== todayIsoDate || reportStore.selectedPaymentMethod !== 'all'
 )
 
+/**
+ * Filtered orders computed property.
+ * Filters reportStore.chronologicalOrders dynamically based on selected payment method.
+ */
+const filteredOrders = computed(() => {
+  const orders = reportStore.chronologicalOrders || []
+  const method = reportStore.selectedPaymentMethod
+
+  if (!method || method === 'all') {
+    return orders
+  }
+
+  return orders.filter(order => order.paymentMethod?.toLowerCase() === method.toLowerCase())
+})
+
 const ITEMS_PER_PAGE = 5
 const currentPage = ref(1)
 
-const totalPages = computed(
-  () => Math.ceil(reportStore.chronologicalOrders.length / ITEMS_PER_PAGE) || 1
-)
+const totalPages = computed(() => Math.ceil(filteredOrders.value.length / ITEMS_PER_PAGE) || 1)
 
 const paginatedOrders = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE
   const end = start + ITEMS_PER_PAGE
-  return reportStore.chronologicalOrders.slice(start, end)
+  return filteredOrders.value.slice(start, end)
 })
 
 const startIndex = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
 const endIndex = computed(() =>
-  Math.min(currentPage.value * ITEMS_PER_PAGE, reportStore.chronologicalOrders.length)
+  Math.min(currentPage.value * ITEMS_PER_PAGE, filteredOrders.value.length)
 )
 
 const nextPage = () => {
@@ -245,13 +259,11 @@ const applyFilters = async () => {
 const clearFilters = async () => {
   reportStore.selectedDate = todayIsoDate
   reportStore.selectedPaymentMethod = 'all'
+  currentPage.value = 1
 
-  await applyFilters()
+  await reportStore.fetchDailyOverview()
 }
 
-/**
- * "exchange rate $1 = 4100khr" — combined USD/KHR display per the acceptance criteria.
- */
 const formatUsdWithKhr = (amountUsd: number, rate: number) => {
   const khr = Math.round(amountUsd * rate)
   return `${formatUsd(amountUsd)} / ${khr.toLocaleString()} KHR`

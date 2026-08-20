@@ -52,7 +52,7 @@ const handleSubmit = async () => {
 
 <template>
   <main
-    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F8FAFC] px-6 py-10 text-foreground"
+    class="relative flex min-h-screen items-center justify-center bg-[#F8FAFC] px-6 py-6 tall:py-10 text-foreground"
   >
     <!-- Premium Background Orbs -->
     <div class="pointer-events-none fixed inset-0 overflow-hidden">
@@ -67,10 +67,10 @@ const handleSubmit = async () => {
     <Card
       class="relative z-10 w-full max-w-[440px] border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[32px] bg-white/80 backdrop-blur-xl p-2"
     >
-      <CardContent class="p-10 md:p-12">
+      <CardContent class="p-6 tall:p-12">
         <div class="flex flex-col items-center text-center">
           <div
-            class="mb-8 flex size-20 items-center justify-center rounded-[28px] bg-primary shadow-2xl shadow-primary/30"
+            class="mb-5 tall:mb-8 flex size-16 tall:size-20 items-center justify-center rounded-[28px] bg-primary shadow-2xl shadow-primary/30"
           >
             <Mail class="size-8 text-white" aria-hidden="true" />
           </div>
@@ -85,7 +85,7 @@ const handleSubmit = async () => {
         <!-- Success State -->
         <div
           v-if="isSent"
-          class="mt-12 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500"
+          class="mt-6 tall:mt-12 space-y-6 tall:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500"
         >
           <div class="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-6 text-center">
             <p class="text-sm font-bold text-emerald-600 leading-relaxed">
@@ -102,7 +102,11 @@ const handleSubmit = async () => {
         </div>
 
         <!-- Form State -->
-        <form v-else class="mt-12 space-y-6" @submit.prevent="handleSubmit">
+        <form
+          v-else
+          class="mt-6 tall:mt-12 space-y-5 tall:space-y-6"
+          @submit.prevent="handleSubmit"
+        >
           <div class="space-y-2">
             <Label
               class="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1"

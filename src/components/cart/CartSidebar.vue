@@ -1,15 +1,44 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCartStore } from '@/store/useCartStore'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { getImageUrl } from '@/utils/image'
+import AppDialog from '@/components/common/AppDialog.vue'
 
 import type { CartItem, CartItemOption } from '@/types/order.types'
 
 const { t } = useI18n()
 const cartStore = useCartStore()
+const shopSettingsStore = useShopSettingsStore()
 
 const formatOptions = (options: CartItemOption[]) => {
   return options.map(o => o.optionName).join(', ')
+}
+
+// ── Per-line action sheet (currently: mark/undo "free — loyalty stamp") ──
+// Kept behind a per-line menu so normal orders stay clutter-free; redemption is rare.
+const actionItem = ref<CartItem | null>(null)
+
+const openLineActions = (item: CartItem) => {
+  actionItem.value = item
+}
+
+const closeLineActions = () => {
+  actionItem.value = null
+}
+
+// Confirm the dialog: toggle the line's complimentary state. For a normal line this
+// marks it free (loyalty stamp); for an already-free line it undoes the mark.
+const confirmLineAction = () => {
+  const item = actionItem.value
+  if (!item) return
+  if (item.isComplimentary) {
+    cartStore.unmarkLineFree(item.cartId)
+  } else {
+    cartStore.markLineFree(item.cartId)
+  }
+  closeLineActions()
 }
 
 // Free units this line gets from an active Buy-1-Get-1 promotion.
@@ -118,6 +147,14 @@ const handlePayCash = async () => {
             <span class="material-symbols-outlined text-[13px] leading-none">add_circle</span>
             {{ t('cart.bogoHint') }}
           </p>
+          <!-- Complimentary (loyalty-stamp) line marker -->
+          <p
+            v-if="item.isComplimentary"
+            class="mt-0.5 flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-emerald-600 dark:text-emerald-500"
+          >
+            <span class="material-symbols-outlined text-[13px] leading-none">loyalty</span>
+            {{ t('cart.freeLoyaltyStamp') }}
+          </p>
         </div>
 
         <!-- Quantity Adjuster -->
@@ -147,12 +184,36 @@ const handlePayCash = async () => {
           </Button>
         </div>
 
-        <!-- Price -->
+        <!-- Price — struck through with a FREE label when the line is complimentary -->
         <div
-          class="w-16 text-right font-headline font-extrabold text-stone-800 dark:text-stone-50 text-sm shrink-0"
+          class="w-16 text-right font-headline font-extrabold text-sm shrink-0"
+          :class="
+            item.isComplimentary
+              ? 'text-stone-400 dark:text-stone-600'
+              : 'text-stone-800 dark:text-stone-50'
+          "
         >
-          ${{ item.itemTotal.toFixed(2) }}
+          <span :class="{ 'line-through': item.isComplimentary }">
+            {{ shopSettingsStore.formatAmount(item.itemTotal) }}
+          </span>
+          <span
+            v-if="item.isComplimentary"
+            class="block text-[10px] font-extrabold uppercase tracking-wide text-emerald-600 dark:text-emerald-500"
+          >
+            {{ t('cart.free') }}
+          </span>
         </div>
+
+        <!-- Per-line action menu (mark free · loyalty stamp). Subtle, opens a confirm. -->
+        <Button
+          type="button"
+          variant="icon"
+          :aria-label="t('cart.lineActions')"
+          class="w-7 h-7 rounded-lg text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 flex items-center justify-center active:scale-90 p-0 shrink-0"
+          @click="openLineActions(item)"
+        >
+          <span class="material-symbols-outlined text-[18px]">more_vert</span>
+        </Button>
       </div>
     </div>
 
@@ -164,7 +225,7 @@ const handlePayCash = async () => {
         class="flex justify-between items-center text-sm font-bold text-stone-400 dark:text-stone-500"
       >
         <span>{{ t('cart.subtotal') }}</span>
-        <span>${{ cartStore.cartTotal.toFixed(2) }}</span>
+        <span>{{ shopSettingsStore.formatAmount(cartStore.cartTotal) }}</span>
       </div>
 
       <!-- Discounts — total plus a per-promotion breakdown when several stack -->
@@ -176,7 +237,7 @@ const handlePayCash = async () => {
             <span class="material-symbols-outlined text-base">sell</span>
             <span>{{ t('cart.discount') }}</span>
           </span>
-          <span>−${{ cartStore.discountTotal.toFixed(2) }}</span>
+          <span>−{{ shopSettingsStore.formatAmount(cartStore.discountTotal) }}</span>
         </div>
         <div
           v-for="applied in cartStore.appliedPromotions"
@@ -184,7 +245,7 @@ const handlePayCash = async () => {
           class="flex justify-between items-center pl-5 text-[11px] font-medium text-stone-400 dark:text-stone-500"
         >
           <span class="truncate max-w-[150px]">· {{ applied.promotion.name }}</span>
-          <span>−${{ applied.discount.toFixed(2) }}</span>
+          <span>−{{ shopSettingsStore.formatAmount(applied.discount) }}</span>
         </div>
       </div>
 
@@ -200,10 +261,18 @@ const handlePayCash = async () => {
           <span
             class="text-4xl font-headline font-extrabold text-stone-900 dark:text-stone-50 leading-none tracking-tighter"
           >
-            ${{ cartStore.netTotal.toFixed(2) }}
+            <!-- A riel-configured shop shows the note-rounded amount due (matching the
+                 payment screen); a dollar shop shows the USD total via the formatter. -->
+            {{
+              shopSettingsStore.currency_code === 'KHR'
+                ? `${shopSettingsStore.currency_symbol}${cartStore.netTotalInRiel.toLocaleString()}`
+                : shopSettingsStore.formatAmount(cartStore.netTotal)
+            }}
           </span>
         </div>
-        <div class="text-right">
+        <!-- Secondary riel figure (note-rounded amount due) — shown as a helper
+             only for USD-configured shops; a riel shop already shows riel above. -->
+        <div v-if="shopSettingsStore.currency_code === 'USD'" class="text-right">
           <span
             class="text-[10px] font-bold text-amber-700 dark:text-amber-500 tracking-wider uppercase flex items-center justify-end gap-1 mb-0.5"
           >
@@ -239,5 +308,42 @@ const handlePayCash = async () => {
         </Button>
       </div>
     </div>
+
+    <!-- Line action confirm: mark free (loyalty stamp) or undo it. Behind the per-line
+         menu so it never clutters a normal order. -->
+    <AppDialog
+      :open="actionItem !== null"
+      :title="actionItem?.isComplimentary ? t('cart.removeFreeTitle') : t('cart.makeFreeTitle')"
+      @update:open="value => !value && closeLineActions()"
+    >
+      <p class="text-sm text-stone-600 dark:text-stone-300">
+        {{ actionItem?.isComplimentary ? t('cart.removeFreeMessage') : t('cart.makeFreeMessage') }}
+      </p>
+
+      <template #footer>
+        <button
+          type="button"
+          class="inline-flex h-9 items-center justify-center rounded-lg border border-zinc-200 px-4 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+          @click="closeLineActions"
+        >
+          {{ t('cart.cancel') }}
+        </button>
+        <button
+          type="button"
+          class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-4 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2"
+          :class="
+            actionItem?.isComplimentary
+              ? 'bg-stone-700 hover:bg-stone-800 focus:ring-stone-400'
+              : 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-400'
+          "
+          @click="confirmLineAction"
+        >
+          <span class="material-symbols-outlined text-[16px] leading-none">loyalty</span>
+          {{
+            actionItem?.isComplimentary ? t('cart.removeFreeConfirm') : t('cart.makeFreeConfirm')
+          }}
+        </button>
+      </template>
+    </AppDialog>
   </aside>
 </template>

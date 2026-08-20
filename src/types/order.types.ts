@@ -17,6 +17,10 @@ export interface CartItem {
   quantity: number
   selectedOptions: CartItemOption[]
   itemTotal: number // (basePrice + sum(extraPrices)) × qty
+  // Complimentary line (loyalty-stamp redemption). When true the line is not charged:
+  // it contributes 0 to the cart totals but its itemTotal is still shown struck through.
+  isComplimentary?: boolean
+  compReason?: string
 }
 
 export type PaymentCurrency = 'USD' | 'KHR'
@@ -26,15 +30,19 @@ export interface CartItemPayload {
   productId: number
   quantity: number
   selectedOptions: CartItemOption[]
+  // Marks the line free (loyalty-stamp redemption); the server persists it with
+  // subtotal 0 and records compReason for the audit trail.
+  isComplimentary?: boolean
+  compReason?: string
 }
 
 export interface CreateOrderPayload {
   orderType: OrderType
   paymentMethod: 'cash'
   paymentCurrency: PaymentCurrency
+  // Amount handed over, in the payment currency. The server owns the total and
+  // the exchange rate, so they are no longer part of the request.
   receivedAmount: number
-  exchangeRateSnapshot: number
-  totalAmount: number
   items: CartItemPayload[]
 }
 
@@ -43,11 +51,31 @@ export interface OrderResult {
   orderNumber: string
   totalAmount: number | string
   receivedAmount: number | string
+  // Received amount normalised to USD (for reporting).
+  receivedAmountUsd: number | string
   paymentCurrency: PaymentCurrency
+  // Change returned in the payment currency, computed and rounded by the server.
   changeAmount: number | string
+  // Server-resolved shop exchange rate applied to this order.
   exchangeRateSnapshot: number | string
   paymentStatus: string
   fulfillmentStatus: string
+}
+
+// The receipt contract passed from the POS view to the success modal after a
+// sale. Change is expressed in both currencies (derived from the server's figures).
+export interface CheckoutSuccessData {
+  orderId: number
+  orderNumber: string
+  totalAmount: number
+  receivedAmount: number
+  paymentCurrency: PaymentCurrency
+  exchangeRateSnapshot: number
+  changeUSD: number
+  changeKHR: number
+  // Complimentary (free) lines on this order, captured for the receipt's free-items
+  // note. Empty/undefined for an ordinary order.
+  freeItems?: { name: string; quantity: number }[]
 }
 
 // Lightweight promotion summary attached to an order for display in history.
@@ -87,6 +115,13 @@ export interface OrderItemDetail {
   price: number | string
   extraPrice: number | string
   subtotal: number | string
+  // Complimentary line (loyalty-stamp redemption): stored with subtotal 0 and a
+  // compReason for the audit trail; the receipt/history keep the struck price.
+  isComplimentary: boolean
+  compReason: string | null
+  // Set when the line was cancelled (kept on the order, struck through in the UI).
+  canceledAt: string | null
+  canceledQuantity: number
   product: {
     id: number
     name: string
@@ -94,6 +129,17 @@ export interface OrderItemDetail {
     price: number | string
   }
   options: OrderItemOptionDetail[]
+}
+
+// A payment/refund record on an order. Refunds carry a negative amount.
+export interface OrderTransaction {
+  id: number
+  amount: number | string
+  currency: string
+  paymentMethod: string
+  status: string
+  verifiedAt: string | null
+  userId: number | null
 }
 
 export interface OrderDetail extends OrderResult {
@@ -107,12 +153,24 @@ export interface OrderDetail extends OrderResult {
   discountAmount: number | string
   promotion?: OrderPromotion | null
   appliedPromotions?: AppliedOrderPromotion[]
-  orderType: OrderType
+  orderType: OrderType | 'pre_order'
   customerName: string | null
   customerPhone: string | null
   deliveryAddress: string | null
+  // Customer pre-order (Telegram Mini App) fields — null for staff POS orders.
+  deliveryLat?: number | string | null
+  deliveryLng?: number | string | null
+  telegramUserId?: string | null
+  telegramUsername?: string | null
   paymentMethod: string
   khqrString: string | null
+  // Void audit — set once a whole order is voided (refunded + canceled).
+  voidedAt?: string | null
+  voidReason?: string | null
+  voidedByUserId?: number | null
+  voidedBy?: { id: number; name: string } | null
+  // Payment/refund records (refunds have a negative amount).
+  transactions?: OrderTransaction[]
   items: OrderItemDetail[]
 }
 
@@ -133,6 +191,10 @@ export interface OrderRow {
   paymentStatus: string
   paymentMethod: 'cash' | 'khqr'
   totalAmount: string | number
+  // Per-order snapshot needed to display the exact riel figure the customer paid,
+  // independent of the shop's current rate.
+  exchangeRateSnapshot: string | number
+  changeAmount: string | number
   paymentCurrency: 'USD' | 'KHR'
   createdAt: string
 }

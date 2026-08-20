@@ -15,6 +15,17 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const shopSettingsStore = useShopSettingsStore()
 
+// A nav item stays highlighted on its own route and on any sub-page that belongs
+// to it (e.g. an item's Stock History lives under the Inventory section).
+const INVENTORY_CHILD_ROUTES: string[] = [APP_ROUTES.INVENTORY_HISTORY.name]
+const isNavItemActive = (routeName: string) => {
+  if (route.name === routeName) return true
+  if (routeName === APP_ROUTES.INVENTORY.name) {
+    return INVENTORY_CHILD_ROUTES.includes(route.name as string)
+  }
+  return false
+}
+
 const handleLogout = async () => {
   await authStore.logout()
   toast.success(t('auth.logoutSuccess'))
@@ -106,13 +117,22 @@ const navSections = computed(() => {
       ],
     },
     {
+      // Section is visible to Managers too, but Shop Settings itself stays
+      // Admin-only via the item's own roles; Managers see only Blocked Customers.
       titleKey: 'sidebar.sections.settings',
-      roles: [ROLES.ADMIN],
+      roles: [ROLES.ADMIN, ROLES.MANAGER],
       items: [
         {
           nameKey: 'sidebar.items.config',
           route: APP_ROUTES.SETTINGS,
           icon: 'settings',
+          roles: [ROLES.ADMIN],
+        },
+        {
+          nameKey: 'sidebar.items.blockedCustomers',
+          route: APP_ROUTES.BLOCKED_CUSTOMERS,
+          icon: 'block',
+          roles: [ROLES.ADMIN, ROLES.MANAGER],
         },
       ],
     },
@@ -205,7 +225,7 @@ const shopDisplayName = computed(() => {
               isCollapsed
                 ? 'flex-col items-center justify-center py-2.5 px-1 rounded-xl'
                 : 'items-center gap-3 py-3 px-6 rounded-r-xl',
-              route.name === item.route.name
+              isNavItemActive(item.route.name)
                 ? 'bg-[#fcf3eb] dark:bg-amber-900/20 text-[#b05a18] dark:text-amber-500 border-[#b05a18] dark:border-amber-500'
                 : 'border-transparent text-stone-500 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50',
             ]"

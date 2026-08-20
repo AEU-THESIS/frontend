@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getOrders, getOrderDetails, updateOrderStatus } from '@/api/order'
+import {
+  getOrders,
+  getOrderDetails,
+  updateOrderStatus,
+  voidOrder as voidOrderApi,
+  cancelOrderItem as cancelOrderItemApi,
+  rejectPreOrder as rejectPreOrderApi,
+} from '@/api/order'
 import { useAuthStore } from './useAuthStore'
 import type { OrderDetail } from '@/types/order.types'
 
@@ -95,6 +102,7 @@ export const useOrderStore = defineStore('orders', () => {
     search?: string
     status?: string
     paymentStatus?: string
+    hasComp?: boolean
     startDate?: string
     endDate?: string
     page?: number
@@ -106,6 +114,7 @@ export const useOrderStore = defineStore('orders', () => {
         search: filters.search || undefined,
         status: filters.status || undefined,
         paymentStatus: filters.paymentStatus || undefined,
+        hasComp: filters.hasComp || undefined,
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined,
         page: filters.page || 1,
@@ -179,6 +188,41 @@ export const useOrderStore = defineStore('orders', () => {
       // Force reload to sync state on failure
       fetchTodayOrders()
     }
+  }
+
+  // Replace an order everywhere it is held (live board, history list, open drawer)
+  // with the server's recalculated version after a void/cancel.
+  const applyUpdatedOrder = (updated: OrderDetail) => {
+    const liveIdx = orders.value.findIndex(o => o.id === updated.id)
+    if (liveIdx !== -1) orders.value[liveIdx] = updated
+
+    const histIdx = historyOrders.value.findIndex(o => o.id === updated.id)
+    if (histIdx !== -1) historyOrders.value[histIdx] = updated
+
+    if (selectedOrder.value && selectedOrder.value.id === updated.id) {
+      selectedOrder.value = updated
+    }
+  }
+
+  // ── 4b. Void a whole order (reverses the money) ───────────────────
+  const voidOrder = async (id: number, reason?: string) => {
+    const updated = await voidOrderApi(id, reason)
+    applyUpdatedOrder(updated)
+    return updated
+  }
+
+  // ── 4c. Cancel a single line item (partial refund) ────────────────
+  const cancelItem = async (orderId: number, itemId: number) => {
+    const updated = await cancelOrderItemApi(orderId, itemId)
+    applyUpdatedOrder(updated)
+    return updated
+  }
+
+  // ── 4d. Reject a pending customer pre-order (unpaid → canceled) ────
+  const rejectPreOrder = async (id: number) => {
+    const updated = await rejectPreOrderApi(id)
+    applyUpdatedOrder(updated)
+    return updated
   }
 
   // ── 5. Server-Sent Events SSE Subscriber ─────────────────────────
@@ -349,6 +393,9 @@ export const useOrderStore = defineStore('orders', () => {
     fetchHistoryOrders,
     fetchSingleOrderDetail,
     changeStatus,
+    voidOrder,
+    cancelItem,
+    rejectPreOrder,
     subscribeToOrderStream,
     unsubscribeFromOrderStream,
   }

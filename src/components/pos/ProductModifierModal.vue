@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import type { Product, OptionSetElement } from '@/types/product.types'
 import type { CartItemOption } from '@/types/order.types'
 import { useCartStore } from '@/store/useCartStore'
+import { toast } from 'vue-sonner'
 
 const props = defineProps<{
   product: Product | null
@@ -38,10 +39,12 @@ const resetSelection = () => {
   quantity.value = isBogo.value ? 2 : 1
   selectedElements.value = {}
 
-  // Pre-select first/default elements for each option set
+  // Pre-select a default only for REQUIRED groups (e.g. size). Optional paid
+  // extras stay unselected so the customer is never charged for something they
+  // did not ask for.
   for (const pos of props.product.optionSets) {
     const elements = pos.optionSet.elements
-    if (elements.length > 0) {
+    if (pos.isRequired && elements.length > 0) {
       const defaultEl = elements[0]
       selectedElements.value[pos.optionSet.id] = {
         elementId: defaultEl.id,
@@ -108,6 +111,22 @@ const itemNetTotal = computed(() =>
 
 const handleAddToCart = () => {
   if (!props.product) return
+
+  // Block if a required group has no selection (e.g. a by-size drink without a size).
+  const missingRequired = props.product.optionSets.some(
+    pos => pos.isRequired && !selectedElements.value[pos.optionSet.id]
+  )
+  if (missingRequired) {
+    toast.error(t('cart.selectRequiredOption'))
+    return
+  }
+
+  // Never allow an item to be added for nothing (guards by-size products whose
+  // price lives entirely in an unselected size option).
+  if (itemUnitPrice.value <= 0) {
+    toast.error(t('cart.sizeRequired'))
+    return
+  }
 
   const cartOptions: CartItemOption[] = Object.entries(selectedElements.value).map(
     ([setId, el]) => ({

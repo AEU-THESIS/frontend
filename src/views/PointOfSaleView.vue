@@ -3,8 +3,11 @@ import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useProductStore } from '@/store/useProductStore'
 import { useCartStore } from '@/store/useCartStore'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import type { Product } from '@/types/product.types'
-import type { OrderResult } from '@/types/order.types'
+import type { OrderResult, CheckoutSuccessData } from '@/types/order.types'
+import { PRICE_MODE } from '@/constants/product'
+import { round2, roundRielDown } from '@/utils/money'
 import ProductCard from '@/components/pos/ProductCard.vue'
 import ProductModifierModal from '@/components/pos/ProductModifierModal.vue'
 import CashPaymentModal from '@/components/pos/CashPaymentModal.vue'
@@ -15,24 +18,20 @@ import { toast } from 'vue-sonner'
 const { t } = useI18n()
 const productStore = useProductStore()
 const cartStore = useCartStore()
+const shopSettingsStore = useShopSettingsStore()
 
 const searchInput = ref('')
 const selectedProductForOptions = ref<Product | null>(null)
 const isModifiersModalOpen = ref(false)
 const isSuccessModalOpen = ref(false)
-interface CheckoutSuccessData {
-  orderId: number
-  orderNumber: string
-  totalAmount: number
-  receivedAmount: number
-  paymentCurrency: string
-  changeUSD: number
-  changeKHR: number
-}
 
 const checkoutResult = ref<CheckoutSuccessData | null>(null)
 
+// Use the shop's configured exchange rate (hydrated from Shop Settings) for the
+// POS, and keep it in sync if an admin changes it while the POS is open. The
+// server remains the authority at checkout; this only drives what is displayed.
 onMounted(async () => {
+  cartStore.exchangeRate = shopSettingsStore.exchange_rate
   try {
     await Promise.all([
       productStore.fetchCategories(),
@@ -43,6 +42,13 @@ onMounted(async () => {
     toast.error(t('cart.fetchFailed'))
   }
 })
+
+watch(
+  () => shopSettingsStore.exchange_rate,
+  rate => {
+    cartStore.exchangeRate = rate
+  }
+)
 
 // Search input watcher
 watch(searchInput, newVal => {
@@ -57,6 +63,11 @@ const handleProductSelect = (product: Product) => {
   if (product.optionSets && product.optionSets.length > 0) {
     selectedProductForOptions.value = product
     isModifiersModalOpen.value = true
+  } else if (product.priceMode === PRICE_MODE.BY_SIZE) {
+    // A by-size product has no base price — its price lives in the size option.
+    // Without any option set to choose a size from, it can only be added at 0.00,
+    // so block it rather than sell it for nothing.
+    toast.error(t('cart.sizeRequired'))
   } else {
     // For a "Buy 1 Get 1" item, add the pair in one tap (one paid + one free) so the
     // barista immediately sees they should make two and charge for one. The backend
@@ -80,16 +91,28 @@ const handleProductSelect = (product: Product) => {
   }
 }
 
-const handlePaymentSuccess = (result: OrderResult & { changeUSD: number; changeKHR: number }) => {
+const handlePaymentSuccess = (result: OrderResult) => {
   cartStore.isCashModalOpen = false
+
+  // Derive both currency views of the change from the SERVER's figures, so the
+  // receipt shows exactly what was charged/returned (not the browser's math).
+  const rate = Number(result.exchangeRateSnapshot)
+  const serverChange = Number(result.changeAmount)
+  const changeKHR =
+    result.paymentCurrency === 'KHR' ? serverChange : roundRielDown(serverChange * rate)
+  const changeUSD = result.paymentCurrency === 'KHR' ? round2(serverChange / rate) : serverChange
+
   checkoutResult.value = {
     orderId: result.id,
     orderNumber: result.orderNumber,
     totalAmount: Number(result.totalAmount),
     receivedAmount: Number(result.receivedAmount),
     paymentCurrency: result.paymentCurrency,
-    changeUSD: result.changeUSD,
-    changeKHR: result.changeKHR,
+    exchangeRateSnapshot: rate,
+    changeUSD,
+    changeKHR,
+    // Free (loyalty-stamp) lines captured at checkout, for the receipt's free-items note.
+    freeItems: cartStore.lastCompItems,
   }
   isSuccessModalOpen.value = true
 }
