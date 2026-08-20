@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, type PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Pencil, Eye } from 'lucide-vue-next'
+import { Pencil, Eye, Trash2 } from 'lucide-vue-next'
 import {
   SwitchRoot,
   SwitchThumb,
@@ -20,6 +20,16 @@ import {
   PaginationEllipsis,
 } from 'reka-ui'
 import type { ProductTableItem } from '@/types/product.types'
+import AppTooltip from '@/components/common/AppTooltip.vue'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 const { t } = useI18n()
 
@@ -94,17 +104,23 @@ const paginationText = computed(() =>
 )
 
 // ── Filler rows — keeps tbody height fixed when products < pageSize ───────
-const fillerRows = computed(() =>
-  props.loading || props.products.length === 0
-    ? 0
-    : Math.max(0, props.pageSize - props.products.length)
-)
+// Only rendered alongside real rows, so no loading/empty guard is needed here.
+const fillerRows = computed(() => Math.max(0, props.pageSize - props.products.length))
 
 // ── Handlers ──────────────────────────────────────────────────────────────────
 const handleToggleAvailable = (item: ProductTableItem) => emit('toggle-available', item)
 const handleEditProduct = (item: ProductTableItem) => emit('edit-product', item)
 const handleViewProduct = (id: number) => emit('view-product', id)
-// const handleDeleteProduct = (item: ProductTableItem) => emit('delete-product', item)
+const handleDeleteProduct = (item: ProductTableItem) => {
+  if (item.cannotDelete) return
+  emit('delete-product', item)
+}
+
+/** Why deletion is blocked, or '' when the product can be deleted (no tooltip). */
+const deleteBlockedReason = (item: ProductTableItem) =>
+  item.cannotDelete
+    ? t('menuManagement.productTable.dropdownMenu.deleteDisabledTooltip')
+    : 'Delete Product'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function categoryBadgeClass(category: string) {
@@ -123,205 +139,215 @@ function categoryBadgeClass(category: string) {
     class="bg-white dark:bg-stone-900 shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden"
   >
     <!-- ── Table ─────────────────────────────────────────────────────────── -->
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse min-w-[640px]">
-        <!-- Head -->
-        <thead>
-          <tr class="bg-stone-50 dark:bg-stone-800 border-b border-stone-100 dark:border-stone-800">
-            <th
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
-            >
-              {{ t('menuManagement.productTable.tableHeaders.itemName') }}
-            </th>
-            <th
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
-            >
-              {{ t('menuManagement.productTable.tableHeaders.category') }}
-            </th>
-            <th
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
-            >
-              {{ t('menuManagement.productTable.tableHeaders.price') }}
-            </th>
-            <th
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
-            >
-              {{ t('menuManagement.productTable.tableHeaders.onSale') }}
-            </th>
-            <th
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 text-center whitespace-nowrap min-w-max"
-            >
-              {{ t('menuManagement.productTable.tableHeaders.actions') }}
-            </th>
-          </tr>
-        </thead>
+    <Table class="min-w-[640px] text-left">
+      <!-- Head -->
+      <TableHeader>
+        <TableRow
+          class="bg-stone-50 border-stone-100 hover:bg-stone-50 dark:bg-stone-800 dark:border-stone-800 dark:hover:bg-stone-800"
+        >
+          <TableHead
+            class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
+          >
+            {{ t('menuManagement.productTable.tableHeaders.itemName') }}
+          </TableHead>
+          <TableHead
+            class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
+          >
+            {{ t('menuManagement.productTable.tableHeaders.category') }}
+          </TableHead>
+          <TableHead
+            class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
+          >
+            {{ t('menuManagement.productTable.tableHeaders.price') }}
+          </TableHead>
+          <TableHead
+            class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
+          >
+            {{ t('menuManagement.productTable.tableHeaders.onSale') }}
+          </TableHead>
+          <TableHead
+            class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400 text-center min-w-max"
+          >
+            {{ t('menuManagement.productTable.tableHeaders.actions') }}
+          </TableHead>
+        </TableRow>
+      </TableHeader>
 
-        <!-- Body -->
-        <tbody class="divide-y divide-stone-50 dark:divide-stone-800">
-          <!-- Loading skeleton -->
-          <template v-if="loading">
-            <tr v-for="n in pageSize" :key="n" class="animate-pulse">
-              <td class="px-3 md:px-6 py-3 md:py-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-lg bg-stone-100 dark:bg-stone-800 shrink-0" />
-                  <div class="space-y-1.5">
-                    <div class="h-3 w-32 rounded bg-stone-100 dark:bg-stone-800" />
-                    <div class="h-2.5 w-20 rounded bg-stone-100 dark:bg-stone-800" />
-                  </div>
+      <!-- Body -->
+      <TableBody>
+        <!-- Loading skeleton -->
+        <template v-if="loading">
+          <TableRow
+            v-for="n in pageSize"
+            :key="n"
+            class="animate-pulse border-stone-50 hover:bg-transparent dark:border-stone-800"
+          >
+            <TableCell class="px-3 md:px-6 py-3 md:py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-stone-100 dark:bg-stone-800 shrink-0" />
+                <div class="space-y-1.5">
+                  <div class="h-3 w-32 rounded bg-stone-100 dark:bg-stone-800" />
+                  <div class="h-2.5 w-20 rounded bg-stone-100 dark:bg-stone-800" />
                 </div>
-              </td>
-              <td class="px-3 md:px-6 py-3 md:py-4">
-                <div class="h-5 w-16 rounded-md bg-stone-100 dark:bg-stone-800" />
-              </td>
-              <td class="px-3 md:px-6 py-3 md:py-4">
-                <div class="h-3 w-12 rounded bg-stone-100 dark:bg-stone-800" />
-              </td>
-              <td class="px-3 md:px-6 py-3 md:py-4">
-                <div class="h-6 w-11 rounded-full bg-stone-100 dark:bg-stone-800" />
-              </td>
-              <td class="px-3 md:px-6 py-3 md:py-4">
-                <div class="h-5 w-5 rounded bg-stone-100 dark:bg-stone-800 mx-auto" />
-              </td>
-            </tr>
-          </template>
+              </div>
+            </TableCell>
+            <TableCell class="px-3 md:px-6 py-3 md:py-4">
+              <div class="h-5 w-16 rounded-md bg-stone-100 dark:bg-stone-800" />
+            </TableCell>
+            <TableCell class="px-3 md:px-6 py-3 md:py-4">
+              <div class="h-3 w-12 rounded bg-stone-100 dark:bg-stone-800" />
+            </TableCell>
+            <TableCell class="px-3 md:px-6 py-3 md:py-4">
+              <div class="h-6 w-11 rounded-full bg-stone-100 dark:bg-stone-800" />
+            </TableCell>
+            <TableCell class="px-3 md:px-6 py-3 md:py-4">
+              <div class="h-5 w-5 rounded bg-stone-100 dark:bg-stone-800 mx-auto" />
+            </TableCell>
+          </TableRow>
+        </template>
 
-          <!-- Rows -->
-          <template v-else-if="products.length > 0">
-            <tr
-              v-for="item in products"
-              :key="item.sku"
-              class="hover:bg-stone-50/50 dark:hover:bg-stone-800/50 transition-colors"
-            >
-              <!-- Item Details -->
-              <td class="px-3 md:px-6 py-3 md:py-4">
-                <div class="flex items-center gap-2 md:gap-4">
-                  <div
-                    class="w-9 h-9 md:w-12 md:h-12 rounded-lg bg-stone-100 dark:bg-stone-800 overflow-hidden shrink-0"
-                  >
-                    <img :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
-                  </div>
-                  <div class="min-w-0">
-                    <p
-                      class="text-sm md:text-[16px] font-bold text-stone-900 dark:text-stone-100 truncate"
-                    >
-                      {{ item.name }}
-                    </p>
-                    <p class="hidden md:block text-xs text-stone-400 dark:text-stone-500">
-                      {{ t('menuManagement.productTable.skuLabel') }} {{ item.sku }}
-                    </p>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Category -->
-              <td class="px-3 md:px-6 py-3 md:py-4">
-                <span
-                  :class="categoryBadgeClass(item.category)"
-                  class="px-2.5 py-1 text-xs font-bold rounded-md"
-                >
-                  {{ item.category }}
-                </span>
-              </td>
-
-              <!-- Price -->
-              <td class="px-3 md:px-6 py-3 md:py-4">
-                <p class="text-sm text-stone-900 dark:text-stone-100">{{ item.price }}</p>
-              </td>
-
-              <!-- On Sale Toggle -->
-              <td class="px-3 pl-5 py-5">
-                <SwitchRoot
-                  :model-value="item.isAvailable"
-                  class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full outline-none focus:ring-2 focus:ring-[#D2691E]/30 transition-colors duration-200 data-[state=checked]:bg-[#D2691E] data-[state=unchecked]:bg-zinc-200 dark:data-[state=unchecked]:bg-stone-600"
-                  @click.stop="handleToggleAvailable(item)"
-                >
-                  <SwitchThumb
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200 mt-[2px] data-[state=checked]:translate-x-[22px] data-[state=unchecked]:translate-x-[2px]"
-                  />
-                </SwitchRoot>
-              </td>
-
-              <!-- Actions -->
-              <td class="px-3 md:px-6 py-3 md:py-4 text-right">
-                <div class="flex justify-center items-center">
-                  <DropdownMenuRoot>
-                    <DropdownMenuTrigger
-                      class="material-symbols-outlined transition-opacity cursor-pointer hover:text-[#974400] focus:outline-none"
-                      @click.stop
-                    >
-                      more_vert
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuPortal>
-                      <DropdownMenuContent
-                        class="z-50 min-w-[140px] bg-white dark:bg-stone-800 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
-                        :side-offset="4"
-                        align="end"
-                      >
-                        <DropdownMenuItem
-                          class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] dark:hover:bg-stone-700 hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] dark:focus:bg-stone-700 focus:text-[#974400] transition-colors select-none"
-                          @click.stop="handleEditProduct(item)"
-                        >
-                          <Pencil class="size-4 shrink-0" />
-                          <span>{{ t('menuManagement.productTable.dropdownMenu.edit') }}</span>
-                        </DropdownMenuItem>
-
-                        <DropdownMenuItem
-                          class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] dark:hover:bg-stone-700 hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] dark:focus:bg-stone-700 focus:text-[#974400] transition-colors select-none"
-                          @click.stop="handleViewProduct(item.id)"
-                        >
-                          <Eye class="size-4 shrink-0" />
-                          <span>{{ t('menuManagement.productTable.dropdownMenu.view') }}</span>
-                        </DropdownMenuItem>
-
-                        <!-- TODO:  -->
-                        <!-- <DropdownMenuItem
-                          class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-red-500 hover:bg-red-50 focus:outline-none focus:bg-red-50 transition-colors select-none"
-                          @click.stop="handleDeleteProduct(item)">
-                          <Trash2 class="size-4 shrink-0" />
-                          <span>{{ t('menuManagement.productTable.dropdownMenu.delete') }}</span>
-                        </DropdownMenuItem> -->
-                      </DropdownMenuContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuRoot>
-                </div>
-              </td>
-            </tr>
-          </template>
-
-          <!-- Filler rows — keeps tbody height fixed when products < pageSize -->
-          <template v-if="!loading && products.length > 0">
-            <tr v-for="n in fillerRows" :key="`filler-${n}`" class="h-[73px]">
-              <td colspan="5" />
-            </tr>
-          </template>
-
-          <!-- Empty State -->
-          <tr v-else>
-            <td colspan="5" class="px-6 py-16 text-center">
-              <div class="flex flex-col items-center gap-3">
+        <!-- Rows -->
+        <template v-else-if="products.length > 0">
+          <TableRow
+            v-for="item in products"
+            :key="item.sku"
+            class="border-stone-50 hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-800/50"
+          >
+            <!-- Item Details -->
+            <TableCell class="px-3 md:px-6 py-3 md:py-4">
+              <div class="flex items-center gap-2 md:gap-4">
                 <div
-                  class="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
+                  class="w-9 h-9 md:w-12 md:h-12 rounded-lg bg-stone-100 dark:bg-stone-800 overflow-hidden shrink-0"
                 >
-                  <span
-                    class="material-symbols-outlined text-[32px] text-stone-400 dark:text-stone-500"
-                    >inventory_2</span
-                  >
+                  <img :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
                 </div>
-                <div>
-                  <p class="text-sm font-bold text-stone-700 dark:text-stone-300">
-                    {{ t('menuManagement.productTable.emptyState.title') }}
+                <div class="min-w-0">
+                  <p
+                    class="text-sm md:text-[16px] font-bold text-stone-900 dark:text-stone-100 truncate"
+                  >
+                    {{ item.name }}
                   </p>
-                  <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">
-                    {{ t('menuManagement.productTable.emptyState.description') }}
+                  <p class="hidden md:block text-xs text-stone-400 dark:text-stone-500">
+                    {{ t('menuManagement.productTable.skuLabel') }} {{ item.sku }}
                   </p>
                 </div>
               </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </TableCell>
+
+            <!-- Category -->
+            <TableCell class="px-3 md:px-6 py-3 md:py-4">
+              <span
+                :class="categoryBadgeClass(item.category)"
+                class="px-2.5 py-1 text-xs font-bold rounded-md"
+              >
+                {{ item.category }}
+              </span>
+            </TableCell>
+
+            <!-- Price -->
+            <TableCell class="px-3 md:px-6 py-3 md:py-4">
+              <p class="text-sm text-stone-900 dark:text-stone-100">{{ item.price }}</p>
+            </TableCell>
+
+            <!-- On Sale Toggle -->
+            <TableCell class="px-3 pl-5 py-5">
+              <SwitchRoot
+                :model-value="item.isAvailable"
+                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full outline-none focus:ring-2 focus:ring-[#D2691E]/30 transition-colors duration-200 data-[state=checked]:bg-[#D2691E] data-[state=unchecked]:bg-zinc-200 dark:data-[state=unchecked]:bg-stone-600"
+                @click.stop="handleToggleAvailable(item)"
+              >
+                <SwitchThumb
+                  class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200 mt-[2px] data-[state=checked]:translate-x-[22px] data-[state=unchecked]:translate-x-[2px]"
+                />
+              </SwitchRoot>
+            </TableCell>
+
+            <!-- Actions -->
+            <TableCell class="px-3 md:px-6 py-3 md:py-4 text-right">
+              <div class="flex justify-center items-center">
+                <DropdownMenuRoot>
+                  <DropdownMenuTrigger
+                    class="material-symbols-outlined transition-opacity cursor-pointer hover:text-[#974400] focus:outline-none"
+                    @click.stop
+                  >
+                    more_vert
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuPortal>
+                    <DropdownMenuContent
+                      class="z-50 min-w-[140px] bg-white dark:bg-stone-800 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
+                      :side-offset="4"
+                      align="end"
+                    >
+                      <DropdownMenuItem
+                        class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] dark:hover:bg-stone-700 hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] dark:focus:bg-stone-700 focus:text-[#974400] transition-colors select-none"
+                        @click.stop="handleEditProduct(item)"
+                      >
+                        <Pencil class="size-4 shrink-0" />
+                        <span>{{ t('menuManagement.productTable.dropdownMenu.edit') }}</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] dark:hover:bg-stone-700 hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] dark:focus:bg-stone-700 focus:text-[#974400] transition-colors select-none"
+                        @click.stop="handleViewProduct(item.id)"
+                      >
+                        <Eye class="size-4 shrink-0" />
+                        <span>{{ t('menuManagement.productTable.dropdownMenu.view') }}</span>
+                      </DropdownMenuItem>
+
+                      <!-- Disabled for products already used in an order -->
+                      <AppTooltip :content="deleteBlockedReason(item)" side="left">
+                        <span class="block">
+                          <DropdownMenuItem
+                            :disabled="!!item.cannotDelete"
+                            :aria-label="deleteBlockedReason(item) || undefined"
+                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 focus:outline-none focus:bg-red-50 dark:focus:bg-red-950/30 transition-colors select-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40 data-[disabled]:hover:bg-transparent dark:data-[disabled]:hover:bg-transparent"
+                            @click.stop="handleDeleteProduct(item)"
+                          >
+                            <Trash2 class="size-4 shrink-0" />
+                            <span>{{ t('menuManagement.productTable.dropdownMenu.delete') }}</span>
+                          </DropdownMenuItem>
+                        </span>
+                      </AppTooltip>
+                    </DropdownMenuContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuRoot>
+              </div>
+            </TableCell>
+          </TableRow>
+
+          <!-- Filler rows — keeps tbody height fixed when products < pageSize -->
+          <TableRow
+            v-for="n in fillerRows"
+            :key="`filler-${n}`"
+            class="h-[73px] border-stone-50 hover:bg-transparent dark:border-stone-800"
+          >
+            <TableCell colspan="5" />
+          </TableRow>
+        </template>
+
+        <!-- Empty State -->
+        <TableEmpty v-else :colspan="5" class="px-6 text-center">
+          <div class="flex flex-col items-center gap-3">
+            <div
+              class="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined text-[32px] text-stone-400 dark:text-stone-500"
+                >inventory_2</span
+              >
+            </div>
+            <div>
+              <p class="text-sm font-bold text-stone-700 dark:text-stone-300">
+                {{ t('menuManagement.productTable.emptyState.title') }}
+              </p>
+              <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">
+                {{ t('menuManagement.productTable.emptyState.description') }}
+              </p>
+            </div>
+          </div>
+        </TableEmpty>
+      </TableBody>
+    </Table>
 
     <!-- ── Pagination footer ───────────────────────────────────────────────── -->
     <div

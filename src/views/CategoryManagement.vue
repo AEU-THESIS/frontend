@@ -2,10 +2,21 @@
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppDialog from '@/components/common/AppDialog.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import AppTooltip from '@/components/common/AppTooltip.vue'
 import AddCategoryForm from '@/components/category/AddCategoryForm.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
-import { Pencil, Eye } from 'lucide-vue-next'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Pencil, Eye, Trash2 } from 'lucide-vue-next'
 import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
@@ -90,10 +101,20 @@ const openEditDialog = (category: Category) => {
   isAddDialogOpen.value = true
 }
 
-// const openDeleteConfirmation = (category: Category) => {
-//   selectedCategory.value = category
-//   isDeleteDialogOpen.value = true
-// }
+const openDeleteConfirmation = (category: Category) => {
+  if (category.cannotDelete) return
+  selectedCategory.value = category
+  isDeleteDialogOpen.value = true
+}
+
+/** Why deletion is blocked, or the plain action label when it is allowed. */
+const deleteBlockedReason = (category: Category) =>
+  category.cannotDelete ? t('category.deleteDisabledTooltip') : t('category.delete')
+
+const getErrorMessage = (err: unknown, fallback: string) => {
+  const axiosErr = err as { response?: { data?: { message?: string } } }
+  return axiosErr?.response?.data?.message || fallback
+}
 
 const handleDelete = async () => {
   if (!selectedCategory.value) return
@@ -102,13 +123,13 @@ const handleDelete = async () => {
   try {
     await productStore.deleteCategory(selectedCategory.value.id)
     toast.success(t('category.toastSuccess'))
-    isDeleteDialogOpen.value = false
-    selectedCategory.value = null
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : t('toastError')
-    toast.error(message)
+    // The API rejects categories that still hold products — show that reason.
+    toast.error(getErrorMessage(error, t('category.toastError')))
   } finally {
     isDeleting.value = false
+    isDeleteDialogOpen.value = false
+    selectedCategory.value = null
   }
 }
 
@@ -167,154 +188,160 @@ const openAddDialog = () => {
         </div>
       </FilterPanel>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[640px]">
-          <thead>
-            <tr
-              class="bg-stone-50 dark:bg-stone-800 border-b border-stone-100 dark:border-stone-800"
+      <Table class="min-w-[640px] text-left">
+        <TableHeader>
+          <TableRow
+            class="bg-stone-50 border-stone-100 hover:bg-stone-50 dark:bg-stone-800 dark:border-stone-800 dark:hover:bg-stone-800"
+          >
+            <TableHead
+              class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
             >
-              <th
-                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
-              >
-                {{ $t('category.categoryName') }}
-              </th>
-              <th
-                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
-              >
-                {{ $t('category.itemsCount') }}
-              </th>
-              <th
-                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 whitespace-nowrap"
-              >
-                {{ $t('category.status') }}
-              </th>
-              <th
-                class="px-3 md:px-6 py-3 md:py-4 text-[11px] text-stone-500 dark:text-stone-400 text-center whitespace-nowrap min-w-max"
-              >
-                {{ $t('category.actions') }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-stone-50 dark:divide-stone-800">
-            <!-- Existing Rows -->
-            <template v-if="paginatedCategories.length > 0">
-              <tr
-                v-for="item in paginatedCategories"
-                :key="item.id"
-                class="hover:bg-stone-50/50 dark:hover:bg-stone-800/50 transition-colors"
-              >
-                <!-- Item Details -->
-                <td class="px-3 md:px-6 py-3 md:py-4">
-                  <div class="flex items-center gap-2 md:gap-4">
-                    <div class="min-w-0">
-                      <p
-                        class="text-sm md:text-[16px] font-bold text-stone-900 dark:text-stone-100 truncate"
-                      >
-                        {{ item.name }}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-
-                <!-- Item Count -->
-                <td class="px-3 md:px-6 py-3 md:py-4">
-                  <span class="px-2.5 py-1 text-xs font-bold rounded-md">
-                    {{ item._count?.products ?? 0 }} {{ $t('category.items') }}
-                  </span>
-                </td>
-
-                <!-- Status -->
-                <td class="px-3 md:px-6 py-3 md:py-4">
-                  <p class="text-sm text-stone-900 dark:text-stone-100">
-                    {{ item.isActive ? $t('category.active') : $t('category.inactive') }}
-                  </p>
-                </td>
-
-                <!-- Actions -->
-                <td class="px-3 md:px-6 py-3 md:py-4 text-right">
-                  <div class="flex justify-center items-center">
-                    <div class="relative">
-                      <!-- Dropdown Menu -->
-                      <DropdownMenuRoot>
-                        <DropdownMenuTrigger
-                          class="material-symbols-outlined transition-opacity cursor-pointer hover:text-[#974400] focus:outline-none"
-                          @click.stop
-                        >
-                          more_vert
-                        </DropdownMenuTrigger>
-
-                        <DropdownMenuPortal>
-                          <DropdownMenuContent
-                            class="z-50 min-w-[140px] bg-white dark:bg-stone-900 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
-                            :side-offset="4"
-                            align="end"
-                          >
-                            <!-- Edit -->
-                            <DropdownMenuItem
-                              class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
-                              @click.stop="openEditDialog(item)"
-                            >
-                              <Pencil class="size-4 shrink-0" />
-                              <span>{{ $t('category.edit') }}</span>
-                            </DropdownMenuItem>
-
-                            <!-- View -->
-                            <DropdownMenuItem
-                              class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
-                              @click.stop="() => {}"
-                            >
-                              <Eye class="size-4 shrink-0" />
-                              <span>{{ $t('category.view') }}</span>
-                            </DropdownMenuItem>
-
-                            <!-- TODO -->
-                            <!-- <DropdownMenuItem
-                              class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-red-500 hover:bg-red-50 focus:outline-none focus:bg-red-50 transition-colors select-none"
-                              @click.stop="openDeleteConfirmation(item)">
-                              <Trash2 class="size-4 shrink-0" />
-                              <span>{{ $t('category.delete') }}</span>
-                            </DropdownMenuItem> -->
-                          </DropdownMenuContent>
-                        </DropdownMenuPortal>
-                      </DropdownMenuRoot>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </template>
-
-            <template v-if="paginatedCategories.length > 0">
-              <tr v-for="n in fillerRows" :key="`filler-${n}`" class="h-[62px]">
-                <td colspan="4" />
-              </tr>
-            </template>
-
-            <!-- Empty State -->
-            <tr v-else>
-              <td colspan="5" class="px-6 py-16 text-center">
-                <div class="flex flex-col items-center gap-3">
-                  <div
-                    class="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
-                  >
-                    <span
-                      class="material-symbols-outlined text-[32px] text-stone-400 dark:text-stone-500"
-                      >inventory_2</span
+              {{ $t('category.categoryName') }}
+            </TableHead>
+            <TableHead
+              class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
+            >
+              {{ $t('category.itemsCount') }}
+            </TableHead>
+            <TableHead
+              class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
+            >
+              {{ $t('category.status') }}
+            </TableHead>
+            <TableHead
+              class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400 text-center min-w-max"
+            >
+              {{ $t('category.actions') }}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <!-- Existing Rows -->
+          <template v-if="paginatedCategories.length > 0">
+            <TableRow
+              v-for="item in paginatedCategories"
+              :key="item.id"
+              class="border-stone-50 hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-800/50"
+            >
+              <!-- Item Details -->
+              <TableCell class="px-3 md:px-6 py-3 md:py-4">
+                <div class="flex items-center gap-2 md:gap-4">
+                  <div class="min-w-0">
+                    <p
+                      class="text-sm md:text-[16px] font-bold text-stone-900 dark:text-stone-100 truncate"
                     >
-                  </div>
-                  <div>
-                    <p class="text-sm font-bold text-stone-700 dark:text-stone-300">
-                      {{ $t('category.noCategoriesFound') }}
-                    </p>
-                    <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">
-                      {{ $t('category.noCategoriesSubtitle') }}
+                      {{ item.name }}
                     </p>
                   </div>
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              </TableCell>
+
+              <!-- Item Count -->
+              <TableCell class="px-3 md:px-6 py-3 md:py-4">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-md">
+                  {{ item._count?.products ?? 0 }} {{ $t('category.items') }}
+                </span>
+              </TableCell>
+
+              <!-- Status -->
+              <TableCell class="px-3 md:px-6 py-3 md:py-4">
+                <p class="text-sm text-stone-900 dark:text-stone-100">
+                  {{ item.isActive ? $t('category.active') : $t('category.inactive') }}
+                </p>
+              </TableCell>
+
+              <!-- Actions -->
+              <TableCell class="px-3 md:px-6 py-3 md:py-4 text-right">
+                <div class="flex justify-center items-center">
+                  <div class="relative">
+                    <!-- Dropdown Menu -->
+                    <DropdownMenuRoot>
+                      <DropdownMenuTrigger
+                        class="material-symbols-outlined transition-opacity cursor-pointer hover:text-[#974400] focus:outline-none"
+                        @click.stop
+                      >
+                        more_vert
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuPortal>
+                        <DropdownMenuContent
+                          class="z-50 min-w-[140px] bg-white dark:bg-stone-900 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
+                          :side-offset="4"
+                          align="end"
+                        >
+                          <!-- Edit -->
+                          <DropdownMenuItem
+                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
+                            @click.stop="openEditDialog(item)"
+                          >
+                            <Pencil class="size-4 shrink-0" />
+                            <span>{{ $t('category.edit') }}</span>
+                          </DropdownMenuItem>
+
+                          <!-- View -->
+                          <DropdownMenuItem
+                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
+                            @click.stop="() => {}"
+                          >
+                            <Eye class="size-4 shrink-0" />
+                            <span>{{ $t('category.view') }}</span>
+                          </DropdownMenuItem>
+
+                          <!-- Delete — disabled while the category still holds products -->
+                          <AppTooltip :content="deleteBlockedReason(item)" side="left">
+                            <span class="block">
+                              <DropdownMenuItem
+                                :disabled="!!item.cannotDelete"
+                                :aria-label="deleteBlockedReason(item)"
+                                class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 focus:outline-none focus:bg-red-50 dark:focus:bg-red-950/30 transition-colors select-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40 data-[disabled]:hover:bg-transparent dark:data-[disabled]:hover:bg-transparent"
+                                @click.stop="openDeleteConfirmation(item)"
+                              >
+                                <Trash2 class="size-4 shrink-0" />
+                                <span>{{ $t('category.delete') }}</span>
+                              </DropdownMenuItem>
+                            </span>
+                          </AppTooltip>
+                        </DropdownMenuContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuRoot>
+                  </div>
+                </div>
+              </TableCell>
+            </TableRow>
+
+            <!-- Filler rows — keeps tbody height fixed when categories < PAGE_SIZE -->
+            <TableRow
+              v-for="n in fillerRows"
+              :key="`filler-${n}`"
+              class="h-[62px] border-stone-50 hover:bg-transparent dark:border-stone-800"
+            >
+              <TableCell colspan="4" />
+            </TableRow>
+          </template>
+
+          <!-- Empty State -->
+          <TableEmpty v-else :colspan="4" class="px-6 text-center">
+            <div class="flex flex-col items-center gap-3">
+              <div
+                class="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-[32px] text-stone-400 dark:text-stone-500"
+                  >inventory_2</span
+                >
+              </div>
+              <div>
+                <p class="text-sm font-bold text-stone-700 dark:text-stone-300">
+                  {{ $t('category.noCategoriesFound') }}
+                </p>
+                <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">
+                  {{ $t('category.noCategoriesSubtitle') }}
+                </p>
+              </div>
+            </div>
+          </TableEmpty>
+        </TableBody>
+      </Table>
 
       <!-- Pagination -->
       <div
@@ -402,40 +429,20 @@ const openAddDialog = () => {
   </app-dialog>
 
   <!-- Delete Confirmation Dialog -->
-  <app-dialog
+  <confirm-dialog
     v-model:open="isDeleteDialogOpen"
     :title="$t('category.deleteCategory')"
-    :description="$t('category.deleteConfirmation')"
+    :message="$t('category.deleteConfirmation')"
+    :confirm-label="$t('category.delete')"
+    :cancel-label="$t('category.cancel')"
+    :loading="isDeleting"
+    variant="danger"
+    @confirm="handleDelete"
   >
-    <div class="w-full space-y-4">
-      <p v-if="selectedCategory" class="text-sm text-stone-600 dark:text-stone-300">
-        {{ $t('category.deleteWarning') }} <strong>{{ selectedCategory.name }}</strong>
-      </p>
-    </div>
-    <template #footer>
-      <div class="flex gap-3 justify-end">
-        <button
-          type="button"
-          class="px-5 py-2.5 rounded-xl text-sm font-semibold text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-          @click="isDeleteDialogOpen = false"
-        >
-          {{ $t('category.cancel') }}
-        </button>
-        <button
-          type="button"
-          :disabled="isDeleting"
-          class="px-6 py-2.5 rounded-xl text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          @click="handleDelete"
-        >
-          <span
-            v-if="isDeleting"
-            class="animate-spin inline-block size-4 border-2 border-current border-t-transparent rounded-full"
-          />
-          {{ $t('category.delete') }}
-        </button>
-      </div>
-    </template>
-  </app-dialog>
+    <p v-if="selectedCategory">
+      {{ $t('category.deleteWarning') }} <strong>{{ selectedCategory.name }}</strong>
+    </p>
+  </confirm-dialog>
 </template>
 
 <style scoped>

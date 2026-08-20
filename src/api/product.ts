@@ -83,9 +83,8 @@ export const updateCategory = async (
   return res.data
 }
 
-export const deleteCategory = async (categoryId: number): Promise<{ message: string }> => {
-  const res = await http.delete<{ message: string }>(`/api/categories/${categoryId}`)
-  return res.data
+export const deleteCategory = async (categoryId: number): Promise<void> => {
+  await http.delete<null>(`/api/categories/${categoryId}`)
 }
 
 export const updateProduct = async (
@@ -96,13 +95,8 @@ export const updateProduct = async (
   return res.data
 }
 
-export const deleteProduct = async (
-  productId: number
-): Promise<{ message: string; productId: number }> => {
-  const res = await http.delete<{ message: string; productId: number }>(
-    `/api/products/${productId}`
-  )
-  return res.data
+export const deleteProduct = async (productId: number): Promise<void> => {
+  await http.delete<null>(`/api/products/${productId}`)
 }
 
 export const toggleProductAvailable = async (

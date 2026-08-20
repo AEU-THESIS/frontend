@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
 import { ref, reactive, onMounted, computed, onUnmounted } from 'vue'
 import { useProductStore } from '@/store/useProductStore'
 import { OPTIONS_SET_TYPE } from '@/constants/product'
-import type { Product, ProductFilters, ProductOptionSet } from '@/types/product.types'
+import type {
+  Product,
+  ProductFilters,
+  ProductOptionSet,
+  ProductTableItem,
+} from '@/types/product.types'
 import NoImage from '@/assets/no-image.jpg'
 import AddProductForm from '@/components/menu/AddProductForm.vue'
 import ProductTable from '@/components/menu/table/ProductTable.vue'
@@ -12,6 +18,7 @@ import { AppInput } from '@/components/ui/input'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppDialog from '@/components/common/AppDialog.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import ProductDetail from '@/components/menu/ProductDetail.vue'
 import { getImageUrl } from '@/utils/image'
 const dialogRef = ref<InstanceType<typeof AppDialog>>()
@@ -38,7 +45,9 @@ const productId = ref<number | null>(null)
 const isDetailDialogOpen = ref(false)
 const isAddDialogOpen = ref(false)
 const isFilterOpen = ref(false)
+const isDeleteDialogOpen = ref(false)
 const editingProduct = ref<Product | null>(null)
+const productPendingDelete = ref<ProductTableItem | null>(null)
 
 const filters = reactive({
   name: '',
@@ -64,6 +73,7 @@ const filteredProducts = computed(() => {
     price: resolvePrice(item),
     isAvailable: item.isAvailable, // has customisation options → on sale
     image: item.imageUrl ? getImageUrl(item.imageUrl) : NoImage,
+    cannotDelete: item.cannotDelete, // used in an order → delete is blocked
     optionSets: item.optionSets, // keep original for the detail dialog
   }))
 })
@@ -108,15 +118,35 @@ const handleViewProduct = async (id: number) => {
   productId.value = id
 }
 
-const handleDeleteProduct = async (item: Product) => {
-  const confirmMessage = t('menuManagement.messages.deleteConfirm', { name: item.name })
-  if (confirm(confirmMessage)) {
-    try {
-      await productStore.deleteProduct(item.id)
-      // Product will be removed from the list automatically via store
-    } catch (error) {
-      console.error(t('menuManagement.messages.deleteError'), error)
-    }
+const getErrorMessage = (err: unknown, fallback: string) => {
+  const axiosErr = err as { response?: { data?: { message?: string } } }
+  return axiosErr?.response?.data?.message || fallback
+}
+
+const handleDeleteProduct = (item: ProductTableItem) => {
+  productPendingDelete.value = item
+  isDeleteDialogOpen.value = true
+}
+
+const confirmDeleteProduct = async () => {
+  const item = productPendingDelete.value
+  if (!item) return
+
+  try {
+    await productStore.deleteProduct(item.id)
+    toast.success(t('menuManagement.messages.deleteSuccess', { name: item.name }))
+
+    // Step back a page when the last row of the current page was removed.
+    const currentPage = queryParams.paginationParams?.page ?? 1
+    const nextPage =
+      productStore.products.length === 0 && currentPage > 1 ? currentPage - 1 : currentPage
+    await fetchProducts(nextPage)
+  } catch (error) {
+    // The API rejects products that already appear in orders — show that reason.
+    toast.error(getErrorMessage(error, t('menuManagement.messages.deleteError')))
+  } finally {
+    isDeleteDialogOpen.value = false
+    productPendingDelete.value = null
   }
 }
 
@@ -297,6 +327,19 @@ onUnmounted(() => {
   >
     <ProductDetail :product-id="productId" />
   </app-dialog>
+
+  <!-- ============ DELETE CONFIRMATION ============= -->
+  <confirm-dialog
+    v-model:open="isDeleteDialogOpen"
+    :title="t('menuManagement.dialog.deleteTitle')"
+    :message="
+      t('menuManagement.messages.deleteConfirm', { name: productPendingDelete?.name ?? '' })
+    "
+    :confirm-label="t('common.delete')"
+    :loading="productStore.isDeletingProduct"
+    variant="danger"
+    @confirm="confirmDeleteProduct"
+  />
 </template>
 
 <style scoped>

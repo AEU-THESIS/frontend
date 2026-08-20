@@ -726,11 +726,13 @@
       "editTitle": "Edit Menu Item",
       "editDescription": "Update the details of your menu item.",
       "detailsTitle": "Product Details",
-      "detailsDescription": "View and edit the details of this product."
+      "detailsDescription": "View and edit the details of this product.",
+      "deleteTitle": "Delete Menu Item"
     },
     "messages": {
       "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
-      "deleteError": "Failed to delete product:",
+      "deleteSuccess": "\"{name}\" was deleted.",
+      "deleteError": "Failed to delete product.",
       "toggleError": "Failed to toggle product availability:"
     },
     "productTable": {
@@ -745,7 +747,8 @@
       "dropdownMenu": {
         "edit": "Edit",
         "view": "View",
-        "delete": "Delete"
+        "delete": "Delete",
+        "deleteDisabledTooltip": "This product cannot be deleted because it has been used in orders"
       },
       "pagination": {
         "showing": "Showing {from}–{to} of {total} items",
@@ -910,6 +913,7 @@
     "cancel": "Cancel",
     "toastSuccess": "Category deleted successfully",
     "toastError": "Failed to delete category",
+    "deleteDisabledTooltip": "This category cannot be deleted because it still contains products",
     "form": {
       "categoryNameLabel": "Category Name",
       "categoryPlaceholder": "e.g. Coffee, Pastries, Teas",
