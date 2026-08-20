@@ -16,7 +16,7 @@ import ProductDetail from '@/components/menu/ProductDetail.vue'
 import { getImageUrl } from '@/utils/image'
 const dialogRef = ref<InstanceType<typeof AppDialog>>()
 
-const PAGE_SIZE = 5
+const PAGE_SIZE = 10
 
 const { t } = useI18n()
 const productStore = useProductStore()
@@ -199,9 +199,6 @@ onUnmounted(() => {
     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex gap-3 items-center">
         <div class="w-auto">
-          <h1 class="font-headline-lg text-[24px] font-bold text-on-background mb-[4px]">
-            {{ t('menuManagement.title') }}
-          </h1>
           <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p>
         </div>
       </div>
@@ -256,7 +253,7 @@ onUnmounted(() => {
       <ProductTable
         :products="filteredProducts"
         :total="productStore.totalProducts"
-        :items-per-page="5"
+        :page-size="PAGE_SIZE"
         :page="queryParams.paginationParams?.page ?? 1"
         @page-change="fetchProducts"
         @toggle-available="handleToggleAvailable"

@@ -25,7 +25,7 @@ import { useProductStore } from '@/store/useProductStore'
 import { toast } from 'vue-sonner'
 import type { Category } from '@/types/product.types'
 
-const PAGE_SIZE = 6
+const PAGE_SIZE = 10
 const productStore = useProductStore()
 const { t } = useI18n()
 
