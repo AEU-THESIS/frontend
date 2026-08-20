@@ -205,6 +205,7 @@ const formatUsd = (amount: number | string) => `$${Number(amount).toFixed(2)}`
 const paymentMethodOptions = computed(() => [
   { value: 'cash', label: t('reports.filters.cash') },
   { value: 'khqr', label: t('reports.filters.khqr') },
+  { value: 'cod', label: t('reports.filters.cod') },
 ])
 
 const hasActiveFilters = computed(
