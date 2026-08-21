@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { usePublicShopStore } from '@/store/usePublicShopStore'
 
 const route = useRoute()
-const { t } = useI18n()
+const router = useRouter()
 const shopStore = usePublicShopStore()
 
-const load = () => {
+const load = async () => {
   const slug = String(route.params.slug ?? '')
-  if (slug) shopStore.loadMenu(slug)
+  if (!slug) {
+    router.replace({ name: 'not-found' })
+    return
+  }
+  const success = await shopStore.loadMenu(slug)
+  if (!success || shopStore.error || !shopStore.shop) {
+    // If not accessible (e.g. unverified Telegram access or invalid slug), redirect to 404
+    router.replace({ name: 'not-found' })
+  }
 }
 
 onMounted(load)
@@ -18,11 +25,10 @@ watch(() => route.params.slug, load)
 </script>
 
 <template>
-  <div class="min-h-screen bg-stone-100 dark:bg-stone-950">
-    <!-- Phone-width column on mobile; a centered app-card on tablet/desktop so a
-         browser visitor sees an intentional layout, not a stranded strip. -->
+  <div class="min-h-screen w-full bg-stone-100 dark:bg-stone-950 flex justify-center">
+    <!-- Seamless full-height container on mobile and responsive max-width on tablet/PC -->
     <div
-      class="tg-app mx-auto flex min-h-screen max-w-md flex-col bg-stone-50 dark:bg-stone-900 md:my-6 md:min-h-[calc(100vh-3rem)] md:overflow-hidden md:rounded-[2rem] md:shadow-2xl md:ring-1 md:ring-stone-200/60 dark:md:ring-stone-800"
+      class="tg-app w-full max-w-md md:max-w-xl lg:max-w-2xl min-h-screen flex flex-col bg-stone-50 dark:bg-stone-900 border-x border-stone-200/50 dark:border-stone-800/50 shadow-sm"
     >
       <!-- Loading skeleton -->
       <div v-if="shopStore.loading" class="p-4">
@@ -35,7 +41,7 @@ watch(() => route.params.slug, load)
             class="h-7 w-16 animate-pulse rounded-full bg-stone-200 dark:bg-stone-800"
           ></div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
           <div v-for="i in 6" :key="i" class="overflow-hidden rounded-2xl">
             <div class="aspect-square animate-pulse bg-stone-200 dark:bg-stone-800"></div>
             <div class="space-y-2 p-2.5">
@@ -46,19 +52,8 @@ watch(() => route.params.slug, load)
         </div>
       </div>
 
-      <!-- Error -->
-      <div
-        v-else-if="shopStore.error || !shopStore.shop"
-        class="flex flex-1 flex-col items-center justify-center gap-2 p-10 text-center"
-      >
-        <span class="material-symbols-outlined text-5xl text-stone-300">storefront</span>
-        <p class="font-bold text-stone-700 dark:text-stone-200">
-          {{ t('publicOrder.shopNotFound') }}
-        </p>
-      </div>
-
       <!-- Content with page transition -->
-      <router-view v-else v-slot="{ Component }">
+      <router-view v-else-if="shopStore.shop" v-slot="{ Component }">
         <transition name="page" mode="out-in">
           <component :is="Component" />
         </transition>

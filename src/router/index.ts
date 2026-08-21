@@ -121,10 +121,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/public/PublicMyOrdersView.vue'),
       },
       {
-        // Mini App 404 for any unknown path under /order/:slug.
+        // 404 for any unknown path under /order/:slug.
         path: ':pathMatch(.*)*',
         name: 'PublicNotFound',
-        component: () => import('@/views/public/PublicNotFoundView.vue'),
+        component: () => import('@/views/NotFound.vue'),
       },
     ],
   },
@@ -132,6 +132,7 @@ const routes: RouteRecordRaw[] = [
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFound.vue'),
+    meta: { requiresAuth: false },
   },
   {
     path: APP_ROUTES.FORGOT_PASSWORD.path,

@@ -1,5 +1,6 @@
 import publicHttp from './publicHttp'
 import type { Product } from '@/types/product.types'
+import type { Promotion } from '@/types/promotion.types'
 
 /** Shop display info returned with the public menu (no internal fields). */
 export interface PublicShop {
@@ -13,6 +14,7 @@ export interface PublicMenu {
   shop: PublicShop
   categories: { id: number; name: string; sortOrder: number }[]
   products: Product[]
+  promotions: Promotion[]
 }
 
 export interface PreOrderItemPayload {
@@ -52,6 +54,14 @@ export interface MyPreOrder {
   items: { id: number; quantity: number; name: string; options: string[] }[]
 }
 
+export interface PaginatedPreOrders {
+  orders: MyPreOrder[]
+  total: number
+  totalPages: number
+  page: number
+  hasMore: boolean
+}
+
 export const getPublicMenu = async (slug: string): Promise<PublicMenu> => {
   const res = await publicHttp.get<PublicMenu>(`/api/public/shops/${slug}/menu`)
   return res.data
@@ -65,7 +75,25 @@ export const createPreOrder = async (
   return res.data
 }
 
-export const getMyPreOrders = async (slug: string): Promise<MyPreOrder[]> => {
-  const res = await publicHttp.get<MyPreOrder[]>(`/api/public/shops/${slug}/orders/mine`)
-  return res.data
+export const getMyPreOrders = async (
+  slug: string,
+  page = 1,
+  limit = 10
+): Promise<PaginatedPreOrders> => {
+  const res = await publicHttp.get<any>(`/api/public/shops/${slug}/orders/mine`, {
+    params: { page, limit },
+  })
+  const raw = res.data
+  const orders = Array.isArray(raw) ? raw : (raw?.orders ?? [])
+  const total = raw?.total ?? orders.length
+  const totalPages = raw?.totalPages ?? (orders.length ? Math.ceil(total / limit) : 1)
+  const currentPage = raw?.page ?? page
+
+  return {
+    orders,
+    total,
+    totalPages,
+    page: currentPage,
+    hasMore: currentPage < totalPages,
+  }
 }

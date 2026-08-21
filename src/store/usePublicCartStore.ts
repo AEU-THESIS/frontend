@@ -2,12 +2,13 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Product } from '@/types/product.types'
 import type { PreOrderItemPayload } from '@/api/publicOrder'
+import { usePublicShopStore } from './usePublicShopStore'
+import { cartDiscounts, isLineInScope, type CartLineForCalc } from '@/lib/promotionDiscount'
 
 /**
- * Client-side cart for the Telegram Mini App pre-order flow. Deliberately separate
- * from the POS `useCartStore` (no promotions, no cash/comp logic) so the customer
- * flow stays simple and can't destabilise the POS. The server always recomputes
- * the authoritative total at submit — the totals here are display-only.
+ * Client-side cart for the Telegram Mini App pre-order flow.
+ * Evaluates active promotions from usePublicShopStore to display discounts and net totals.
+ * The server recomputes the authoritative total at submit.
  */
 export interface PublicCartOption {
   optionSetId: number
@@ -39,12 +40,61 @@ const optionsKey = (opts: PublicCartOption[]) =>
     .join('-')
 
 export const usePublicCartStore = defineStore('publicCart', () => {
+  const shopStore = usePublicShopStore()
   const items = ref<PublicCartItem[]>([])
 
   const count = computed(() => items.value.reduce((sum, i) => sum + i.quantity, 0))
-  const total = computed(
+  const subtotal = computed(
     () => Math.round(items.value.reduce((sum, i) => sum + i.lineTotal, 0) * 100) / 100
   )
+
+  const cartLines = computed<CartLineForCalc[]>(() =>
+    items.value.map(item => ({
+      productId: item.productId,
+      categoryId: item.categoryId,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      subtotal: item.lineTotal,
+    }))
+  )
+
+  const appliedResult = computed(() => cartDiscounts(shopStore.promotions, cartLines.value))
+  const appliedPromotions = computed(() => appliedResult.value.applied)
+  const discountTotal = computed(() => appliedResult.value.total)
+  const total = computed(() =>
+    Math.max(0, Math.round((subtotal.value - discountTotal.value + Number.EPSILON) * 100) / 100)
+  )
+
+  const bogoFreeByCartId = computed<Record<string, number>>(() => {
+    const map: Record<string, number> = {}
+    for (const { promotion } of appliedPromotions.value) {
+      if (promotion.discountType !== 'BOGO') continue
+
+      const units = items.value
+        .filter(item =>
+          isLineInScope(promotion, {
+            productId: item.productId,
+            categoryId: item.categoryId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subtotal: item.lineTotal,
+          })
+        )
+        .flatMap(item =>
+          Array.from({ length: item.quantity }, () => ({
+            cartId: item.cartId,
+            unitPrice: item.unitPrice,
+          }))
+        )
+        .sort((a, b) => a.unitPrice - b.unitPrice)
+
+      const freeCount = Math.floor(units.length / 2)
+      for (const { cartId } of units.slice(0, freeCount)) {
+        map[cartId] = (map[cartId] ?? 0) + 1
+      }
+    }
+    return map
+  })
 
   const addItem = (product: Product, quantity: number, options: PublicCartOption[]) => {
     const basePrice = product.price == null ? 0 : Number(product.price)
@@ -102,5 +152,18 @@ export const usePublicCartStore = defineStore('publicCart', () => {
       selectedOptions: i.options.map(o => ({ optionSetId: o.optionSetId, elementId: o.elementId })),
     }))
 
-  return { items, count, total, addItem, updateQuantity, remove, clear, toPayloadItems }
+  return {
+    items,
+    count,
+    subtotal,
+    discountTotal,
+    appliedPromotions,
+    total,
+    bogoFreeByCartId,
+    addItem,
+    updateQuantity,
+    remove,
+    clear,
+    toPayloadItems,
+  }
 })

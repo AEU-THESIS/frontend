@@ -36,6 +36,12 @@ const pageTitle = computed(() => {
       return t('sidebar.items.saleReports')
     case APP_ROUTES.PRODUCT.name:
       return t('menuManagement.title')
+    case APP_ROUTES.PROMOTIONS.name:
+      return t('promotions.title')
+    case APP_ROUTES.BLOCKED_CUSTOMERS.name:
+      return t('sidebar.items.blockedCustomers')
+    case APP_ROUTES.SETTINGS.name:
+      return t('settings.title')
     default:
       return t('app.title')
   }
