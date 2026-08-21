@@ -35,6 +35,7 @@ const form = reactive({
   exchangeRate: '',
   receiptFooter: '',
   isOrderManagementEnabled: false,
+  isShopClosed: false,
 })
 
 const receiptItems = [
@@ -103,6 +104,7 @@ const fillForm = (settings: ShopSettings) => {
   form.exchangeRate = getExchangeRateInputValue(settings.exchangeRate)
   form.receiptFooter = settings.receiptFooter || ''
   form.isOrderManagementEnabled = settings.isOrderManagementEnabled === true
+  form.isShopClosed = settings.isShopClosed === true
 }
 
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -142,6 +144,7 @@ const saveSettings = async () => {
       exchange_rate: getFormExchangeRate(),
       receipt_footer: form.receiptFooter.trim() || null,
       is_order_management_enabled: form.isOrderManagementEnabled,
+      is_shop_closed: form.isShopClosed,
     })
 
     fillForm(settings)
@@ -290,6 +293,26 @@ onMounted(loadSettings)
                   type="checkbox"
                   class="sr-only peer"
                 />
+                <div
+                  class="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer dark:bg-stone-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-stone-600 peer-checked:bg-amber-700"
+                ></div>
+              </label>
+            </div>
+
+            <!-- Close Shop (Holiday / Temporary Closure) Switch -->
+            <div
+              class="md:col-span-2 border-t border-stone-100 dark:border-stone-800 pt-5 mt-2 flex items-center justify-between"
+            >
+              <div>
+                <h3 class="text-sm font-bold text-stone-950 dark:text-stone-50">
+                  {{ t('settings.shopClosure.title') }}
+                </h3>
+                <p class="text-xs font-medium text-stone-500 dark:text-stone-400 mt-0.5">
+                  {{ t('settings.shopClosure.description') }}
+                </p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer select-none">
+                <input v-model="form.isShopClosed" type="checkbox" class="sr-only peer" />
                 <div
                   class="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer dark:bg-stone-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-stone-600 peer-checked:bg-amber-700"
                 ></div>

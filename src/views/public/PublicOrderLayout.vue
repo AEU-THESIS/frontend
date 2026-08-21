@@ -3,6 +3,8 @@ import { onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePublicShopStore } from '@/store/usePublicShopStore'
 import { APP_ROUTES } from '@/constants/appRoutes'
+import PublicBlockedView from './PublicBlockedView.vue'
+import PublicClosedView from './PublicClosedView.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +21,12 @@ const load = async () => {
   const version = ++loadVersion
   const success = await shopStore.loadMenu(slug)
   if (version !== loadVersion) return
+
+  // If blocked or shop is closed, no need to redirect to NotFound
+  if (shopStore.isBlocked || shopStore.isShopClosed) {
+    return
+  }
+
   if (!success || shopStore.error || !shopStore.shop) {
     router.replace({ name: APP_ROUTES.NOT_FOUND.name })
   }
@@ -55,6 +63,12 @@ watch(() => route.params.slug, load)
           </div>
         </div>
       </div>
+
+      <!-- Immediately display blocked page if customer is blocked -->
+      <PublicBlockedView v-else-if="shopStore.isBlocked" />
+
+      <!-- Immediately display closed notice if shop is closed (holiday / temporary closure) -->
+      <PublicClosedView v-else-if="shopStore.isShopClosed" />
 
       <!-- Content with page transition -->
       <router-view v-else-if="shopStore.shop" v-slot="{ Component }">

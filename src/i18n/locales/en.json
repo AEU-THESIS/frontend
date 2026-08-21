@@ -60,6 +60,16 @@
       "completed": "Completed",
       "canceled": "Canceled",
       "rejected": "Rejected"
+    },
+    "blocked": {
+      "title": "Access Restricted",
+      "message": "Your account has been temporarily restricted from placing orders at this shop.",
+      "contact": "Please contact the shop owner to resolve this issue."
+    },
+    "closed": {
+      "title": "Shop is Currently Closed",
+      "message": "We are temporarily closed (holiday or maintenance). Please check back later!",
+      "note": "We apologize for any inconvenience caused."
     }
   },
   "preOrders": {
@@ -89,7 +99,8 @@
     "blockMessage": "Stop pre-orders from",
     "blockAction": "Block",
     "blocked": "Customer blocked",
-    "blockCustomer": "Block customer"
+    "blockCustomer": "Block customer",
+    "pagination": "Showing {start}–{end} of {total}"
   },
   "app": {
     "title": "RoutinCafe POS"
@@ -170,7 +181,7 @@
       "pos": "POS",
       "orders": "Orders",
       "orderHistory": "Order History",
-      "blockedCustomers": "Blocked Customers",
+      "blockedCustomers": "Blocklist",
       "inventory": "Inventory",
       "products": "Product",
       "categories": "Categories",
@@ -298,6 +309,10 @@
     "orderManagement": {
       "title": "Enable Order Management Dashboard",
       "description": "If enabled, orders go through Preparing/Ready flow. If disabled, orders are automatically completed immediately after checkout."
+    },
+    "shopClosure": {
+      "title": "Close Shop (Holiday / Temporary Closure)",
+      "description": "When enabled, online pre-orders are closed and customers will see the shop closed notice."
     },
     "financials": {
       "title": "Financials & Payments",

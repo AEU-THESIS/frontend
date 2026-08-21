@@ -34,6 +34,7 @@ export const useShopSettingsStore = defineStore('shopSettings', () => {
     Number.isFinite(initialExchangeRate) ? initialExchangeRate : DEFAULT_EXCHANGE_RATE
   )
   const is_order_management_enabled = ref(getStoredValue('is_order_management_enabled') === 'true')
+  const is_shop_closed = ref(getStoredValue('is_shop_closed') === 'true')
 
   const currency_code = computed(() => (currency_symbol.value === KHR_SYMBOL ? 'KHR' : 'USD'))
   const exchangeRateLabel = computed(() => exchange_rate.value.toLocaleString('en-US'))
@@ -41,18 +42,20 @@ export const useShopSettingsStore = defineStore('shopSettings', () => {
   const setShopSettings = (
     settings: Pick<
       ShopSettings,
-      'name' | 'currencySymbol' | 'exchangeRate' | 'isOrderManagementEnabled'
+      'name' | 'currencySymbol' | 'exchangeRate' | 'isOrderManagementEnabled' | 'isShopClosed'
     >
   ) => {
     shop_name.value = settings.name || DEFAULT_SHOP_NAME
     currency_symbol.value = normalizeCurrencySymbol(settings.currencySymbol)
     exchange_rate.value = normalizeExchangeRate(settings.exchangeRate)
     is_order_management_enabled.value = settings.isOrderManagementEnabled === true
+    is_shop_closed.value = settings.isShopClosed === true
 
     setStoredValue('shop_name', shop_name.value)
     setStoredValue('currency_symbol', currency_symbol.value)
     setStoredValue('exchange_rate', String(exchange_rate.value))
     setStoredValue('is_order_management_enabled', String(is_order_management_enabled.value))
+    setStoredValue('is_shop_closed', String(is_shop_closed.value))
   }
 
   const convertUsdToKhr = (amount: number) => Math.round(amount * exchange_rate.value)
@@ -74,6 +77,7 @@ export const useShopSettingsStore = defineStore('shopSettings', () => {
     exchange_rate,
     exchangeRateLabel,
     is_order_management_enabled,
+    is_shop_closed,
     setShopSettings,
     convertUsdToKhr,
     formatAmount,

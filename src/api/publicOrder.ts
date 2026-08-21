@@ -8,6 +8,7 @@ export interface PublicShop {
   name: string
   slug: string
   currencySymbol: string
+  isShopClosed?: boolean
 }
 
 export interface PublicMenu {
@@ -83,7 +84,7 @@ export const getMyPreOrders = async (
   const res = await publicHttp.get<PaginatedPreOrders>(`/api/public/shops/${slug}/orders/mine`, {
     params: { page, limit },
   })
-  const raw = res.data as Record<string, unknown>
+  const raw = (res.data ?? {}) as unknown as Record<string, unknown>
   const orders: MyPreOrder[] = Array.isArray(raw) ? raw : ((raw?.orders as MyPreOrder[]) ?? [])
   const total = (raw?.total as number) ?? orders.length
   const totalPages = (raw?.totalPages as number) ?? (orders.length ? Math.ceil(total / limit) : 1)

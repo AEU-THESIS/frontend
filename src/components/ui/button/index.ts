@@ -7,14 +7,19 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
+        default: 'bg-[#D2691E] text-primary-foreground hover:bg-[#B35919] disabled:bg-[#D2691E]/50',
         primary: 'bg-[#D2691E] text-primary-foreground hover:bg-[#B35919] disabled:bg-[#D2691E]/50',
         secondary:
           'bg-[#FFDDC7] text-[#2D241E] hover:bg-[#FFDFC9] disabled:bg-[#F9EFE9] disabled:text-[#B6A295]',
         tertiary: [
-          'bg-transparent text-[#2D241E] shadow-none', // Default
-          'hover:bg-transparent', // Hover
-          'disabled:text-[#B6A295] disabled:no-underline', // Disabled
+          'bg-transparent text-[#2D241E] shadow-none',
+          'hover:bg-transparent',
+          'disabled:text-[#B6A295] disabled:no-underline',
         ],
+        outline:
+          'border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300',
+        ghost: 'hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300',
+        destructive: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400',
         icon: 'bg-[#EDEDED] text-[#2D241E] hover:bg-[#E2E2E2] rounded-xl',
       },
       size: {

@@ -47,13 +47,22 @@ const loadOrder = async () => {
 // Real-time SSE push updates without polling!
 usePublicOrderSse(
   computed(() => shopStore.slug),
-  (_event, data) => {
-    if (!data) return
+  (_event, rawData) => {
+    if (!rawData) return
+    const data = rawData as {
+      orderNumber?: string
+      id?: number
+      fulfillmentStatus?: string
+      paymentStatus?: string
+    }
     if (data.orderNumber === orderNumber.value || data.id === orderDetail.value?.id) {
       if (orderDetail.value) {
-        orderDetail.value.fulfillmentStatus =
-          data.fulfillmentStatus ?? orderDetail.value.fulfillmentStatus
-        orderDetail.value.paymentStatus = data.paymentStatus ?? orderDetail.value.paymentStatus
+        if (data.fulfillmentStatus) {
+          orderDetail.value.fulfillmentStatus = data.fulfillmentStatus
+        }
+        if (data.paymentStatus) {
+          orderDetail.value.paymentStatus = data.paymentStatus
+        }
       } else {
         loadOrder()
       }

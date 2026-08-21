@@ -93,8 +93,13 @@ const submit = async () => {
       params: { slug: shopStore.slug, orderNumber: result.orderNumber },
     })
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
+    const err = e as { response?: { status?: number; data?: { message?: string } } }
     tg.notify('error')
+    // Blocked customer → mark blocked state
+    if (err?.response?.status === 403) {
+      shopStore.isBlocked = true
+      return
+    }
     toast.error(err?.response?.data?.message ?? t('publicOrder.submitFailed'))
   } finally {
     submitting.value = false

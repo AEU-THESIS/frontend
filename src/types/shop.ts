@@ -11,6 +11,7 @@ export interface ShopSettings {
   exchangeRate: string | number
   receiptFooter: string | null
   isOrderManagementEnabled?: boolean
+  isShopClosed?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -25,4 +26,5 @@ export interface UpdateShopSettingsPayload {
   exchange_rate: number
   receipt_footer: string | null
   is_order_management_enabled?: boolean
+  is_shop_closed?: boolean
 }
