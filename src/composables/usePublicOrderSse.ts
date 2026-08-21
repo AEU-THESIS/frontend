@@ -1,32 +1,41 @@
-import { onMounted, onUnmounted, unref, type MaybeRef } from 'vue'
+import { watch, onUnmounted, unref, type MaybeRef } from 'vue'
 import { useTelegram } from './useTelegram'
 
 const DEV_TELEGRAM_USER_ID = '999999'
+const MAX_RECONNECT_DELAY = 30_000
 
 export function usePublicOrderSse(
   slug: MaybeRef<string>,
-  onEvent: (eventType: 'order_created' | 'order_updated', order: any) => void
+  onEvent: (eventType: 'order_created' | 'order_updated', order: Record<string, unknown>) => void
 ) {
   let eventSource: EventSource | null = null
+  let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  let reconnectDelay = 1_000
   const tg = useTelegram()
+
+  const cleanup = () => {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
+    }
+    if (eventSource) {
+      eventSource.close()
+      eventSource = null
+    }
+  }
 
   const connect = () => {
     const shopSlug = unref(slug)
     if (!shopSlug) return
 
-    if (eventSource) {
-      eventSource.close()
-      eventSource = null
-    }
+    cleanup()
 
     const params = new URLSearchParams()
-    const userId = tg.user?.id
-      ? String(tg.user.id)
-      : import.meta.env.DEV
-        ? DEV_TELEGRAM_USER_ID
-        : ''
-    if (userId) {
-      params.set('telegramUserId', userId)
+
+    if (tg.webApp?.initData) {
+      params.set('initData', tg.webApp.initData)
+    } else if (import.meta.env.DEV) {
+      params.set('telegramUserId', DEV_TELEGRAM_USER_ID)
     }
 
     const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
@@ -37,42 +46,48 @@ export function usePublicOrderSse(
 
       eventSource.addEventListener('order_updated', (e: MessageEvent) => {
         try {
-          const data = JSON.parse(e.data)
-          onEvent('order_updated', data)
-        } catch (err) {
-          console.error('⚠️ [SSE] failed to parse order_updated payload', err)
+          onEvent('order_updated', JSON.parse(e.data))
+        } catch {
+          // malformed payload
         }
       })
 
       eventSource.addEventListener('order_created', (e: MessageEvent) => {
         try {
-          const data = JSON.parse(e.data)
-          onEvent('order_created', data)
-        } catch (err) {
-          console.error('⚠️ [SSE] failed to parse order_created payload', err)
+          onEvent('order_created', JSON.parse(e.data))
+        } catch {
+          // malformed payload
         }
       })
 
-      eventSource.onerror = () => {
-        // EventSource automatically handles reconnection internally
+      eventSource.onopen = () => {
+        reconnectDelay = 1_000
       }
-    } catch (err) {
-      console.warn('⚠️ [SSE] EventSource init failed:', err)
+
+      eventSource.onerror = () => {
+        if (eventSource?.readyState === EventSource.CLOSED) {
+          cleanup()
+          reconnectTimer = setTimeout(() => {
+            reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY)
+            connect()
+          }, reconnectDelay)
+        }
+      }
+    } catch {
+      // EventSource init failed
     }
   }
 
-  onMounted(() => {
-    connect()
-  })
+  watch(
+    () => unref(slug),
+    newSlug => {
+      if (newSlug) connect()
+      else cleanup()
+    },
+    { immediate: true }
+  )
 
-  onUnmounted(() => {
-    if (eventSource) {
-      eventSource.close()
-      eventSource = null
-    }
-  })
+  onUnmounted(cleanup)
 
-  return {
-    reconnect: connect,
-  }
+  return { reconnect: connect }
 }

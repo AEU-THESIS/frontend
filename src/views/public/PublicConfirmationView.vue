@@ -8,6 +8,7 @@ import { usePublicShopStore } from '@/store/usePublicShopStore'
 import { getMyPreOrders, type MyPreOrder } from '@/api/publicOrder'
 import { useTelegram } from '@/composables/useTelegram'
 import { usePublicOrderSse } from '@/composables/usePublicOrderSse'
+import { usePublicOrderStatus } from '@/composables/usePublicOrderStatus'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import LangFlagToggle from '@/components/public/LangFlagToggle.vue'
 
@@ -16,6 +17,7 @@ const router = useRouter()
 const { t } = useI18n()
 const shopStore = usePublicShopStore()
 const tg = useTelegram()
+const { statusConfig } = usePublicOrderStatus()
 
 const orderNumber = computed(() => String(route.params.orderNumber ?? ''))
 const cafeTelegram = import.meta.env.VITE_CAFE_TELEGRAM_URL as string | undefined
@@ -25,54 +27,7 @@ const copied = ref(false)
 const currency = computed(() => shopStore.shop?.currencySymbol ?? '$')
 
 const status = computed(() => orderDetail.value?.fulfillmentStatus ?? 'pending')
-
-const statusConfig = (st: string) => {
-  switch (st) {
-    case 'pending':
-      return {
-        title: t('publicOrder.status.pending'),
-        badgeClass: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
-        dotClass: 'bg-amber-500',
-        step: 1,
-      }
-    case 'preparing':
-      return {
-        title: t('publicOrder.status.preparing'),
-        badgeClass: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
-        dotClass: 'bg-blue-500',
-        step: 2,
-      }
-    case 'ready':
-      return {
-        title: t('publicOrder.status.ready'),
-        badgeClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
-        dotClass: 'bg-emerald-500',
-        step: 3,
-      }
-    case 'completed':
-      return {
-        title: t('publicOrder.status.completed'),
-        badgeClass: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300',
-        dotClass: 'bg-stone-400',
-        step: 4,
-      }
-    case 'rejected':
-    case 'canceled':
-      return {
-        title: t('publicOrder.status.canceled'),
-        badgeClass: 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300',
-        dotClass: 'bg-red-500',
-        step: 0,
-      }
-    default:
-      return {
-        title: t('publicOrder.status.pending'),
-        badgeClass: 'bg-stone-100 text-stone-600',
-        dotClass: 'bg-stone-400',
-        step: 1,
-      }
-  }
-}
+const currentStatus = computed(() => statusConfig(status.value))
 
 const loadOrder = async () => {
   if (!orderNumber.value) return
@@ -112,6 +67,7 @@ const handleVisibility = () => {
   }
 }
 
+let copiedTimer: ReturnType<typeof setTimeout> | null = null
 const copyNumber = async () => {
   if (!orderNumber.value) return
   try {
@@ -119,11 +75,12 @@ const copyNumber = async () => {
     copied.value = true
     tg.haptic('light')
     toast.success(t('publicOrder.copied'))
-    setTimeout(() => {
+    if (copiedTimer) clearTimeout(copiedTimer)
+    copiedTimer = setTimeout(() => {
       copied.value = false
     }, 2000)
   } catch {
-    // fallback
+    toast.error(t('publicOrder.copyFailed'))
   }
 }
 
@@ -139,6 +96,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (copiedTimer) clearTimeout(copiedTimer)
   document.removeEventListener('visibilitychange', handleVisibility)
 })
 </script>
@@ -155,7 +113,7 @@ onUnmounted(() => {
         <span class="material-symbols-outlined text-lg">arrow_back</span>
       </button>
       <span class="text-xs font-bold uppercase tracking-wider text-stone-400">
-        {{ shopStore.shop?.name ?? 'Routine Café' }}
+        {{ shopStore.shop?.name ?? '' }}
       </span>
       <LangFlagToggle />
     </header>
@@ -164,7 +122,13 @@ onUnmounted(() => {
       <!-- Icon Hero -->
       <div class="relative mb-3 mt-1 flex h-20 w-20 items-center justify-center">
         <div
-          v-if="status === 'completed' || status === 'ready' || status === 'pending'"
+          v-if="status === 'pending'"
+          class="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+        >
+          <span class="material-symbols-outlined text-3xl font-bold">schedule</span>
+        </div>
+        <div
+          v-else-if="status === 'completed' || status === 'ready'"
           class="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
         >
           <span class="material-symbols-outlined text-3xl font-bold">check</span>
@@ -255,10 +219,10 @@ onUnmounted(() => {
           <!-- Status pill -->
           <span
             class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-            :class="statusConfig(status).badgeClass"
+            :class="currentStatus.badgeClass"
           >
-            <span class="h-1.5 w-1.5 rounded-full" :class="statusConfig(status).dotClass"></span>
-            <span>{{ statusConfig(status).title }}</span>
+            <span class="h-1.5 w-1.5 rounded-full" :class="currentStatus.dotClass"></span>
+            <span>{{ currentStatus.title }}</span>
           </span>
         </div>
 
@@ -278,7 +242,7 @@ onUnmounted(() => {
               <div
                 class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors"
                 :class="
-                  statusConfig(status).step >= 1
+                  currentStatus.step >= 1
                     ? 'bg-emerald-500 text-white'
                     : 'bg-stone-200 text-stone-500 dark:bg-stone-700'
                 "
@@ -288,7 +252,7 @@ onUnmounted(() => {
               <span
                 class="text-[11px] font-semibold"
                 :class="
-                  statusConfig(status).step >= 1
+                  currentStatus.step >= 1
                     ? 'text-stone-800 dark:text-stone-200'
                     : 'text-stone-400 dark:text-stone-500'
                 "
@@ -302,13 +266,13 @@ onUnmounted(() => {
               <div
                 class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors"
                 :class="
-                  statusConfig(status).step >= 2
+                  currentStatus.step >= 2
                     ? 'bg-blue-500 text-white'
                     : 'bg-stone-200 text-stone-500 dark:bg-stone-700 dark:text-stone-400'
                 "
               >
                 <span
-                  v-if="statusConfig(status).step >= 3"
+                  v-if="currentStatus.step >= 3"
                   class="material-symbols-outlined text-sm font-bold"
                   >check</span
                 >
@@ -317,7 +281,7 @@ onUnmounted(() => {
               <span
                 class="text-[11px] font-semibold"
                 :class="
-                  statusConfig(status).step >= 2
+                  currentStatus.step >= 2
                     ? 'text-stone-800 dark:text-stone-200'
                     : 'text-stone-400 dark:text-stone-500'
                 "
@@ -331,13 +295,13 @@ onUnmounted(() => {
               <div
                 class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors"
                 :class="
-                  statusConfig(status).step >= 3
+                  currentStatus.step >= 3
                     ? 'bg-emerald-500 text-white'
                     : 'bg-stone-200 text-stone-500 dark:bg-stone-700 dark:text-stone-400'
                 "
               >
                 <span
-                  v-if="statusConfig(status).step >= 4"
+                  v-if="currentStatus.step >= 4"
                   class="material-symbols-outlined text-sm font-bold"
                   >check</span
                 >
@@ -346,7 +310,7 @@ onUnmounted(() => {
               <span
                 class="text-[11px] font-semibold"
                 :class="
-                  statusConfig(status).step >= 3
+                  currentStatus.step >= 3
                     ? 'text-stone-800 dark:text-stone-200'
                     : 'text-stone-400 dark:text-stone-500'
                 "
@@ -425,15 +389,10 @@ onUnmounted(() => {
           :href="cafeTelegram"
           target="_blank"
           rel="noopener"
-          class="block w-full pt-1"
+          class="flex w-full items-center justify-center gap-1.5 pt-1 text-xs font-bold text-sky-600 transition hover:underline dark:text-sky-400"
         >
-          <button
-            type="button"
-            class="flex w-full items-center justify-center gap-1.5 text-xs font-bold text-sky-600 transition hover:underline dark:text-sky-400"
-          >
-            <span class="material-symbols-outlined text-sm">send</span>
-            {{ t('publicOrder.messageUs') }}
-          </button>
+          <span class="material-symbols-outlined text-sm">send</span>
+          {{ t('publicOrder.messageUs') }}
         </a>
       </div>
     </main>

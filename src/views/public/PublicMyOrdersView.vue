@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { usePublicShopStore } from '@/store/usePublicShopStore'
 import { getMyPreOrders, type MyPreOrder } from '@/api/publicOrder'
 import { usePublicOrderSse } from '@/composables/usePublicOrderSse'
+import { usePublicOrderStatus } from '@/composables/usePublicOrderStatus'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import LangFlagToggle from '@/components/public/LangFlagToggle.vue'
 
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const shopStore = usePublicShopStore()
+const { statusConfig } = usePublicOrderStatus()
 
 const orders = ref<MyPreOrder[]>([])
 const loadingInitial = ref(true)
@@ -23,47 +25,13 @@ let observer: IntersectionObserver | null = null
 
 const currency = computed(() => shopStore.shop?.currencySymbol ?? '$')
 
-const statusConfig = (status: string) => {
-  switch (status) {
-    case 'pending':
-      return {
-        badgeClass: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
-        dotClass: 'bg-amber-500',
-      }
-    case 'preparing':
-      return {
-        badgeClass: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
-        dotClass: 'bg-blue-500',
-      }
-    case 'ready':
-      return {
-        badgeClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
-        dotClass: 'bg-emerald-500',
-      }
-    case 'completed':
-      return {
-        badgeClass: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300',
-        dotClass: 'bg-stone-400',
-      }
-    case 'rejected':
-    case 'canceled':
-      return {
-        badgeClass: 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300',
-        dotClass: 'bg-red-500',
-      }
-    default:
-      return {
-        badgeClass: 'bg-stone-100 text-stone-600',
-        dotClass: 'bg-stone-400',
-      }
-  }
-}
-
 const formatTime = (isoString?: string) => {
   if (!isoString) return ''
   try {
-    const d = new Date(isoString)
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return new Date(isoString).toLocaleTimeString(locale.value, {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
   } catch {
     return ''
   }
@@ -71,11 +39,25 @@ const formatTime = (isoString?: string) => {
 
 const loadFirstPage = async (silent = false) => {
   if (!silent) loadingInitial.value = true
-  page.value = 1
   try {
     const res = await getMyPreOrders(shopStore.slug, 1, 10)
-    orders.value = res.orders
-    hasMore.value = res.hasMore
+    if (silent) {
+      const existingIds = new Set(orders.value.map(o => o.id))
+      for (const order of res.orders) {
+        if (!existingIds.has(order.id)) {
+          orders.value.unshift(order)
+        } else {
+          const idx = orders.value.findIndex(o => o.id === order.id)
+          if (idx !== -1) {
+            orders.value[idx] = order
+          }
+        }
+      }
+    } else {
+      orders.value = res.orders
+      page.value = 1
+      hasMore.value = res.hasMore
+    }
   } catch {
     if (!silent) orders.value = []
   } finally {
@@ -90,7 +72,6 @@ const loadNextPage = async () => {
   try {
     const res = await getMyPreOrders(shopStore.slug, nextPage, 10)
     if (res.orders.length > 0) {
-      // Append unique orders
       const existingIds = new Set(orders.value.map(o => o.id))
       const newItems = res.orders.filter(o => !existingIds.has(o.id))
       orders.value.push(...newItems)
@@ -100,43 +81,51 @@ const loadNextPage = async () => {
       hasMore.value = false
     }
   } catch {
-    hasMore.value = false
+    // Keep hasMore unchanged so the user can retry
   } finally {
     loadingMore.value = false
   }
 }
 
-// SSE Real-time push listener: instantly updates order status without polling
 usePublicOrderSse(
   computed(() => shopStore.slug),
   (event, data) => {
     if (!data) return
+    const orderId = data.id as number | undefined
+    const orderNumber = data.orderNumber as string | undefined
+
     if (event === 'order_updated') {
-      const idx = orders.value.findIndex(
-        o => o.id === data.id || o.orderNumber === data.orderNumber
-      )
+      const idx = orders.value.findIndex(o => o.id === orderId || o.orderNumber === orderNumber)
       if (idx !== -1) {
         orders.value[idx] = {
           ...orders.value[idx],
-          fulfillmentStatus: data.fulfillmentStatus ?? orders.value[idx].fulfillmentStatus,
-          paymentStatus: data.paymentStatus ?? orders.value[idx].paymentStatus,
+          fulfillmentStatus:
+            (data.fulfillmentStatus as string) ?? orders.value[idx].fulfillmentStatus,
+          paymentStatus: (data.paymentStatus as string) ?? orders.value[idx].paymentStatus,
         }
       }
     } else if (event === 'order_created') {
-      const exists = orders.value.some(o => o.id === data.id || o.orderNumber === data.orderNumber)
-      if (!exists && data.orderNumber) {
+      const exists = orders.value.some(o => o.id === orderId || o.orderNumber === orderNumber)
+      if (!exists && orderNumber) {
+        const items = Array.isArray(data.items) ? data.items : []
         orders.value.unshift({
-          id: data.id,
-          orderNumber: data.orderNumber,
+          id: orderId ?? 0,
+          orderNumber,
           totalAmount: Number(data.totalAmount ?? 0),
-          fulfillmentStatus: data.fulfillmentStatus ?? 'pending',
-          paymentStatus: data.paymentStatus ?? 'unpaid',
-          createdAt: data.createdAt ?? new Date().toISOString(),
-          items: (data.items ?? []).map((it: any) => ({
-            id: it.id,
-            quantity: it.quantity,
-            name: it.product?.name ?? it.name ?? '',
-            options: (it.options ?? []).map((op: any) => op.optionName ?? op),
+          fulfillmentStatus: (data.fulfillmentStatus as string) ?? 'pending',
+          paymentStatus: (data.paymentStatus as string) ?? 'unpaid',
+          createdAt: (data.createdAt as string) ?? new Date().toISOString(),
+          items: items.map((it: Record<string, unknown>) => ({
+            id: it.id as number,
+            quantity: it.quantity as number,
+            name:
+              ((it.product as Record<string, unknown>)?.name as string) ??
+              (it.name as string) ??
+              '',
+            options: (Array.isArray(it.options) ? it.options : []).map(
+              (op: Record<string, unknown> | string) =>
+                typeof op === 'string' ? op : ((op.optionName as string) ?? '')
+            ),
           })),
         })
       }
@@ -179,10 +168,13 @@ const goToDetail = (orderNumber: string) => {
   })
 }
 
+watch(sentinel, el => {
+  if (el) setupObserver()
+})
+
 onMounted(() => {
   loadFirstPage()
   document.addEventListener('visibilitychange', handleVisibility)
-  setTimeout(setupObserver, 300)
 })
 
 onUnmounted(() => {
@@ -201,13 +193,14 @@ onUnmounted(() => {
       class="sticky top-0 z-10 flex items-center justify-between gap-3 bg-stone-50/90 px-4 py-3 backdrop-blur dark:bg-stone-900/90"
     >
       <div class="flex items-center gap-3">
-        <button
-          type="button"
-          class="flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition active:scale-90 dark:bg-stone-800 dark:text-stone-300"
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-9 w-9 rounded-full bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300"
           @click="goMenu"
         >
           <span class="material-symbols-outlined">arrow_back</span>
-        </button>
+        </Button>
         <h1 class="text-lg font-extrabold text-stone-900 dark:text-stone-50">
           {{ t('publicOrder.myOrders') }}
         </h1>
@@ -268,8 +261,12 @@ onUnmounted(() => {
         <div
           v-for="o in orders"
           :key="o.id"
+          role="button"
+          tabindex="0"
           class="cursor-pointer rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition hover:border-stone-200 hover:shadow active:scale-[0.99] dark:border-stone-800 dark:bg-stone-800"
           @click="goToDetail(o.orderNumber)"
+          @keydown.enter="goToDetail(o.orderNumber)"
+          @keydown.space.prevent="goToDetail(o.orderNumber)"
         >
           <!-- Order Header: Number on Left, Clean Compact Status Badge on Right -->
           <div
@@ -295,7 +292,7 @@ onUnmounted(() => {
                 class="h-1.5 w-1.5 rounded-full"
                 :class="statusConfig(o.fulfillmentStatus).dotClass"
               ></span>
-              <span>{{ t(`publicOrder.status.${o.fulfillmentStatus}`) }}</span>
+              <span>{{ statusConfig(o.fulfillmentStatus).title }}</span>
             </span>
           </div>
 

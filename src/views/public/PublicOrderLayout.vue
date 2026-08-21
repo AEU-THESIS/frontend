@@ -2,21 +2,25 @@
 import { onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePublicShopStore } from '@/store/usePublicShopStore'
+import { APP_ROUTES } from '@/constants/appRoutes'
 
 const route = useRoute()
 const router = useRouter()
 const shopStore = usePublicShopStore()
 
+let loadVersion = 0
+
 const load = async () => {
   const slug = String(route.params.slug ?? '')
   if (!slug) {
-    router.replace({ name: 'not-found' })
+    router.replace({ name: APP_ROUTES.NOT_FOUND.name })
     return
   }
+  const version = ++loadVersion
   const success = await shopStore.loadMenu(slug)
+  if (version !== loadVersion) return
   if (!success || shopStore.error || !shopStore.shop) {
-    // If not accessible (e.g. unverified Telegram access or invalid slug), redirect to 404
-    router.replace({ name: 'not-found' })
+    router.replace({ name: APP_ROUTES.NOT_FOUND.name })
   }
 }
 

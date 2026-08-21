@@ -42,6 +42,7 @@
     "orderNumber": "លេខការបញ្ជាទិញ",
     "copyOrderNumber": "ចម្លង",
     "copied": "បានចម្លង!",
+    "copyFailed": "មិនអាចចម្លងបានទេ។ សូមចម្លងដោយខ្លួនឯង។",
     "messageUs": "ផ្ញើសារមកយើងតាម Telegram",
     "viewMyOrders": "មើលការបញ្ជាទិញរបស់ខ្ញុំ",
     "orderMore": "កម្ម៉ង់ភេសជ្ជៈបន្ថែម",

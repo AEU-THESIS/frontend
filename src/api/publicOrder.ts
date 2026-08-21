@@ -80,14 +80,14 @@ export const getMyPreOrders = async (
   page = 1,
   limit = 10
 ): Promise<PaginatedPreOrders> => {
-  const res = await publicHttp.get<any>(`/api/public/shops/${slug}/orders/mine`, {
+  const res = await publicHttp.get<PaginatedPreOrders>(`/api/public/shops/${slug}/orders/mine`, {
     params: { page, limit },
   })
-  const raw = res.data
-  const orders = Array.isArray(raw) ? raw : (raw?.orders ?? [])
-  const total = raw?.total ?? orders.length
-  const totalPages = raw?.totalPages ?? (orders.length ? Math.ceil(total / limit) : 1)
-  const currentPage = raw?.page ?? page
+  const raw = res.data as Record<string, unknown>
+  const orders: MyPreOrder[] = Array.isArray(raw) ? raw : ((raw?.orders as MyPreOrder[]) ?? [])
+  const total = (raw?.total as number) ?? orders.length
+  const totalPages = (raw?.totalPages as number) ?? (orders.length ? Math.ceil(total / limit) : 1)
+  const currentPage = (raw?.page as number) ?? page
 
   return {
     orders,

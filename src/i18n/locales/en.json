@@ -42,6 +42,7 @@
     "orderNumber": "Order number",
     "copyOrderNumber": "Copy",
     "copied": "Copied!",
+    "copyFailed": "Could not copy. Please copy manually.",
     "messageUs": "Message us on Telegram",
     "viewMyOrders": "View my orders",
     "orderMore": "Order More Drinks",
