@@ -118,9 +118,7 @@ const handleDeleteProduct = (item: ProductTableItem) => {
 
 /** Why deletion is blocked, or '' when the product can be deleted (no tooltip). */
 const deleteBlockedReason = (item: ProductTableItem) =>
-  item.cannotDelete
-    ? t('menuManagement.productTable.dropdownMenu.deleteDisabledTooltip')
-    : 'Delete Product'
+  item.cannotDelete ? t('menuManagement.productTable.dropdownMenu.deleteDisabledTooltip') : ''
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function categoryBadgeClass(category: string) {

@@ -896,7 +896,6 @@
     "active": "Active",
     "inactive": "Inactive",
     "edit": "Edit",
-    "view": "View",
     "delete": "Delete",
     "showing": "Showing {from}-{to} of {total} items",
     "to": "-",

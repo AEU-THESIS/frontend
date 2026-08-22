@@ -21,6 +21,7 @@ import AppDialog from '@/components/common/AppDialog.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import ProductDetail from '@/components/menu/ProductDetail.vue'
 import { getImageUrl } from '@/utils/image'
+import { getErrorMessage } from '@/utils/error'
 const dialogRef = ref<InstanceType<typeof AppDialog>>()
 
 const PAGE_SIZE = 5
@@ -116,11 +117,6 @@ const handleEditProduct = (item: Product) => {
 const handleViewProduct = async (id: number) => {
   isDetailDialogOpen.value = true
   productId.value = id
-}
-
-const getErrorMessage = (err: unknown, fallback: string) => {
-  const axiosErr = err as { response?: { data?: { message?: string } } }
-  return axiosErr?.response?.data?.message || fallback
 }
 
 const handleDeleteProduct = (item: ProductTableItem) => {

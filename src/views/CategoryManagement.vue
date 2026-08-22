@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Pencil, Eye, Trash2 } from 'lucide-vue-next'
+import { Pencil, Trash2 } from 'lucide-vue-next'
 import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
@@ -35,6 +35,7 @@ import {
 import { useProductStore } from '@/store/useProductStore'
 import { toast } from 'vue-sonner'
 import type { Category } from '@/types/product.types'
+import { getErrorMessage } from '@/utils/error'
 
 const PAGE_SIZE = 6
 const productStore = useProductStore()
@@ -107,14 +108,9 @@ const openDeleteConfirmation = (category: Category) => {
   isDeleteDialogOpen.value = true
 }
 
-/** Why deletion is blocked, or the plain action label when it is allowed. */
+/** Why deletion is blocked, or '' when the category can be deleted (no tooltip). */
 const deleteBlockedReason = (category: Category) =>
-  category.cannotDelete ? t('category.deleteDisabledTooltip') : t('category.delete')
-
-const getErrorMessage = (err: unknown, fallback: string) => {
-  const axiosErr = err as { response?: { data?: { message?: string } } }
-  return axiosErr?.response?.data?.message || fallback
-}
+  category.cannotDelete ? t('category.deleteDisabledTooltip') : ''
 
 const handleDelete = async () => {
   if (!selectedCategory.value) return
@@ -278,21 +274,12 @@ const openAddDialog = () => {
                             <span>{{ $t('category.edit') }}</span>
                           </DropdownMenuItem>
 
-                          <!-- View -->
-                          <DropdownMenuItem
-                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
-                            @click.stop="() => {}"
-                          >
-                            <Eye class="size-4 shrink-0" />
-                            <span>{{ $t('category.view') }}</span>
-                          </DropdownMenuItem>
-
                           <!-- Delete — disabled while the category still holds products -->
                           <AppTooltip :content="deleteBlockedReason(item)" side="left">
                             <span class="block">
                               <DropdownMenuItem
                                 :disabled="!!item.cannotDelete"
-                                :aria-label="deleteBlockedReason(item)"
+                                :aria-label="deleteBlockedReason(item) || undefined"
                                 class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 focus:outline-none focus:bg-red-50 dark:focus:bg-red-950/30 transition-colors select-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40 data-[disabled]:hover:bg-transparent dark:data-[disabled]:hover:bg-transparent"
                                 @click.stop="openDeleteConfirmation(item)"
                               >

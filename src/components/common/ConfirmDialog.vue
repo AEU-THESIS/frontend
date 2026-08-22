@@ -11,6 +11,7 @@ import {
   AlertDialogDescription,
   AlertDialogCancel,
 } from 'reka-ui'
+import type { ConfirmDialogProps } from '@/types/common.types'
 
 /**
  * Reusable confirmation dialog for destructive or irreversible actions.
@@ -28,25 +29,10 @@ import {
  *   @confirm="doTheThing"
  * />
  */
-const props = withDefaults(
-  defineProps<{
-    /** Controlled visibility — pair with `v-model:open`. */
-    open: boolean
-    title: string
-    /** Body text. Override with the default slot for richer content. */
-    message?: string
-    confirmLabel?: string
-    cancelLabel?: string
-    /** `danger` for destructive actions (default), `primary` for neutral ones. */
-    variant?: 'danger' | 'primary'
-    /** Shows a spinner and blocks dismissal while the action is in flight. */
-    loading?: boolean
-  }>(),
-  {
-    variant: 'danger',
-    loading: false,
-  }
-)
+const props = withDefaults(defineProps<ConfirmDialogProps>(), {
+  variant: 'danger',
+  loading: false,
+})
 
 const emit = defineEmits<{
   'update:open': [value: boolean]

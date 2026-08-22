@@ -22,6 +22,7 @@ import type { Category, Product } from '@/types/product.types'
 import type { DiscountType, Promotion, PromotionPayload } from '@/types/promotion.types'
 import PromotionStatCard from '@/components/promotions/PromotionStatCard.vue'
 import PromotionFormModal from '@/components/promotions/PromotionFormModal.vue'
+import { getErrorMessage } from '@/utils/error'
 
 const { t } = useI18n()
 const store = usePromotionStore()
@@ -91,11 +92,6 @@ const openEdit = (promotion: Promotion) => {
 const closeForm = () => {
   isFormOpen.value = false
   editing.value = null
-}
-
-const getErrorMessage = (err: unknown, fallback: string) => {
-  const axiosErr = err as { response?: { data?: { message?: string } } }
-  return axiosErr?.response?.data?.message || fallback
 }
 
 const handleSubmit = async (payload: PromotionPayload) => {

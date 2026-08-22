@@ -7,6 +7,7 @@ import {
   TooltipContent,
   TooltipArrow,
 } from 'reka-ui'
+import type { AppTooltipProps } from '@/types/common.types'
 
 /**
  * Styled hover/focus tooltip around any trigger content.
@@ -21,19 +22,10 @@ import {
  * Wrap disabled controls in a plain element (a `span`) inside the slot —
  * `disabled` buttons swallow pointer events, so the tooltip would never open.
  */
-withDefaults(
-  defineProps<{
-    /** Tooltip text. Empty or omitted renders the trigger with no tooltip. */
-    content?: string
-    side?: 'top' | 'right' | 'bottom' | 'left'
-    /** Milliseconds to hover before the tooltip opens. */
-    delayDuration?: number
-  }>(),
-  {
-    side: 'top',
-    delayDuration: 150,
-  }
-)
+withDefaults(defineProps<AppTooltipProps>(), {
+  side: 'top',
+  delayDuration: 150,
+})
 </script>
 
 <template>
