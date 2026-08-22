@@ -23,6 +23,5 @@ export const APP_ROUTES = {
   PUBLIC_CHECKOUT: { path: 'checkout', name: 'PublicCheckout' },
   PUBLIC_CONFIRMATION: { path: 'confirmation/:orderNumber', name: 'PublicConfirmation' },
   PUBLIC_MY_ORDERS: { path: 'my-orders', name: 'PublicMyOrders' },
-  PUBLIC_BLOCKED: { path: 'blocked', name: 'PublicBlocked' },
   NOT_FOUND: { path: '/:pathMatch(.*)*', name: 'not-found' },
 } as const

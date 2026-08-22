@@ -121,11 +121,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/public/PublicMyOrdersView.vue'),
       },
       {
-        path: APP_ROUTES.PUBLIC_BLOCKED.path,
-        name: APP_ROUTES.PUBLIC_BLOCKED.name,
-        component: () => import('@/views/public/PublicBlockedView.vue'),
-      },
-      {
         // 404 for any unknown path under /order/:slug.
         path: ':pathMatch(.*)*',
         name: 'PublicNotFound',

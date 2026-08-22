@@ -43,13 +43,13 @@ const shopStore = usePublicShopStore()
       {{ t('publicOrder.blocked.contact') }}
     </p>
 
-    <!-- Shop name pill (if available) -->
+    <!-- Shop slug pill (shop object is null when blocked, but slug is always available) -->
     <div
-      v-if="shopStore.shop?.name"
+      v-if="shopStore.slug"
       class="inline-flex items-center gap-2 rounded-full bg-stone-100 dark:bg-stone-800 px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300"
     >
       <span class="material-symbols-outlined text-base">storefront</span>
-      {{ shopStore.shop.name }}
+      {{ shopStore.slug }}
     </div>
   </div>
 </template>
