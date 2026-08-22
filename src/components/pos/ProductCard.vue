@@ -31,13 +31,20 @@ const basePrice = computed(
 
 const displayPrice = computed(() => `$${basePrice.value.toFixed(2)}`)
 
-// A percentage promo maps cleanly to a per-unit discounted price. Fixed-amount and
-// BOGO apply to the order/scope, not a single unit, so those only show a badge.
+// A percentage or fixed-amount promo maps to a discounted price display on the card.
+// BOGO applies across pairs of units, so it only shows the BOGO badge.
 const discountedPrice = computed(() => {
   const promo = props.promotion
-  if (!promo || promo.discountType !== 'PERCENTAGE') return null
-  const value = basePrice.value * (1 - promo.discountValue / 100)
-  return `$${(Math.round(value * 100) / 100).toFixed(2)}`
+  if (!promo) return null
+  if (promo.discountType === 'PERCENTAGE') {
+    const value = basePrice.value * (1 - promo.discountValue / 100)
+    return `$${(Math.round(value * 100) / 100).toFixed(2)}`
+  }
+  if (promo.discountType === 'FIXED_AMOUNT') {
+    const value = Math.max(0, basePrice.value - promo.discountValue)
+    return `$${(Math.round(value * 100) / 100).toFixed(2)}`
+  }
+  return null
 })
 
 // Short label shown on the promo badge.

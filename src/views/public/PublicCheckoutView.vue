@@ -5,10 +5,11 @@ import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { usePublicShopStore } from '@/store/usePublicShopStore'
-import { usePublicCartStore } from '@/store/usePublicCartStore'
+import { usePublicCartStore, type PublicCartItem } from '@/store/usePublicCartStore'
 import { createPreOrder } from '@/api/publicOrder'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { useTelegram } from '@/composables/useTelegram'
+import { getImageUrl } from '@/utils/image'
 import LangFlagToggle from '@/components/public/LangFlagToggle.vue'
 
 const router = useRouter()
@@ -35,6 +36,13 @@ const mapsLink = computed(() =>
 )
 
 const optionSummary = (opts: { optionName: string }[]) => opts.map(o => o.optionName).join(', ')
+
+const freeQtyFor = (item: PublicCartItem) => cart.bogoFreeByCartId[item.cartId] ?? 0
+
+const bogoHintFor = (item: PublicCartItem) => {
+  const promo = shopStore.promotionForProduct(item.productId, item.categoryId)
+  return promo?.discountType === 'BOGO' && freeQtyFor(item) === 0
+}
 
 const useLocation = () => {
   if (!navigator.geolocation) {
@@ -85,8 +93,13 @@ const submit = async () => {
       params: { slug: shopStore.slug, orderNumber: result.orderNumber },
     })
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
+    const err = e as { response?: { status?: number; data?: { message?: string } } }
     tg.notify('error')
+    // Blocked customer → mark blocked state
+    if (err?.response?.status === 403) {
+      shopStore.isBlocked = true
+      return
+    }
     toast.error(err?.response?.data?.message ?? t('publicOrder.submitFailed'))
   } finally {
     submitting.value = false
@@ -123,37 +136,119 @@ const submit = async () => {
 
     <template v-else>
       <!-- Cart lines -->
-      <section class="space-y-2 px-4 pt-2">
+      <section class="space-y-2.5 px-4 pt-2">
         <div
           v-for="item in cart.items"
           :key="item.cartId"
-          class="flex items-center gap-3 rounded-2xl border border-stone-100 bg-white p-3 dark:border-stone-800 dark:bg-stone-800"
+          class="flex items-center gap-3.5 rounded-2xl border border-stone-100 bg-white p-3.5 shadow-sm dark:border-stone-800 dark:bg-stone-800"
         >
+          <!-- Product image / fallback -->
+          <div
+            class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-50 text-stone-300 dark:bg-stone-900 dark:text-stone-700"
+          >
+            <img
+              v-if="item.imageUrl"
+              class="h-full w-full object-cover"
+              :alt="item.name"
+              :src="getImageUrl(item.imageUrl)"
+            />
+            <span v-else class="material-symbols-outlined text-2xl">local_cafe</span>
+          </div>
+
+          <!-- Info -->
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-bold text-stone-800 dark:text-stone-100">
               {{ item.name }}
             </p>
-            <p v-if="item.options.length" class="truncate text-xs text-stone-400">
+            <p
+              v-if="item.options.length"
+              class="truncate text-[11px] font-medium text-stone-400 dark:text-stone-500"
+            >
               {{ optionSummary(item.options) }}
             </p>
-            <p class="mt-0.5 text-sm font-bold text-primary">
-              {{ currency }}{{ item.lineTotal.toFixed(2) }}
+            <!-- BOGO free status -->
+            <p
+              v-if="freeQtyFor(item) > 0"
+              class="mt-0.5 flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-emerald-600 dark:text-emerald-500"
+            >
+              <span class="material-symbols-outlined text-[13px] leading-none">redeem</span>
+              {{ t('cart.bogoFree', { count: freeQtyFor(item) }) }}
+            </p>
+            <!-- BOGO hint -->
+            <p
+              v-else-if="bogoHintFor(item)"
+              class="mt-0.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-500"
+            >
+              <span class="material-symbols-outlined text-[13px] leading-none">add_circle</span>
+              {{ t('cart.bogoHint') }}
             </p>
           </div>
-          <div class="flex items-center gap-2 rounded-xl bg-stone-100 p-1 dark:bg-stone-950">
+
+          <!-- Quantity Stepper -->
+          <div class="flex items-center gap-1.5 rounded-xl bg-stone-100 p-1 dark:bg-stone-950">
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-stone-700 dark:bg-stone-700 dark:text-stone-100"
+              class="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-stone-700 active:scale-90 dark:bg-stone-800 dark:text-stone-100"
               @click="cart.updateQuantity(item.cartId, item.quantity - 1)"
             >
               <span class="material-symbols-outlined text-sm">remove</span>
             </button>
-            <span class="w-5 text-center text-sm font-bold">{{ item.quantity }}</span>
+            <span class="w-5 text-center text-sm font-extrabold">{{ item.quantity }}</span>
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-stone-700 dark:bg-stone-700 dark:text-stone-100"
+              class="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-stone-700 active:scale-90 dark:bg-stone-800 dark:text-stone-100"
               @click="cart.updateQuantity(item.cartId, item.quantity + 1)"
             >
               <span class="material-symbols-outlined text-sm">add</span>
             </button>
+          </div>
+
+          <!-- Line total -->
+          <div class="w-14 text-right shrink-0">
+            <span class="text-sm font-extrabold text-stone-900 dark:text-stone-50">
+              {{ currency }}{{ item.lineTotal.toFixed(2) }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Order summary / Discounts -->
+      <section class="mt-3 px-4">
+        <div
+          class="space-y-2 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm text-sm dark:border-stone-800 dark:bg-stone-800"
+        >
+          <div
+            class="flex items-center justify-between font-bold text-stone-500 dark:text-stone-400"
+          >
+            <span>{{ t('cart.subtotal') }}</span>
+            <span>{{ currency }}{{ cart.subtotal.toFixed(2) }}</span>
+          </div>
+
+          <!-- Discounts breakdown -->
+          <div v-if="cart.discountTotal > 0" class="flex flex-col gap-1.5">
+            <div
+              class="flex items-center justify-between font-bold text-emerald-600 dark:text-emerald-500"
+            >
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base leading-none">sell</span>
+                <span>{{ t('cart.discount') }}</span>
+              </span>
+              <span>-{{ currency }}{{ cart.discountTotal.toFixed(2) }}</span>
+            </div>
+            <!-- Per-promotion breakdown line items with promotion name -->
+            <div
+              v-for="applied in cart.appliedPromotions"
+              :key="applied.promotion.id"
+              class="flex items-center justify-between pl-5 text-xs text-stone-400 dark:text-stone-500"
+            >
+              <span class="truncate max-w-[200px]">· {{ applied.promotion.name }}</span>
+              <span>-{{ currency }}{{ applied.discount.toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div
+            class="flex items-center justify-between border-t border-stone-100 pt-2 text-base font-extrabold text-stone-900 dark:border-stone-700 dark:text-stone-50"
+          >
+            <span>{{ t('publicOrder.total') }}</span>
+            <span class="text-primary">{{ currency }}{{ cart.total.toFixed(2) }}</span>
           </div>
         </div>
       </section>
@@ -232,10 +327,10 @@ const submit = async () => {
     <!-- Sticky submit -->
     <div
       v-if="cart.count > 0"
-      class="tg-safe-bottom fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900"
+      class="tg-safe-bottom fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md md:max-w-xl lg:max-w-2xl border-t border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900"
     >
       <Button
-        class="h-auto w-full rounded-xl py-3.5 font-bold"
+        class="h-12 w-full rounded-2xl font-bold shadow-sm transition active:scale-[0.98]"
         :disabled="!canSubmit"
         @click="submit"
       >

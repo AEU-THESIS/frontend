@@ -96,3 +96,8 @@ const handleCreation = async () => {
 - Authentication tokens (JWT) are preserved in `localStorage` securely mapped by `useAuthStore.ts` initialization hooks across page reloads.
 - Central `api.ts` interceptors uniformly evaluate `401 Unauthorized` states mathematically, instantly nullifying `localStorage` and rerouting to `APP_ROUTES.LOGIN`.
 - User input payloads are mathematically sanitized by Zod BEFORE initiating asynchronous HTTP network traffic minimizing load on the Backend architecture.
+
+## Testing & Verification Guidelines
+
+- **No Vitest / Jest / Automated Unit Test Frameworks**: Automated test suites are not configured in this project. Do not create `.spec.ts` or `.test.ts` files or introduce test runner packages.
+- **Verification Method**: Always verify changes by running `npm run build` (`vue-tsc -b && vite build`) for static type safety and `npm run dev` for interactive UI verification.
