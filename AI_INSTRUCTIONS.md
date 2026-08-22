@@ -42,6 +42,9 @@ View → Component → Store → API Layer
    - **Single Quotes & No Semicolons** naturally enforced by `.prettierrc`.
    - **BANNED**: The `any` TypeScript type is strictly prohibited (`Unexpected any` will fail CI/CD).
    - HTML Attributes MUST be strictly ordered: `v-model` must mathematically precede standard attributes like `type` and `@submit`.
+7. **No Vitest / Jest / Spec Files**:
+   - Automated test runners (Vitest, Jest) are strictly **BANNED**. Do not create `.spec.ts` or `.test.ts` files or add test dependencies.
+   - Verification is done exclusively through `vue-tsc` (`npm run build`) and interactive UI testing (`npm run dev`).
 
 ---
 
