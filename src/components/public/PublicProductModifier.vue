@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { usePublicCartStore, type PublicCartOption } from '@/store/usePublicCartStore'
+import { usePublicShopStore } from '@/store/usePublicShopStore'
 import { useTelegram } from '@/composables/useTelegram'
 import type { Product, OptionSetElement } from '@/types/product.types'
 
@@ -12,6 +13,7 @@ const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { t } = useI18n()
 const cart = usePublicCartStore()
+const shopStore = usePublicShopStore()
 const tg = useTelegram()
 
 const quantity = ref(1)
@@ -19,9 +21,91 @@ const selected = ref<
   Record<number, { elementId: number; label: string; priceModifier: number; groupName: string }>
 >({})
 
+// Touch drag gesture state
+const dragOffset = ref(0)
+const isDragging = ref(false)
+let startY = 0
+let startX = 0
+let isVerticalGesture = false
+
+const onTouchStart = (e: TouchEvent) => {
+  if (e.touches.length !== 1) return
+  startY = e.touches[0].clientY
+  startX = e.touches[0].clientX
+  isDragging.value = true
+  isVerticalGesture = false
+  dragOffset.value = 0
+}
+
+const onTouchMove = (e: TouchEvent) => {
+  if (!isDragging.value) return
+  const currentY = e.touches[0].clientY
+  const currentX = e.touches[0].clientX
+  const deltaY = currentY - startY
+  const deltaX = Math.abs(currentX - startX)
+
+  if (!isVerticalGesture && Math.abs(deltaY) > 5) {
+    isVerticalGesture = Math.abs(deltaY) > deltaX
+  }
+
+  if (isVerticalGesture && deltaY > 0) {
+    e.preventDefault()
+    dragOffset.value = deltaY
+  }
+}
+
+const onTouchEnd = () => {
+  if (!isDragging.value) return
+  isDragging.value = false
+  if (dragOffset.value > 80) {
+    tg.haptic('light')
+    emit('close')
+  }
+  dragOffset.value = 0
+}
+
+// Lock body scrolling when modal dialog is open
+watch(
+  () => props.isOpen,
+  open => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      dragOffset.value = 0
+    }
+  },
+  { immediate: true }
+)
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
+})
+
+const promo = computed(() =>
+  props.product ? shopStore.promotionForProduct(props.product.id, props.product.categoryId) : null
+)
+
+const promoBadge = computed(() => {
+  if (!promo.value) return null
+  switch (promo.value.discountType) {
+    case 'PERCENTAGE':
+      return t('home.promo.percentOff', { value: promo.value.discountValue })
+    case 'FIXED_AMOUNT':
+      return t('home.promo.amountOff', {
+        value: `${props.currencySymbol}${promo.value.discountValue.toFixed(2)}`,
+      })
+    case 'BOGO':
+      return t('home.promo.bogo')
+    default:
+      return null
+  }
+})
+
 const resetSelection = () => {
   if (!props.product) return
-  quantity.value = 1
+  const p = shopStore.promotionForProduct(props.product.id, props.product.categoryId)
+  quantity.value = p?.discountType === 'BOGO' ? 2 : 1
   selected.value = {}
   for (const pos of props.product.optionSets) {
     const els = pos.optionSet.elements
@@ -100,7 +184,12 @@ const handleAdd = () => {
 
   cart.addItem(props.product, quantity.value, options)
   tg.haptic('medium')
-  toast.success(t('publicOrder.addedToCart'))
+  const isBogo = promo.value?.discountType === 'BOGO'
+  toast.success(
+    isBogo && quantity.value >= 2
+      ? t('cart.addedBogo', { name: props.product.name })
+      : t('publicOrder.addedToCart')
+  )
   emit('close')
 }
 </script>
@@ -117,22 +206,47 @@ const handleAdd = () => {
       ></div>
 
       <div
-        class="sheet-panel relative flex max-h-[88vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl dark:bg-stone-900 sm:rounded-3xl"
+        class="sheet-panel relative flex max-h-[88vh] w-full max-w-md md:max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl dark:bg-stone-900 sm:rounded-3xl"
+        :style="{
+          transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
+          transition: isDragging ? 'none' : 'transform 0.25s ease-out',
+        }"
       >
-        <!-- Grab handle (mobile affordance) -->
-        <div class="flex justify-center pt-2.5 sm:hidden">
-          <span class="h-1.5 w-10 rounded-full bg-stone-300 dark:bg-stone-700"></span>
+        <!-- Touch Drag Handle (Mobile gesture trigger) -->
+        <div
+          class="flex cursor-grab touch-none justify-center py-3 active:cursor-grabbing sm:hidden"
+          @touchstart="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+        >
+          <span
+            class="h-1.5 w-12 rounded-full bg-stone-300 transition-colors hover:bg-stone-400 dark:bg-stone-700"
+          ></span>
         </div>
 
         <!-- Header -->
         <div
-          class="flex items-start justify-between border-b border-stone-100 p-5 pt-3 dark:border-stone-800"
+          class="flex items-start justify-between border-b border-stone-100 p-5 pt-1 dark:border-stone-800"
+          @touchstart="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
         >
           <div>
-            <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">{{ product.name }}</h2>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-stone-900 dark:text-stone-50">
+                {{ product.name }}
+              </h2>
+              <span
+                v-if="promoBadge"
+                class="rounded-full bg-emerald-600/95 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-white"
+              >
+                {{ promoBadge }}
+              </span>
+            </div>
             <p class="text-xs text-stone-500 dark:text-stone-400">{{ product.category.name }}</p>
           </div>
           <button
+            type="button"
             class="flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-stone-500 transition active:scale-90 dark:bg-stone-800"
             @click="emit('close')"
           >
@@ -140,7 +254,7 @@ const handleAdd = () => {
           </button>
         </div>
 
-        <!-- Options -->
+        <!-- Options (Scrollable area) -->
         <div class="flex-1 space-y-5 overflow-y-auto p-5">
           <div v-for="pos in product.optionSets" :key="pos.optionSet.id" class="space-y-2.5">
             <div class="flex items-center justify-between">
@@ -160,7 +274,7 @@ const handleAdd = () => {
                 :key="el.id"
                 type="button"
                 :class="[
-                  'flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 p-3 text-center transition-all active:scale-95',
+                  'flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 p-3 text-center transition-all active:scale-95 touch-manipulation',
                   selected[pos.optionSet.id]?.elementId === el.id
                     ? 'border-primary bg-primary/5 font-bold text-primary'
                     : 'border-stone-100 bg-stone-50 text-stone-700 dark:border-stone-800 dark:bg-stone-900/50 dark:text-stone-300',
@@ -175,29 +289,47 @@ const handleAdd = () => {
             </div>
           </div>
 
-          <!-- Quantity -->
-          <div class="flex items-center justify-between pt-1">
-            <span class="text-sm font-bold text-stone-800 dark:text-stone-200">
-              {{ t('publicOrder.quantity') }}
-            </span>
-            <div class="flex items-center gap-4 rounded-xl bg-stone-100 p-1 dark:bg-stone-950">
-              <Button
-                variant="secondary"
-                size="icon"
-                class="h-10 w-10 rounded-lg active:scale-90"
-                @click="dec"
-              >
-                <span class="material-symbols-outlined text-base">remove</span>
-              </Button>
-              <span class="w-8 text-center text-base font-extrabold">{{ quantity }}</span>
-              <Button
-                variant="secondary"
-                size="icon"
-                class="h-10 w-10 rounded-lg active:scale-90"
-                @click="inc"
-              >
-                <span class="material-symbols-outlined text-base">add</span>
-              </Button>
+          <!-- Quantity Stepper -->
+          <div class="flex flex-col gap-1.5 pt-1">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col">
+                <span class="text-sm font-bold text-stone-800 dark:text-stone-200">
+                  {{ t('publicOrder.quantity') }}
+                </span>
+                <span
+                  v-if="promo?.discountType === 'BOGO' && quantity >= 2"
+                  class="mt-0.5 flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-emerald-600 dark:text-emerald-500"
+                >
+                  <span class="material-symbols-outlined text-[13px] leading-none">redeem</span>
+                  {{ t('cart.bogoFree', { count: Math.floor(quantity / 2) }) }}
+                </span>
+                <span
+                  v-else-if="promo?.discountType === 'BOGO' && quantity === 1"
+                  class="mt-0.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-500"
+                >
+                  <span class="material-symbols-outlined text-[13px] leading-none">add_circle</span>
+                  {{ t('cart.bogoHint') }}
+                </span>
+              </div>
+              <div class="flex items-center gap-4 rounded-xl bg-stone-100 p-1 dark:bg-stone-950">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  class="h-10 w-10 rounded-lg active:scale-90 touch-manipulation"
+                  @click="dec"
+                >
+                  <span class="material-symbols-outlined text-base">remove</span>
+                </Button>
+                <span class="w-8 text-center text-base font-extrabold">{{ quantity }}</span>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  class="h-10 w-10 rounded-lg active:scale-90 touch-manipulation"
+                  @click="inc"
+                >
+                  <span class="material-symbols-outlined text-base">add</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -215,7 +347,7 @@ const handleAdd = () => {
             </span>
           </div>
           <Button
-            class="h-auto rounded-xl px-8 py-3.5 font-bold transition active:scale-95"
+            class="h-12 rounded-2xl px-8 font-bold shadow-sm transition active:scale-[0.98] touch-manipulation"
             @click="handleAdd"
           >
             {{ t('publicOrder.addToCart') }}
@@ -227,7 +359,7 @@ const handleAdd = () => {
 </template>
 
 <style scoped>
-/* Backdrop fades; panel slides up from the bottom (and back down on close). */
+/* Backdrop fades; panel slides up from the bottom */
 .sheet-enter-active,
 .sheet-leave-active {
   transition: opacity 0.25s ease;

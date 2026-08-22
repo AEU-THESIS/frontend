@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
+import { Megaphone, Ticket, CalendarClock, Pencil, Trash2, LoaderCircle } from 'lucide-vue-next'
 import {
-  Megaphone,
-  Ticket,
-  CalendarClock,
-  Pencil,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  LoaderCircle,
-} from 'lucide-vue-next'
+  PaginationRoot,
+  PaginationList,
+  PaginationListItem,
+  PaginationFirst,
+  PaginationPrev,
+  PaginationNext,
+  PaginationLast,
+  PaginationEllipsis,
+} from 'reka-ui'
 import { Card } from '@/components/ui/card'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
@@ -209,11 +210,33 @@ const stateBadgeClass = (state: PromotionState) => {
   }
 }
 
-const pageStart = computed(() =>
-  store.pagination.total === 0 ? 0 : (store.pagination.page - 1) * store.pagination.limit + 1
+const currentPage = ref(store.page)
+
+watch(
+  () => store.page,
+  newPage => {
+    currentPage.value = newPage
+  }
 )
-const pageEnd = computed(() =>
-  Math.min(store.pagination.page * store.pagination.limit, store.pagination.total)
+
+watch(currentPage, newPage => {
+  if (newPage !== store.page) {
+    store.setPage(newPage)
+  }
+})
+
+const showingFrom = computed(() =>
+  store.pagination.total === 0 ? 0 : (currentPage.value - 1) * store.pagination.limit + 1
+)
+const showingTo = computed(() =>
+  Math.min(currentPage.value * store.pagination.limit, store.pagination.total)
+)
+const paginationText = computed(() =>
+  t('promotions.pagination', {
+    start: showingFrom.value,
+    end: showingTo.value,
+    total: store.pagination.total,
+  })
 )
 </script>
 
@@ -221,16 +244,6 @@ const pageEnd = computed(() =>
   <div class="flex h-full flex-col overflow-hidden bg-[#F9FAFB] font-body dark:bg-stone-900">
     <div class="custom-scrollbar flex-1 overflow-y-auto px-10 py-10">
       <div class="w-full space-y-8">
-        <!-- Header -->
-        <div>
-          <h1 class="text-3xl font-bold text-[#1A1C1C] dark:text-stone-50">
-            {{ t('promotions.title') }}
-          </h1>
-          <p class="mt-1 text-sm text-[#737373] dark:text-stone-400">
-            {{ t('promotions.subtitle') }}
-          </p>
-        </div>
-
         <!-- Summary cards -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           <PromotionStatCard
@@ -409,56 +422,71 @@ const pageEnd = computed(() =>
             </table>
           </div>
 
-          <!-- Pagination -->
+          <!-- ── Pagination footer ───────────────────────────────────────────────── -->
           <div
-            class="flex flex-col items-center justify-between gap-4 border-t border-slate-50 p-8 dark:border-stone-800 md:flex-row"
+            class="px-3 md:px-6 py-3 md:py-4 bg-stone-50/30 dark:bg-stone-800/30 border-t border-slate-50 dark:border-stone-800 flex flex-col md:flex-row gap-2 md:gap-0 justify-between items-center"
           >
-            <p class="text-sm font-bold text-slate-400">
-              {{
-                t('promotions.pagination', {
-                  start: pageStart,
-                  end: pageEnd,
-                  total: store.pagination.total,
-                })
-              }}
-            </p>
+            <!-- Showing X to Y of Z promotions -->
+            <span class="text-xs text-stone-500 dark:text-stone-400 text-[14px]">
+              {{ paginationText }}
+            </span>
 
-            <div class="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                class="size-10 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 dark:border-stone-700 dark:bg-stone-800"
-                :disabled="store.pagination.page === 1"
-                @click="store.setPage(store.pagination.page - 1)"
-              >
-                <ChevronLeft class="size-5" />
-              </Button>
+            <!-- Reka-UI Pagination -->
+            <PaginationRoot
+              v-model:page="currentPage"
+              :total="store.pagination.total"
+              :items-per-page="store.pagination.limit"
+              :sibling-count="1"
+              show-edges
+            >
+              <PaginationList v-slot="{ items }" class="flex items-center gap-1">
+                <PaginationFirst
+                  :title="t('menuManagement.productTable.pagination.firstPage')"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[18px]">first_page</span>
+                </PaginationFirst>
 
-              <Button
-                v-for="p in store.pagination.totalPages"
-                :key="p"
-                variant="outline"
-                class="size-10 rounded-lg font-bold"
-                :class="
-                  store.pagination.page === p
-                    ? 'bg-[#D2691E] text-white hover:bg-[#B35919]'
-                    : 'bg-white text-[#737373] dark:bg-stone-800 dark:text-stone-300'
-                "
-                @click="store.setPage(p)"
-              >
-                {{ p }}
-              </Button>
+                <PaginationPrev
+                  :title="t('menuManagement.productTable.pagination.previousPage')"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                </PaginationPrev>
 
-              <Button
-                variant="outline"
-                size="icon"
-                class="size-10 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 dark:border-stone-700 dark:bg-stone-800"
-                :disabled="store.pagination.page === store.pagination.totalPages"
-                @click="store.setPage(store.pagination.page + 1)"
-              >
-                <ChevronRight class="size-5" />
-              </Button>
-            </div>
+                <template v-for="(pageItem, index) in items" :key="index">
+                  <PaginationEllipsis
+                    v-if="pageItem.type === 'ellipsis'"
+                    :index="index"
+                    class="w-8 h-8 flex items-center justify-center text-stone-400 dark:text-stone-500 text-xs select-none"
+                  >
+                    &#8230;
+                  </PaginationEllipsis>
+
+                  <PaginationListItem
+                    v-else
+                    :value="pageItem.value"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors data-[selected]:bg-[#D2691E] data-[selected]:text-white data-[selected]:border-transparent bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700 hover:border-stone-300 dark:hover:border-stone-600"
+                  >
+                    {{ pageItem.value }}
+                  </PaginationListItem>
+                </template>
+
+                <PaginationNext
+                  :title="t('menuManagement.productTable.pagination.nextPage')"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                </PaginationNext>
+
+                <PaginationLast
+                  :title="t('menuManagement.productTable.pagination.lastPage')"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[18px]">last_page</span>
+                </PaginationLast>
+              </PaginationList>
+            </PaginationRoot>
           </div>
         </Card>
       </div>

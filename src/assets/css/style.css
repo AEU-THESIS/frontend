@@ -332,6 +332,7 @@
   -webkit-user-select: none;
   user-select: none;
   overscroll-behavior-y: contain;
+  touch-action: manipulation;
 }
 /* 16px inputs stop iOS Safari from auto-zooming the page on focus. */
 .tg-app input,
@@ -344,3 +345,17 @@
 .tg-safe-bottom {
   padding-bottom: calc(1rem + env(safe-area-inset-bottom));
 }
+
+/* Prevent double-tap zoom & tap delay on all interactive elements */
+html,
+body,
+button,
+[role='button'],
+input,
+select,
+textarea,
+a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
