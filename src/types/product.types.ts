@@ -5,6 +5,8 @@ export interface Category {
   sortOrder?: number
   isActive: boolean
   imageUrl?: string | null
+  /** Set by the API when the category still holds products, so it must be kept. */
+  cannotDelete?: boolean
   _count?: {
     products: number
   }
@@ -43,6 +45,8 @@ export interface Product {
   category: Category
   priceMode?: string
   type?: string
+  /** Set by the API when the product already appears in an order, so it must be kept. */
+  cannotDelete?: boolean
   optionSets: ProductOptionSet[]
 }
 
@@ -101,4 +105,5 @@ export interface ProductTableItem {
   category: string
   price: string | number
   isAvailable: boolean
+  cannotDelete?: boolean
 }

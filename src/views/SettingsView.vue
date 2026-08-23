@@ -17,6 +17,7 @@ import { getShopSettings, updateShopSettings } from '@/api/shop'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { USD_SYMBOL, KHR_SYMBOL, LEGACY_KHR_CODE } from '@/constants/currency'
 import type { ShopSettings } from '@/types/shop'
+import { getErrorMessage } from '@/utils/error'
 
 const shopSettingsStore = useShopSettingsStore()
 const { t } = useI18n()
@@ -105,15 +106,6 @@ const fillForm = (settings: ShopSettings) => {
   form.receiptFooter = settings.receiptFooter || ''
   form.isOrderManagementEnabled = settings.isOrderManagementEnabled === true
   form.isShopClosed = settings.isShopClosed === true
-}
-
-const getErrorMessage = (error: unknown, fallback: string) => {
-  if (typeof error === 'object' && error !== null && 'response' in error) {
-    const response = (error as { response?: { data?: { message?: string } } }).response
-    return response?.data?.message || fallback
-  }
-
-  return fallback
 }
 
 const loadSettings = async () => {
