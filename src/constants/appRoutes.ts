@@ -1,0 +1,27 @@
+export const APP_ROUTES = {
+  HOME: { path: '/', name: 'Home' },
+  DASHBOARD: { path: '/dashboard', name: 'Dashboard' },
+  ORDERS: { path: '/orders', name: 'Orders' },
+  ORDER_HISTORY: { path: '/orders/history', name: 'OrderHistory' },
+  INVENTORY: { path: '/inventory', name: 'Inventory' },
+  INVENTORY_HISTORY: { path: '/inventory/:id/history', name: 'InventoryHistory' },
+  CATEGORIES: { path: '/categories', name: 'Categories' },
+  SALE_REPORTS: { path: '/sale-reports', name: 'SaleReports' },
+  PROMOTIONS: { path: '/promotions', name: 'Promotions' },
+  STAFF: { path: '/staff', name: 'Staff' },
+  SETTINGS: { path: '/settings', name: 'Settings' },
+  LOGIN: { path: '/login', name: 'Login' },
+  FORGOT_PASSWORD: { path: '/forgot-password', name: 'ForgotPassword' },
+  RESET_PASSWORD: { path: '/reset-password', name: 'ResetPassword' },
+  MENU: { path: '/menu', name: 'Menu' },
+  PRODUCT: { path: '/product', name: 'Product' },
+  // Staff: Admin/Manager block-list (anti-spam for Telegram pre-orders)
+  BLOCKED_CUSTOMERS: { path: '/blocked-customers', name: 'BlockedCustomers' },
+  // Public customer Telegram Mini App (no auth). Children are relative to PUBLIC_ORDER.
+  PUBLIC_ORDER: { path: '/order/:slug', name: 'PublicOrder' },
+  PUBLIC_MENU: { path: '', name: 'PublicMenu' },
+  PUBLIC_CHECKOUT: { path: 'checkout', name: 'PublicCheckout' },
+  PUBLIC_CONFIRMATION: { path: 'confirmation/:orderNumber', name: 'PublicConfirmation' },
+  PUBLIC_MY_ORDERS: { path: 'my-orders', name: 'PublicMyOrders' },
+  NOT_FOUND: { path: '/:pathMatch(.*)*', name: 'not-found' },
+} as const

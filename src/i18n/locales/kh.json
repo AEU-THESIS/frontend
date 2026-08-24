@@ -1,0 +1,1209 @@
+{
+  "publicOrder": {
+    "switchLanguage": "ប្តូរទៅ {lang}",
+    "orderNow": "កម្ម៉ង់ឥឡូវនេះ",
+    "shopNotFound": "សូមអភ័យទោស រកមិនឃើញម៉ឺនុយហាងកាហ្វេនេះទេ។",
+    "searchPlaceholder": "ស្វែងរកម៉ឺនុយ…",
+    "all": "ទាំងអស់",
+    "emptyMenu": "គ្មានទំនិញត្រូវនឹងការស្វែងរករបស់អ្នកទេ។",
+    "from": "ចាប់ពី",
+    "myOrders": "ការបញ្ជាទិញរបស់ខ្ញុំ",
+    "viewCart": "មើលកន្ត្រក",
+    "required": "ចាំបាច់",
+    "selectRequired": "សូមជ្រើសរើសជម្រើសចាំបាច់។",
+    "sizeRequired": "សូមជ្រើសរើសទំហំ។",
+    "addedToCart": "បានបញ្ចូលទៅកន្ត្រក",
+    "quantity": "ចំនួន",
+    "subtotal": "សរុបរង",
+    "discount": "ការបញ្ចុះតម្លៃ",
+    "bogoFree": "ឥតគិតថ្លៃ {count} (ទិញ ១ បាន ១)",
+    "total": "សរុប",
+    "addToCart": "បញ្ចូលទៅកន្ត្រក",
+    "yourOrder": "ការបញ្ជាទិញរបស់អ្នក",
+    "cartEmpty": "កន្ត្រករបស់អ្នកទទេ។",
+    "backToMenu": "ត្រឡប់ទៅម៉ឺនុយ",
+    "deliveryDetails": "ព័ត៌មានដឹកជញ្ជូន",
+    "namePlaceholder": "ឈ្មោះរបស់អ្នក (ស្រេចចិត្ត)",
+    "phonePlaceholder": "លេខទូរស័ព្ទ",
+    "invalidPhone": "សូមបញ្ចូលលេខទូរស័ព្ទឲ្យបានត្រឹមត្រូវ។",
+    "useLocation": "ប្រើទីតាំងបច្ចុប្បន្នរបស់ខ្ញុំ",
+    "locationCaptured": "បានទទួលទីតាំង",
+    "locationDenied": "មិនអាចទទួលទីតាំងរបស់អ្នកបានទេ។",
+    "geoUnsupported": "ឧបករណ៍នេះមិនគាំទ្រទីតាំងទេ។",
+    "locationHint": "ការចែករំលែកទីតាំងជួយឲ្យយើងដឹកជញ្ជូនលឿនជាងមុន។",
+    "addressPlaceholder": "អាសយដ្ឋាន ឬចំណាំទីតាំង (ស្រេចចិត្ត)",
+    "paymentNote": "គ្មានការទូទាត់តាមអនឡាញ។ ហាងកាហ្វេនឹងទាក់ទងអ្នកដើម្បីរៀបចំការទូទាត់ និងការដឹកជញ្ជូន។",
+    "placeOrder": "បញ្ជាទិញ",
+    "submitFailed": "មិនអាចបញ្ជាទិញបានទេ។ សូមព្យាយាមម្ដងទៀត។",
+    "orderPlaced": "បានបញ្ជាទិញ!",
+    "orderPlacedSuccess": "ការបញ្ជាទិញបានជោគជ័យ!",
+    "orderPlacedMessage": "ហាងកាហ្វេនឹងទាក់ទងអ្នកឆាប់ៗ ដើម្បីបញ្ជាក់ការទូទាត់ និងការដឹកជញ្ជូន។",
+    "orderPlacedDesc": "ហាងកាហ្វេបានទទួលការបញ្ជាទិញរបស់អ្នកហើយ ហើយនឹងចាប់ផ្តើមរៀបចំឆាប់ៗនេះ។",
+    "orderNumber": "លេខការបញ្ជាទិញ",
+    "copyOrderNumber": "ចម្លង",
+    "copied": "បានចម្លង!",
+    "copyFailed": "មិនអាចចម្លងបានទេ។ សូមចម្លងដោយខ្លួនឯង។",
+    "messageUs": "ផ្ញើសារមកយើងតាម Telegram",
+    "viewMyOrders": "មើលការបញ្ជាទិញរបស់ខ្ញុំ",
+    "orderMore": "កម្ម៉ង់ភេសជ្ជៈបន្ថែម",
+    "stepReceived": "បានទទួល",
+    "stepPreparing": "កំពុងរៀបចំ",
+    "stepReady": "រួចរាល់",
+    "liveUpdates": "ស្ថានភាពនឹងធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិ",
+    "noOrders": "អ្នកមិនទាន់មានការបញ្ជាទិញនៅឡើយទេ។",
+    "notFoundTitle": "រកមិនឃើញទំព័រ",
+    "notFoundMessage": "ទំព័រនេះមិនមានទេ។ សូមត្រឡប់ទៅម៉ឺនុយវិញ។",
+    "status": {
+      "pending": "រង់ចាំការបញ្ជាក់",
+      "preparing": "កំពុងរៀបចំ",
+      "ready": "រួចរាល់",
+      "completed": "បានបញ្ចប់",
+      "canceled": "បានលុបចោល",
+      "rejected": "បដិសេធ"
+    },
+    "blocked": {
+      "title": "ការចូលប្រើត្រូវបានដាក់កម្រិត",
+      "message": "គណនីរបស់អ្នកត្រូវបានដាក់កម្រិតជាបណ្តោះអាសន្នមិនអាចបញ្ជាទិញនៅហាងនេះបានទេ។",
+      "contact": "សូមទាក់ទងម្ចាស់ហាងដើម្បីដោះស្រាយបញ្ហានេះ។"
+    },
+    "closed": {
+      "title": "ហាងត្រូវបានបិទបណ្ដោះអាសន្ន",
+      "message": "យើងកំពុងបិទសម្រាកសម្រាប់ថ្ងៃឈប់សម្រាក ឬការថែទាំ។ សូមពិនិត្យមើលឡើងវិញនៅពេលក្រោយ!",
+      "note": "យើងសូមអភ័យទោសចំពោះការរំខាននេះ។"
+    }
+  },
+  "preOrders": {
+    "accepted": "បានទទួលយកការបញ្ជាទិញ",
+    "rejected": "បានបដិសេធការបញ្ជាទិញ",
+    "confirmReject": "បដិសេធការបញ្ជាទិញនេះ? អតិថិជននឹងមិនត្រូវបានបម្រើទេ។",
+    "accept": "ទទួលយក",
+    "reject": "បដិសេធ",
+    "map": "ផែនទី"
+  },
+  "blockedCustomers": {
+    "title": "អតិថិជនដែលបានរារាំង",
+    "subtitle": "អតិថិជន Telegram ដែលត្រូវបានរារាំងមិនឲ្យបញ្ជាទិញជាមុន។",
+    "empty": "គ្មានអតិថិជនត្រូវបានរារាំងទេ។",
+    "loadFailed": "មិនអាចផ្ទុកបញ្ជីអតិថិជនដែលបានរារាំង។",
+    "customer": "អតិថិជន",
+    "duration": "រយៈពេលរារាំង",
+    "reason": "មូលហេតុ",
+    "unblock": "ដោះការរារាំង",
+    "confirmUnblock": "ដោះការរារាំងអតិថិជននេះ? ពួកគេនឹងអាចបញ្ជាទិញជាមុនម្ដងទៀត។",
+    "unblocked": "បានដោះការរារាំងអតិថិជន",
+    "expired": "ផុតកំណត់",
+    "forever": "ជារៀងរហូត",
+    "until": "រហូតដល់កាលបរិច្ឆេទ/ម៉ោង",
+    "reasonPlaceholder": "មូលហេតុ (ស្រេចចិត្ត)",
+    "blockTitle": "រារាំងអតិថិជន",
+    "blockMessage": "បញ្ឈប់ការបញ្ជាទិញជាមុនពី",
+    "blockAction": "រារាំង",
+    "blocked": "បានរារាំងអតិថិជន",
+    "blockCustomer": "រារាំងអតិថិជន",
+    "pagination": "កំពុងបង្ហាញ {start}–{end} នៃ {total}"
+  },
+  "app": {
+    "title": "RoutinCafe POS"
+  },
+  "login": {
+    "shopLogoAlt": "និមិត្តសញ្ញាហាង"
+  },
+  "orders": {
+    "paginationShowing": "បង្ហាញពី {start} ដល់ {end} នៃប្រតិបត្តិការសរុប {total}",
+    "pageOf": "ទំព័រ {page} នៃ {totalPages}"
+  },
+  "product": {
+    "thumbnailAlt": "រូបភាពផលិតផល"
+  },
+  "checkout": {
+    "thankYou": "សូមអរគុណសម្រាប់ការមកកាន់ហាងរបស់យើង!"
+  },
+  "order": {
+    "status": {
+      "connected": "បានភ្ជាប់សកម្មភាពភ្លាមៗ",
+      "disconnected": "បានដាច់ការតភ្ជាប់",
+      "live": "បន្តផ្ទាល់",
+      "offline": "ក្រៅបណ្តាញ"
+    }
+  },
+  "ui": {
+    "thankYou": "សូមអរគុណសម្រាប់ការមកកាន់ហាងរបស់យើង!"
+  },
+  "preferences": {
+    "title": "ចំណង់ចំណូលចិត្តប្រព័ន្ធ",
+    "language": "ភាសា",
+    "english": "អង់គ្លេស",
+    "khmer": "ខ្មែរ",
+    "theme": "ស្បែក",
+    "light": "ភ្លឺ",
+    "dark": "ងងឹត"
+  },
+  "auth": {
+    "login": "ចូលប្រើ",
+    "logout": "ចាកចេញ",
+    "email": "អាសយដ្ឋានអ៊ីមែល",
+    "password": "ពាក្យសម្ងាត់",
+    "title": "Routine Café & Bakery",
+    "subtitle": "ចូលប្រើគណនីរបស់អ្នក",
+    "emailPlaceholder": "staff{'@'}routine.com",
+    "passwordPlaceholder": "********",
+    "forgotPassword": "ភ្លេចពាក្យសម្ងាត់?",
+    "authenticating": "កំពុងផ្ទៀងផ្ទាត់...",
+    "signIn": "ចូលប្រើ",
+    "loginSuccess": "ចូលប្រើជោគជ័យ!",
+    "loginError": "មានបញ្ហាកើតឡើងក្នុងពេលចូលប្រើ។",
+    "sessionExpired": "វគ្គចូលប្រើរបស់អ្នកបានផុតកំណត់។ សូមចូលប្រើម្តងទៀត។",
+    "sessionActive": "វគ្គចូលប្រើនៅតែសកម្ម។",
+    "checkSession": "ពិនិត្យវគ្គចូលប្រើ",
+    "showPassword": "បង្ហាញពាក្យសម្ងាត់",
+    "hidePassword": "លាក់ពាក្យសម្ងាត់",
+    "authorizedOnly": "សម្រាប់តែបុគ្គលិកដែលមានការអនុញ្ញាតប៉ុណ្ណោះ",
+    "copyright": "© ២០២៦ Routine Café & Bakery",
+    "logoutSuccess": "អ្នកបានចាកចេញដោយជោគជ័យ។"
+  },
+  "sidebar": {
+    "title": "Routine Cafe",
+    "station": "ស្ថានីយ ០១",
+    "help": "ជំនួយ",
+    "logout": "ចាកចេញ",
+    "your_shop": "ហាងរបស់អ្នក",
+    "shop_logo": "និមិត្តសញ្ញាហាង",
+    "sections": {
+      "home": "ទំព័រដើម",
+      "pos": "ផលិតផលលក់ POS",
+      "inventory": "សារពើភ័ណ្ឌ",
+      "reports": "របាយការណ៍",
+      "settings": "ការកំណត់",
+      "marketing": "ទីផ្សារ"
+    },
+    "items": {
+      "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+      "pos": "POS",
+      "orders": "ការបញ្ជាទិញ",
+      "orderHistory": "ប្រវត្តិនៃការបញ្ជាទិញ",
+      "blockedCustomers": "បញ្ជីរារាំង",
+      "inventory": "សារពើភ័ណ្ឌ",
+      "products": "ផលិតផល",
+      "categories": "ប្រភេទ",
+      "saleReports": "របាយការណ៍លក់",
+      "analytics": "វិភាគ",
+      "staff": "បុគ្គលិក",
+      "config": "ការកំណត់",
+      "promotions": "ប្រូម៉ូសិន"
+    }
+  },
+  "navbar": {
+    "menuManagement": "ការគ្រប់គ្រងបញ្ជីម្ហូប"
+  },
+  "home": {
+    "title": "Routine's POS",
+    "searchPlaceholder": "ស្វែងរកមុខម្ហូប...",
+    "categories": {
+      "all": "ទាំងអស់",
+      "coffee": "កាហ្វេ",
+      "tea": "តែ",
+      "bakery": "នំបុ័ង",
+      "breakfast": "អាហារពេលព្រឹក",
+      "pastry": "នំផ្អែម"
+    },
+    "products": {
+      "icedLatte": "ឡាតេទឹកកក",
+      "croissant": "នំក្រូសង់ប៊័រ",
+      "avocadoToast": "នំបុ័ងអូរកាដូ",
+      "matchaLatte": "ម៉ាចាឡាតេ"
+    },
+    "promo": {
+      "percentOff": "បញ្ចុះ {value}%",
+      "amountOff": "បញ្ចុះ {value}",
+      "bogo": "ទិញ ១ ថែម ១"
+    },
+    "noProducts": "មិនមានផលិតផលនៅក្នុងប្រភេទនេះទេ"
+  },
+  "cart": {
+    "order": "ការបញ្ជាទិញ",
+    "dineIn": "ញ៉ាំក្នុងហាង",
+    "dine_in": "ញ៉ាំក្នុងហាង",
+    "takeaway": "ខ្ចប់ទៅក្រៅ",
+    "subtotal": "សរុបរង",
+    "addDiscount": "បន្ថែមការបញ្ចុះតម្លៃ",
+    "totalAmount": "ចំនួនសរុប",
+    "khr": "រៀល",
+    "payWithCash": "ទូទាត់ជាសាច់ប្រាក់",
+    "payWithQR": "ទូទាត់ជាមួយ KHQR",
+    "options": {
+      "oatMilk": "ទឹកដោះគោ Oat, ស្ករ ៥០%",
+      "warmed": "កម្តៅ"
+    },
+    "currentOrder": "ការបញ្ជាទិញបច្ចុប្បន្ន",
+    "required": "តម្រូវឱ្យជ្រើសរើស",
+    "quantity": "បរិមាណ",
+    "empty": "កន្ត្រកទិញទំនិញរបស់អ្នកទទេ",
+    "clearAll": "សម្អាតទាំងអស់",
+    "amountDue": "ប្រាក់ត្រូវបង់",
+    "selectPaymentCurrency": "ជ្រើសរើសរូបិយប័ណ្ណទូទាត់",
+    "changeDue": "ប្រាក់អាប់",
+    "insufficientReceived": "ចំនួនទឹកប្រាក់ដែលទទួលបានមិនគ្រប់គ្រាន់ទេ",
+    "cancel": "បោះបង់",
+    "completePayment": "បញ្ចប់ការទូទាត់",
+    "processing": "កំពុងដំណើរការ...",
+    "amountReceived": "ប្រាក់ទទួលបាន",
+    "quickCash": "ជ្រើសរើសប្រាក់រហ័ស",
+    "exactAmount": "គ្រប់ចំនួន",
+    "clear": "សម្អាត",
+    "paymentSuccessful": "ការទូទាត់ជោគជ័យ!",
+    "orderPlacedDesc": "ប្រតិបត្តិការត្រូវបានបញ្ចប់ដោយជោគជ័យ ហើយការបញ្ជាទិញត្រូវបានរក្សាទុក។",
+    "orderNumber": "លេខបញ្ជាទិញ",
+    "changeReturned": "ប្រាក់អាប់ជូន",
+    "newOrder": "ការបញ្ជាទិញថ្មី",
+    "printReceipt": "បោះពុម្ពវិក្កយបត្រ",
+    "fetchFailed": "បរាជ័យក្នុងការផ្ទុកទិន្នន័យផលិតផល POS",
+    "addedToCart": "បានបន្ថែម {name} ទៅក្នុងកន្ត្រក!",
+    "addedBogo": "បានបន្ថែម {name} — ទី២ឥតគិតថ្លៃ (ទិញ ១ ថែម ១)",
+    "bogoFree": "ឥតគិតថ្លៃ {count} (ទិញ ១ ថែម ១)",
+    "bogoHint": "បន្ថែម ១ ទៀត — ទី២ឥតគិតថ្លៃ",
+    "addToCart": "បន្ថែមទៅក្នុងកន្ត្រក",
+    "insufficientPayment": "ចំនួនទឹកប្រាក់ដែលទទួលបានគឺតិចជាងប្រាក់ត្រូវបង់",
+    "checkoutFailed": "បរាជ័យក្នុងការបញ្ចប់ប្រតិបត្តិការ",
+    "selectRequiredOption": "សូមជ្រើសរើសជម្រើសចាំបាច់ទាំងអស់",
+    "sizeRequired": "សូមជ្រើសរើសទំហំសម្រាប់មុខទំនិញនេះ",
+    "orderCreatedSuccess": "ការបញ្ជាទិញ #{num} ត្រូវបានបង្កើតដោយជោគជ័យ!",
+    "paymentDetails": "ព័ត៌មានលម្អិតនៃការទូទាត់",
+    "loadingCatalog": "កំពុងផ្ទុកទិន្នន័យ POS...",
+    "discount": "បញ្ចុះតម្លៃ",
+    "free": "ឥតគិតថ្លៃ",
+    "freeLoyaltyStamp": "ឥតគិតថ្លៃ · កាតបញ្ចុះតម្លៃ",
+    "freeItemsReceipt": "មុខទំនិញឥតគិតថ្លៃ",
+    "lineActions": "សកម្មភាពមុខទំនិញ",
+    "makeFreeTitle": "កំណត់ជាឥតគិតថ្លៃ?",
+    "makeFreeMessage": "កំណត់ជាឥតគិតថ្លៃ — មុខទំនិញនេះនឹងមិនគិតថ្លៃទេ? ប្រើសម្រាប់ការប្តូរកាតបញ្ចុះតម្លៃ។",
+    "makeFreeConfirm": "កំណត់ឥតគិតថ្លៃ",
+    "removeFreeTitle": "ដកឥតគិតថ្លៃ?",
+    "removeFreeMessage": "គិតថ្លៃមុខទំនិញនេះឡើងវិញ? វានឹងលែងឥតគិតថ្លៃទៀតហើយ។",
+    "removeFreeConfirm": "ដកឥតគិតថ្លៃ"
+  },
+  "maintenance": {
+    "title": "កំពុងថែទាំប្រព័ន្ធ",
+    "message": "ប្រព័ន្ធរបស់យើងកំពុងស្ថិតក្នុងការថែទាំ។ យើងនឹងត្រឡប់មកវិញក្នុងពេលឆាប់ៗនេះ។",
+    "contactSupport": "ទាក់ទងផ្នែកគាំទ្រ"
+  },
+  "settings": {
+    "title": "ការកំណត់ហាង",
+    "subtitle": "កំណត់ព័ត៌មានកាហ្វេ ធនាគារ KHQR និងការកំណត់លំនាំដើមសម្រាប់វិក្កយបត្រ។",
+    "actions": {
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "saving": "កំពុងរក្សាទុក...",
+      "previewReceipt": "មើលគំរូវិក្កយបត្រ"
+    },
+    "messages": {
+      "loading": "កំពុងផ្ទុកការកំណត់ហាង...",
+      "loadError": "មិនអាចផ្ទុកការកំណត់ហាងបានទេ។",
+      "saveError": "មិនអាចរក្សាទុកការកំណត់ហាងបានទេ។",
+      "saveSuccess": "បានរក្សាទុកការកំណត់ហាងដោយជោគជ័យ។",
+      "invalidExchangeRate": "អត្រាប្តូរប្រាក់ត្រូវតែជាលេខត្រឹមត្រូវ និងធំជាង 0។"
+    },
+    "branch": {
+      "title": "ព័ត៌មានសាខា",
+      "description": "ធ្វើបច្ចុប្បន្នភាពព័ត៌មានកាហ្វេរបស់អ្នក ដែលបង្ហាញនៅក្នុងប្រព័ន្ធ POS។"
+    },
+    "orderManagement": {
+      "title": "បើកដំណើរការផ្ទាំងគ្រប់គ្រងការបញ្ជាទិញ",
+      "description": "ប្រសិនបើបើក ការបញ្ជាទិញនឹងឆ្លងកាត់ដំណើរការ កំពុងរៀបចំ/រួចរាល់។ ប្រសិនបើបិទ ការបញ្ជាទិញនឹងត្រូវបានបញ្ចប់ដោយស្វ័យប្រវត្តភ្លាមៗបន្ទាប់ពីទូទាត់ប្រាក់។"
+    },
+    "shopClosure": {
+      "title": "បិទហាងបណ្ដោះអាសន្ន (ថ្ងៃឈប់សម្រាក/ការថែទាំ)",
+      "description": "នៅពេលបើក ការបញ្ជាទិញតាមអនឡាញត្រូវបានបិទ ហើយអតិថិជននឹងឃើញការជូនដំណឹងអំពីការបិទហាង។"
+    },
+    "financials": {
+      "title": "ហិរញ្ញវត្ថុ និងការទូទាត់",
+      "description": "គ្រប់គ្រងរូបិយប័ណ្ណ អត្រាប្តូរប្រាក់ និងការទូទាត់ឌីជីថល។",
+      "bakongHelper": "ប្រើសម្រាប់បង្កើត QR ដោយស្វ័យប្រវត្តិ"
+    },
+    "receipt": {
+      "title": "ការកំណត់វិក្កយបត្រ",
+      "description": "កែសម្រួលអ្វីដែលអតិថិជននឹងឃើញលើវិក្កយបត្រដែលបានបោះពុម្ព។",
+      "brand": "Routine Café & Bakery"
+    },
+    "fields": {
+      "shopName": "ឈ្មោះហាង",
+      "branchSlug": "Slug សាខា",
+      "ownerName": "ឈ្មោះម្ចាស់",
+      "phoneNumber": "លេខទូរស័ព្ទ",
+      "fullAddress": "អាសយដ្ឋានពេញ",
+      "bakongAccountId": "លេខសម្គាល់គណនី Bakong (KHQR)",
+      "defaultCurrency": "រូបិយប័ណ្ណលំនាំដើម",
+      "exchangeRate": "អត្រាប្តូរប្រាក់",
+      "receiptFooterText": "អត្ថបទខាងក្រោមវិក្កយបត្រ"
+    },
+    "currency": {
+      "usd": "USD ($)",
+      "khr": "KHR (៛)",
+      "khrCode": "KHR"
+    },
+    "receiptPreview": {
+      "fallbackShopName": "ROUTINE CAFÉ & BAKERY",
+      "total": "សរុប",
+      "inRiel": "ជារៀល ({rate})",
+      "mockupLabel": "គំរូមើលវិក្កយបត្រ",
+      "items": {
+        "icedLatte": "កាហ្វេឡាតេទឹកកក (L)",
+        "croissant": "នំប៊ឺ Croissant"
+      }
+    }
+  },
+  "inventory": {
+    "title": "ការគ្រប់គ្រងសារពើភ័ណ្ឌ",
+    "subtitle": "ឃ្លាំង A",
+    "searchPlaceholder": "ស្វែងរកសម្ភារៈ...",
+    "summary": {
+      "totalSupplies": "សម្ភារៈសរុប",
+      "totalValue": "តម្លៃស្តុកសរុប",
+      "acrossSupplies": "លើសម្ភារៈ {count} មុខ",
+      "stockHealth": "{percentage}%",
+      "lowStock": "ការព្រមាន៖ ស្តុកទាប",
+      "outOfStock": "ធ្ងន់ធ្ងរ៖ អស់ពីស្តុក",
+      "newCount": "{count} ថ្មី",
+      "alertCount": "{count} ជូនដំណឹង"
+    },
+    "table": {
+      "allSupplies": "សម្ភារៈទាំងអស់",
+      "showing": "បង្ហាញ {shown} នៃ {total} មុខ",
+      "showingRange": "បង្ហាញ {start}-{end} នៃ {total} មុខ",
+      "name": "ឈ្មោះ",
+      "stockLevel": "កម្រិតស្តុក",
+      "unit": "ឯកតា",
+      "unitCost": "តម្លៃមធ្យមក្នុងមួយឯកតា",
+      "totalValue": "តម្លៃសរុប",
+      "status": "ស្ថានភាព",
+      "actions": "សកម្មភាព"
+    },
+    "status": {
+      "inStock": "មានក្នុងស្តុក",
+      "lowStock": "ស្តុកទាប",
+      "outOfStock": "អស់ពីស្តុក"
+    },
+    "filters": {
+      "status": "ស្ថានភាព",
+      "unit": "ឯកតា",
+      "allStatuses": "ស្ថានភាពទាំងអស់",
+      "allUnits": "ឯកតាទាំងអស់",
+      "clear": "សម្អាតតម្រង",
+      "apply": "អនុវត្តតម្រង"
+    },
+    "actions": {
+      "addItem": "បន្ថែមមុខទំនិញ",
+      "refresh": "ផ្ទុកឡើងវិញ",
+      "filters": "តម្រង",
+      "adjust": "កែសម្រួលស្តុក",
+      "view": "មើល",
+      "viewHistory": "មើលប្រវត្តិ",
+      "edit": "កែសម្រួល",
+      "delete": "លុប",
+      "restock": "បំពេញស្តុក",
+      "viewAllWarnings": "មើលការព្រមានទាំងអស់",
+      "viewLessWarnings": "មើលតិចជាងមុន",
+      "viewAllCriticalStock": "មើលស្តុកធ្ងន់ធ្ងរទាំងអស់",
+      "viewLessCriticalStock": "មើលស្តុកធ្ងន់ធ្ងរតិចជាងមុន",
+      "close": "បិទ",
+      "editSupply": "កែសម្រួលសម្ភារៈ",
+      "addSupply": "បន្ថែមសម្ភារៈ"
+    },
+    "panels": {
+      "criticalStock": "ស្តុកធ្ងន់ធ្ងរ ({count})",
+      "lowStockWarnings": "ការព្រមានស្តុកទាប ({count})",
+      "noCriticalStock": "មិនមានស្តុកធ្ងន់ធ្ងរ។",
+      "noLowStock": "មិនមានការព្រមានស្តុកទាប។",
+      "lowStockRatio": "{quantity} / អប្បបរមា {threshold} {unit}"
+    },
+    "modal": {
+      "addTitle": "បន្ថែមសម្ភារៈថ្មី",
+      "editTitle": "កែសម្រួលសម្ភារៈ",
+      "viewTitle": "ព័ត៌មានលម្អិតសម្ភារៈ"
+    },
+    "deleteConfirm": {
+      "title": "លុបសម្ភារៈ",
+      "message": "តើអ្នកប្រាកដជាចង់លុប {name} មែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។"
+    },
+    "form": {
+      "required": " *",
+      "itemName": "ឈ្មោះមុខទំនិញ",
+      "itemNamePlaceholder": "ឧ. Double Wall Glassware",
+      "numberOfItems": "ចំនួនមុខទំនិញ",
+      "unitOfMeasure": "ឯកតារង្វាស់",
+      "category": "ប្រភេទ",
+      "categoryPlaceholder": "ជ្រើសរើសប្រភេទ (ស្រេចចិត្ត)",
+      "minAlert": "ការព្រមានស្តុកទាបអប្បបរមា",
+      "minAlertPlaceholder": "ឧ. 5",
+      "unitCost": "តម្លៃដើមក្នុងមួយឯកតា ({currency})",
+      "unitCostPlaceholder": "ឧ. 3.50",
+      "unitCostHint": "តម្លៃដែលអ្នកបង់ក្នុងមួយឯកតា — ប្រើសម្រាប់គណនាតម្លៃស្តុក។",
+      "itemImage": "រូបភាពមុខទំនិញ",
+      "imageRecommendation": "បង្ហោះឯកសារ ឬអូសទម្លាក់ PNG, JPG រហូតដល់ 10MB"
+    },
+    "units": {
+      "packs": "កញ្ចប់",
+      "kg": "kg",
+      "liters": "លីត្រ",
+      "units": "ឯកតា"
+    },
+    "adjustment": {
+      "title": "កែសម្រួលស្តុករហ័ស",
+      "currentStock": "ស្តុកបច្ចុប្បន្ន៖ {quantity} {unit}",
+      "typeAndAmount": "ប្រភេទ និងចំនួនកែសម្រួល",
+      "addStock": "+ បន្ថែមស្តុក",
+      "removeStock": "- ដកស្តុក",
+      "unitCost": "តម្លៃទិញក្នុងមួយឯកតា ({currency})",
+      "unitCostHint": "តម្លៃដែលអ្នកបានបង់លើកនេះ — នឹងធ្វើបច្ចុប្បន្នភាពតម្លៃដើមជាមធ្យម។",
+      "notes": "កំណត់ចំណាំ",
+      "notesPlaceholder": "បន្ថែមព័ត៌មានលម្អិតអំពីការកែសម្រួលនេះ...",
+      "amountRequired": "សូមបញ្ចូលចំនួនធំជាង 0។",
+      "amountExceedsStock": "ចំនួនលើសពីស្តុកដែលមាន ({quantity} {unit})។"
+    },
+    "history": {
+      "title": "ប្រវត្តិស្តុក",
+      "back": "ត្រឡប់ទៅសារពើភ័ណ្ឌ",
+      "empty": "គ្មានចលនាស្តុកសម្រាប់រយៈពេលនេះទេ។",
+      "date": "កាលបរិច្ឆេទ",
+      "change": "ការផ្លាស់ប្តូរ",
+      "value": "តម្លៃ",
+      "unitCost": "តម្លៃក្នុងមួយឯកតា",
+      "notes": "កំណត់ចំណាំ",
+      "by": "ដោយ",
+      "summary": {
+        "currentStock": "ស្តុកបច្ចុប្បន្ន",
+        "averageDailyUsage": "ការប្រើប្រាស់ជាមធ្យមប្រចាំថ្ងៃ",
+        "totalIn": "បញ្ចូលសរុប",
+        "totalOut": "ដកសរុប",
+        "currentValue": "តម្លៃបច្ចុប្បន្ន",
+        "category": "ប្រភេទ",
+        "unit": "ឯកតា",
+        "reorderLevel": "កម្រិតបញ្ជាទិញឡើងវិញ"
+      }
+    },
+    "messages": {
+      "loading": "កំពុងផ្ទុកសារពើភ័ណ្ឌ...",
+      "empty": "រកមិនឃើញសម្ភារៈ។",
+      "loadError": "មិនអាចផ្ទុកសារពើភ័ណ្ឌបានទេ។",
+      "nameRequired": "ត្រូវបំពេញឈ្មោះមុខទំនិញ។",
+      "createSuccess": "បានបន្ថែមសម្ភារៈ។",
+      "updateSuccess": "បានធ្វើបច្ចុប្បន្នភាពសម្ភារៈ។",
+      "saveError": "មិនអាចរក្សាទុកសម្ភារៈបានទេ។",
+      "deleteSuccess": "បានលុបសម្ភារៈ។",
+      "deleteError": "មិនអាចលុបសម្ភារៈបានទេ។",
+      "adjustSuccess": "បានកែសម្រួលស្តុក។",
+      "adjustError": "មិនអាចកែសម្រួលស្តុកបានទេ។"
+    }
+  },
+  "common": {
+    "save": "រក្សាទុក",
+    "cancel": "បោះបង់",
+    "confirm": "បញ្ជាក់",
+    "close": "បិទ",
+    "delete": "លុប",
+    "edit": "កែសម្រួល",
+    "create": "បង្កើត",
+    "search": "ស្វែងរក",
+    "loading": "កំពុងផ្ទុក...",
+    "noData": "មិនមានទិន្នន័យ",
+    "na": "មិនមាន",
+    "applyFilters": "អនុវត្តតម្រង",
+    "clearFilters": "សម្អាតតម្រង"
+  },
+  "staff": {
+    "title": "ការគ្រប់គ្រងបុគ្គលិក",
+    "subtitle": "គ្រប់គ្រងសមាជិកក្រុម ការកំណត់តួនាទី និងកម្រិតនៃការចូលប្រើ។",
+    "addStaff": "បន្ថែមបុគ្គលិកថ្មី",
+    "addStaffTitle": "បន្ថែមសមាជិកបុគ្គលិកថ្មី",
+    "editStaffTitle": "កែសម្រួលប្រវត្តិរូបបុគ្គលិក",
+    "updateDetails": "ធ្វើបច្ចុប្បន្នភាពព័ត៌មានលម្អិតសម្រាប់បុគ្គលិកនេះ។",
+    "totalLabel": "សរុប",
+    "totalDescription": "បុគ្គលិកដែលបានចុះឈ្មោះ",
+    "activeMembers": "សមាជិកសកម្ម",
+    "totalWorkforce": "កម្លាំងពលកម្មសរុប",
+    "inactiveMembers": "មិនសកម្ម",
+    "teamDirectory": "បញ្ជីឈ្មោះក្រុម",
+    "showingCount": "បង្ហាញសមាជិក {count}",
+    "searchPlaceholder": "ស្វែងរកតាមឈ្មោះ ឬអ៊ីមែល...",
+    "allRoles": "តួនាទីទាំងអស់",
+    "loadingEmployees": "កំពុងផ្ទុកទិន្នន័យបុគ្គលិក...",
+    "noStaffFound": "រកមិនឃើញបុគ្គលិកទេ។",
+    "pagination": "បង្ហាញពី {start} ដល់ {end} នៃបុគ្គលិកសរុប {total}",
+    "employeeId": "លេខសម្គាល់បុគ្គលិក",
+    "joinedDate": "កាលបរិច្ឆេទចូលធ្វើការ",
+    "location": "ទីតាំង",
+    "locationPlaceholder": "ទីក្រុង, ប្រទេស",
+    "phone": "លេខទូរស័ព្ទ",
+    "phonePlaceholder": "+855 (0) 00-000-000",
+    "accountActive": "គណនីសកម្ម",
+    "roleAssignment": "ការកំណត់តួនាទី",
+    "discard": "បោះបង់",
+    "updateProfile": "ធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូប",
+    "confirmRegistration": "បញ្ជាក់ការចុះឈ្មោះ",
+    "terminate": "បញ្ឈប់",
+    "editProfile": "កែសម្រួលប្រវត្តិរូប",
+    "closeView": "បិទការមើល",
+    "createSuccess": "បានបង្កើតបុគ្គលិក! អ៊ីមែលកំណត់គណនីត្រូវបានផ្ញើហើយ។",
+    "createSuccessNoEmail": "បានបង្កើតបុគ្គលិកដោយជោគជ័យ។",
+    "createError": "បានបរាជ័យក្នុងការបង្កើតបុគ្គលិក។",
+    "updateSuccess": "បានធ្វើបច្ចុប្បន្នភាពបុគ្គលិកដោយជោគជ័យ។",
+    "updateError": "បានបរាជ័យក្នុងការធ្វើបច្ចុប្បន្នភាពបុគ្គលិក។",
+    "deleteSuccess": "បុគ្គលិកត្រូវបានលុបដោយជោគជ័យ។",
+    "deleteError": "បរាជ័យក្នុងការលុបបុគ្គលិក។",
+    "deleteFailed": "បរាជ័យក្នុងការលុបបុគ្គលិក។",
+    "deleteSelfError": "អ្នកមិនអាចលុបគណនីរបស់អ្នកបានទេ។",
+    "deleteConfirm": "តើអ្នកប្រាកដជាចង់លុបបុគ្គលិកនេះមែនទេ?",
+    "error": "មានកំហុសមួយបានកើតឡើងក្នុងពេលដំណើរការសំណើរបស់អ្នក។",
+    "table": {
+      "staffMember": "សមាជិកបុគ្គលិក",
+      "name": "ឈ្មោះ",
+      "email": "អ៊ីមែល",
+      "role": "តួនាទី",
+      "contact": "ទំនាក់ទំនង",
+      "status": "ស្ថានភាព",
+      "actions": "សកម្មភាព",
+      "joinedAt": "ថ្ងៃចូលធ្វើការ",
+      "active": "សកម្ម",
+      "notActive": "មិនសកម្ម"
+    },
+    "form": {
+      "name": "ឈ្មោះពេញ",
+      "namePlaceholder": "ឧ. Jonathan Smith",
+      "email": "អាសយដ្ឋានអ៊ីមែល",
+      "emailPlaceholder": "staff{'@'}routine.com",
+      "password": "ពាក្យសម្ងាត់",
+      "passwordPlaceholder": "********",
+      "phoneOptional": "លេខទូរស័ព្ទ (ជម្រើស)",
+      "phonePlaceholder": "+855 (0) 00-000-000",
+      "addressOptional": "អាសយដ្ឋានបច្ចុប្បន្ន (ជម្រើស)",
+      "addressPlaceholder": "ផ្ទះលេខ ១២៣, ភ្នំពេញ",
+      "role": "តួនាទី",
+      "selectRole": "ជ្រើសរើសតួនាទី",
+      "active": "សកម្ម",
+      "profileImageOptional": "រូបភាពប្រវត្តិរូប (ជម្រើស)",
+      "upload": "បង្ហោះ",
+      "uploadRecommendation": "ទំហំដែលណែនាំ៖ 400x400px។ ប្រភេទដែលគាំទ្រ៖ JPG, PNG ឬ WEBP។ ទំហំអតិបរមា 2MB។",
+      "emailNotice": "អ៊ីមែលកំណត់គណនីនឹងត្រូវបានផ្ញើទៅអាសយដ្ឋាននេះជាមួយតំណដើម្បីកំណត់ពាក្យសម្ងាត់។ តំណផុតកំណត់ក្នុង ៨ ម៉ោង។",
+      "submit": "បន្ថែមសមាជិក",
+      "cancel": "បោះបង់",
+      "subtitle": "បង្កើតប្រវត្តិរូបថ្មី និងកំណត់សិទ្ធិអនុញ្ញាត។"
+    },
+    "detail": {
+      "generalInfo": "ព័ត៌មានទូទៅ",
+      "information": "ព័ត៌មាន",
+      "contact": "ទំនាក់ទំនង",
+      "security": "សន្តិសុខ",
+      "system": "ប្រព័ន្ធ"
+    }
+  },
+  "forgotPassword": {
+    "title": "ភ្លេចពាក្យសម្ងាត់?",
+    "subtitle": "វាយអ៊ីមែលរបស់អ្នក ហើយយើងនឹងផ្ញើតំណដើម្បីកំណត់ពាក្យសម្ងាត់ឡើងវិញ។",
+    "submit": "ផ្ញើតំណកំណត់ឡើងវិញ",
+    "successMessage": "តំណកំណត់ពាក្យសម្ងាត់ឡើងវិញត្រូវបានផ្ញើទៅអ៊ីមែលរបស់អ្នក។",
+    "errorMessage": "មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។",
+    "sentConfirmation": "យើងបានផ្ញើតំណកំណត់ពាក្យសម្ងាត់ឡើងវិញទៅអ៊ីមែលរបស់អ្នក។ សូមពិនិត្យប្រអប់សំបុត្ររបស់អ្នក។",
+    "backToLogin": "ត្រឡប់ទៅចូលប្រើ"
+  },
+  "resetPassword": {
+    "title": "កំណត់ពាក្យសម្ងាត់របស់អ្នក",
+    "subtitle": "ជ្រើសរើសពាក្យសម្ងាត់ដែលមានសុវត្ថិភាពសម្រាប់គណនីរបស់អ្នក។",
+    "newPassword": "ពាក្យសម្ងាត់ថ្មី",
+    "newPasswordPlaceholder": "យ៉ាងតិច ៦ តួអក្សរ",
+    "confirmPassword": "បញ្ជាក់ពាក្យសម្ងាត់",
+    "confirmPasswordPlaceholder": "វាយពាក្យសម្ងាត់ម្តងទៀត",
+    "submit": "កំណត់ពាក្យសម្ងាត់",
+    "successMessage": "ពាក្យសម្ងាត់ត្រូវបានកំណត់ដោយជោគជ័យ! អ្នកអាចចូលប្រើបានឥឡូវ។",
+    "errorMessage": "បរាជ័យក្នុងការកំណត់ពាក្យសម្ងាត់ឡើងវិញ។ តំណអាចផុតកំណត់ហើយ។",
+    "invalidToken": "តំណកំណត់ឡើងវិញមិនត្រឹមត្រូវ ឬផុតកំណត់។",
+    "successConfirmation": "ពាក្យសម្ងាត់របស់អ្នកត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។ ឥឡូវនេះអ្នកអាចប្រើពាក្យសម្ងាត់ថ្មីរបស់អ្នកដើម្បីចូលប្រើ។",
+    "backToLogin": "ត្រឡប់ទៅចូលប្រើ"
+  },
+  "imageUpload": {
+    "label": "បង្ហោះរូបភាព",
+    "recommendation": "JPG, PNG ឬ WEBP។ ទំហំអតិបរមា 2MB។",
+    "errorTooLarge": "ទំហំឯកសារត្រូវតែតិចជាង {max}MB",
+    "upload": "បង្ហោះ"
+  },
+  "dashboard": {
+    "title": "ផ្ទាំងគ្រប់គ្រងការវិភាគទិន្នន័យ",
+    "salesOverview": "ទិដ្ឋភាពទូទៅនៃការលក់",
+    "kpis": {
+      "totalSales": "ការលក់សរុប (USD)",
+      "totalOrders": "ចំនួនវិក្កយបត្របានទូទាត់",
+      "avgOrder": "តម្លៃមធ្យមនៃវិក្កយបត្រ",
+      "khrConversion": "ការលក់សរុបជាប្រាក់រៀល"
+    },
+    "performance": {
+      "topProducts": "មុខទំនិញលក់ដាច់បំផុតទាំង ៥",
+      "bottomProducts": "មុខទំនិញលក់តិចបំផុតទាំង ៥",
+      "product": "មុខទំនិញ",
+      "qty": "ចំនួនលក់",
+      "revenue": "ចំណូលសរុប",
+      "noData": "មិនមានទិន្នន័យលក់សម្រាប់រយៈពេលនេះទេ។"
+    },
+    "category": {
+      "title": "ចំណាត់ថ្នាក់នៃការលក់តាមប្រភេទ",
+      "noData": "មិនមានទិន្នន័យតាមប្រភេទ។"
+    },
+    "alerts": {
+      "title": "ការជូនដំណឹងអំពីស្តុកទាប & អស់ពីស្តុក",
+      "outOfStock": "គ្រឿងផ្សំអស់ពីស្តុក",
+      "lowStock": "គ្រឿងផ្សំមានស្តុកទាប",
+      "good": "គ្រឿងផ្សំទាំងអស់មានស្តុកគ្រប់គ្រាន់!",
+      "outBadge": "អស់ស្តុក",
+      "lowBadge": "ស្តុកទាប"
+    },
+    "export": {
+      "button": "ទាញយករបាយការណ៍ (CSV)",
+      "selectType": "ជ្រើសរើសប្រភេទរបាយការណ៍",
+      "sales": "របាយការណ៍ប្រតិបត្តិការលក់",
+      "inventory": "របាយការណ៍ស្ថានភាពស្តុក",
+      "exporting": "កំពុងទាញយក...",
+      "success": "បានទាញយករបាយការណ៍ដោយជោគជ័យ!"
+    },
+    "periods": {
+      "daily": "ថ្ងៃនេះ",
+      "weekly": "សប្តាហ៍នេះ",
+      "monthly": "ខែនេះ"
+    }
+  },
+  "payments": {
+    "rate_usd_to_khr": "1 USD = {rate} រៀល",
+    "usd_label": "USD ($)",
+    "khr_label": "KHR (៛)"
+  },
+  "orderDashboard": {
+    "title": "ការគ្រប់គ្រងការបញ្ជាទិញ",
+    "station": "ឃ្លាំង A",
+    "pending": "ការបញ្ជាទិញជាមុន",
+    "preparing": "កំពុងរៀបចំ",
+    "ready": "រួចរាល់",
+    "completed": "បានបញ្ចប់",
+    "canceled": "បានបោះបង់",
+    "rejected": "បដិសេធ",
+    "unpaid": "មិនទាន់បង់ប្រាក់",
+    "paid": "បានបង់ប្រាក់",
+    "refunded": "បានសងប្រាក់",
+    "partially_refunded": "សងប្រាក់ខ្លះ",
+    "comp": "ឥតគិតថ្លៃ",
+    "items": "មុខទំនិញ",
+    "noIce": "គ្មានទឹកកក",
+    "oatMilk": "ទឹកដោះគោ Oat",
+    "extraShot": "ថែម espresso",
+    "orderType": "ប្រភេទបញ្ជាទិញ",
+    "stationLabel": "ស្ថានីយ",
+    "totalItems": "ទំនិញសរុប",
+    "totalPrice": "តម្លៃសរុប",
+    "paymentSummary": "សេចក្តីសរុបការទូទាត់",
+    "subtotal": "សរុបរង",
+    "discount": "បញ្ចុះតម្លៃ",
+    "serviceFee": "កម្រៃសេវា",
+    "total": "សរុប",
+    "backToOrders": "ត្រឡប់ទៅការបញ្ជាទិញ",
+    "printReceipt": "បោះពុម្ពវិក្កយបត្រ",
+    "emptyDashboard": "មិនមានការបញ្ជាទិញសកម្មក្នុងផ្ទាំងនេះទេ",
+    "pendingDesc": "ការបញ្ជាទិញជាមុនរបស់អតិថិជនកំពុងរង់ចាំការបញ្ជាក់",
+    "preparingDesc": "ការបញ្ជាទិញកំពុងចូល និងកំពុងរៀបចំ",
+    "readyDesc": "រួចរាល់សម្រាប់យក ឬជូនដល់តុ",
+    "canceledDesc": "ការបញ្ជាទិញដែលបានបោះបង់ថ្ងៃនេះ",
+    "completedDesc": "ការបញ្ជាទិញដែលបានបំពេញរួចរាល់ថ្ងៃនេះ",
+    "statusUpdated": "ស្ថានភាពការបញ្ជាទិញត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ",
+    "viewDetails": "មើលលម្អិត"
+  },
+  "orderActions": {
+    "voidOrder": "លុបចោលការបញ្ជាទិញ",
+    "voidTitle": "លុបចោលការបញ្ជាទិញនេះ?",
+    "voidMessage": "សកម្មភាពនេះនឹងលុបចោលការបញ្ជាទិញទាំងមូល និងសងប្រាក់វិញ។ វានឹងត្រូវដកចេញពីរបាយការណ៍លក់។ មិនអាចត្រឡប់វិញបានទេ។",
+    "voidReasonPlaceholder": "មូលហេតុ (ស្រេចចិត្ត) — ឧ. អតិថិជនប្តូរចិត្ត",
+    "voidConfirm": "លុបចោល និងសងប្រាក់",
+    "cancelItem": "លុបចោលមុខទំនិញ",
+    "cancelItemTitle": "លុបចោលមុខទំនិញនេះ?",
+    "cancelItemMessage": "សកម្មភាពនេះនឹងដកមុខទំនិញចេញ គណនាតម្លៃសរុបឡើងវិញ និងសងប្រាក់ដែលនៅសល់វិញ។",
+    "cancelItemConfirm": "លុបចោលមុខទំនិញ",
+    "keep": "រក្សាទុក",
+    "markAs": "ប្តូរទៅ {status}",
+    "cancelledBadge": "បានលុបចោល",
+    "refundedLine": "បានសងប្រាក់",
+    "voidedBy": "លុបចោលដោយ {name} · {time}",
+    "voidedNotice": "ការបញ្ជាទិញនេះត្រូវបានលុបចោល និងសងប្រាក់វិញ។",
+    "orderVoided": "បានលុបចោលការបញ្ជាទិញ និងសងប្រាក់វិញ",
+    "itemCanceled": "បានលុបចោលមុខទំនិញ និងធ្វើបច្ចុប្បន្នភាព",
+    "actionFailed": "សកម្មភាពបរាជ័យ។ សូមព្យាយាមម្តងទៀត។"
+  },
+  "orderHistory": {
+    "title": "ប្រវត្តិនៃការបញ្ជាទិញ",
+    "subtitle": "ស្វែងរក និងចម្រោះប្រវត្តិនៃការបញ្ជាទិញ និងបោះពុម្ពវិក្កយបត្រឡើងវិញ។",
+    "searchPlaceholder": "ស្វែងរកការបញ្ជាទិញ ទំនិញ ឬអតិថិជន...",
+    "filterStatus": "ស្ថានភាពបំពេញ",
+    "filterPayment": "ស្ថានភាពទូទាត់",
+    "datePreset": "កម្រិតកំណត់ស្រាប់",
+    "allStatuses": "ស្ថានភាពទាំងអស់",
+    "allPayments": "ការទូទាត់ទាំងអស់",
+    "compFree": "ឥតគិតថ្លៃ",
+    "freeBadge": "ឥតគិតថ្លៃ",
+    "today": "ថ្ងៃនេះ",
+    "yesterday": "ម្សិលមិញ",
+    "last7Days": "៧ ថ្ងៃចុងក្រោយ",
+    "customRange": "ជ្រើសរើសថ្ងៃ",
+    "table": {
+      "dateTime": "ថ្ងៃខែ & ម៉ោង",
+      "orderId": "លេខបញ្ជាទិញ",
+      "customer": "អតិថិជន",
+      "payment": "ការទូទាត់",
+      "fulfillment": "ស្ថានភាពបំពេញ",
+      "total": "តម្លៃសរុប"
+    },
+    "noHistory": "មិនឃើញប្រវត្តិប្រតិបត្តិការដែលត្រូវនឹងលក្ខខណ្ឌចម្រោះទេ។",
+    "reprintReceipt": "បោះពុម្ពវិក្កយបត្រឡើងវិញ",
+    "startDate": "ថ្ងៃចាប់ផ្តើម",
+    "endDate": "ថ្ងៃបញ្ចប់",
+    "applyFilters": "អនុវត្តតម្រង",
+    "clearFilters": "សម្អាតតម្រង"
+  },
+  "menuManagement": {
+    "title": "ការគ្រប់គ្រងផលិតផល",
+    "subtitle": "គ្រប់គ្រងកាតាឡុក ធាតុនៃហាង ការកំណត់តម្លៃ និងកម្រិតស្តុក។",
+    "filters": "តម្រងលទ្ធផល",
+    "newItem": "បន្ថែមទំនិញថ្មី",
+    "filterPanel": {
+      "itemName": "ឈ្មោះមុខទំនិញ",
+      "category": "ប្រភេទ",
+      "status": "ស្ថានភាព",
+      "allCategories": "ប្រភេទទាំងអស់",
+      "allStatuses": "ស្ថានភាពទាំងអស់",
+      "search": "ស្វែងរកទំនិញ...",
+      "clearAll": "សម្អាតទាំងអស់",
+      "applyFilters": "អនុវត្តតម្រង"
+    },
+    "statusOptions": {
+      "active": "សកម្ម",
+      "inactive": "អសកម្ម"
+    },
+    "dialog": {
+      "addTitle": "បន្ថែមធាតុម៉ឺនុយ",
+      "addDescription": "បញ្ចូលព័ត៌មានលម្អិតនៃធាតុម៉ឺនុយថ្មីរបស់អ្នក។",
+      "editTitle": "កែសម្រួលធាតុម៉ឺនុយ",
+      "editDescription": "ធ្វើឱ្យទាន់សម័យនូវព័ត៌មានលម្អិតនៃធាតុម៉ឺនុយរបស់អ្នក។",
+      "detailsTitle": "ព័ត៌មានលម្អិតផលិតផល",
+      "detailsDescription": "មើល និងកែសម្រួលព័ត៌មានលម្អិតនៃផលិតផលនេះ។",
+      "deleteTitle": "លុបធាតុម៉ឺនុយ"
+    },
+    "messages": {
+      "deleteConfirm": "តើអ្នកប្រាកដថាចង់លុប \"{name}\" មែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "deleteSuccess": "\"{name}\" ត្រូវបានលុប។",
+      "deleteError": "បរាជ័យក្នុងការលុបផលិតផល។",
+      "toggleError": "បរាជ័យក្នុងការប្តូរភាពលេចធ្លាក់របស់ផលិតផល:"
+    },
+    "productTable": {
+      "tableHeaders": {
+        "itemName": "ឈ្មោះមុខទំនិញ",
+        "category": "ចំណាត់ថ្នាក់",
+        "price": "តម្លៃ",
+        "onSale": "មានលក់",
+        "actions": "សកម្មភាព"
+      },
+      "skuLabel": "SKU:",
+      "dropdownMenu": {
+        "edit": "កែសម្រួល",
+        "view": "មើល",
+        "delete": "លុប",
+        "deleteDisabledTooltip": "ផលិតផលនេះមិនអាចលុបបានទេ ដោយសារវាត្រូវបានប្រើក្នុងការបញ្ជាទិញ"
+      },
+      "pagination": {
+        "showing": "បង្ហាញ {from}–{to} នៃ {total} ទំនិញ",
+        "firstPage": "ទំព័ររូមដំបូង",
+        "previousPage": "ទំព័ររៀងមុន",
+        "nextPage": "ទំព័របន្ទាប់",
+        "lastPage": "ទំព័ររៀងចុងក្រោយ"
+      },
+      "emptyState": {
+        "title": "មិនរកឃើញវត្ថុ",
+        "description": "មិនមានវត្ថុដែលត្រូវបង្ហាញក្នុងពេលនេះទេ។"
+      }
+    },
+    "productForm": {
+      "sections": {
+        "basicInfo": "ព័ត៌មានមូលដ្ឋាន",
+        "sizesAndPrices": "ទំហំនិងតម្លៃ",
+        "optionsAndVariations": "ជម្រើស និងលក្ខណៈបម្រែបម្រួល",
+        "details": "ព័ត៌មានលម្អិត"
+      },
+      "labels": {
+        "itemName": "ឈ្មោះមុខទំនិញ",
+        "category": "ចំណាត់ថ្នាក់",
+        "itemType": "ប្រភេទទំនិញ",
+        "price": "តម្លៃ",
+        "pricingMode": "របៀបកំណត់តម្លៃ",
+        "productImage": "រូបភាពផលិតផល"
+      },
+      "itemType": {
+        "drink": "ភេសជ្ជៈ",
+        "food": "ម្ហូបអាហារ"
+      },
+      "pricingMode": [
+        {
+          "value": "fixed",
+          "label": "តម្លៃថេរ",
+          "hint": "តម្លៃតែមួយសម្រាប់ទាំងអស់ — ឧ. សម្ពាធកាហ្វេ។"
+        },
+        {
+          "value": "bySize",
+          "label": "តម្លៃតាមទំហំ",
+          "hint": "តម្លៃខុសគ្នាក្នុងទំហំនីមួយៗ — ឧ. ឡាតេ។"
+        }
+      ],
+      "sizesSection": {
+        "title": "ទំហំនិងតម្លៃ",
+        "sizeLabel": "ទំហំ",
+        "priceLabel": "តម្លៃ",
+        "sizeePlaceholder": "ឧ. តូច មធ្យម ធំ",
+        "addButton": "បន្ថែមទំហំផ្សេងទៀត",
+        "removeButtonLabel": "ដកចេញទំហំ"
+      },
+      "optionsSection": {
+        "title": "ជម្រើស និងលក្ខណៈបម្រែបម្រួល",
+        "subtitle": "(ស្ម័គ្រច្ឆន្ទ)",
+        "description": "ដាក់ជម្រើសដែលពាក់ព័ន្ធគ្នាក្នុងក្រុមតែមួយ ឧ. \"ប្រភេទទឹកដោះគោ\" ឬ \"ការតុបតែង\"។",
+        "addGroupButton": "បន្ថែមក្រុម",
+        "emptyStateIcon": "tune",
+        "emptyStateTitle": "មិនមានក្រុមជម្រើសនៅឡើយទេ",
+        "emptyStateDescription": "ចុច \"បន្ថែមក្រុម\" ដើម្បីឱ្យអតិថិជនបង្កើតកម្មាល់ផលិតផលនេះ។",
+        "groupNamePlaceholder": "ឈ្មោះក្រុម ឧ. ប្រភេទទឹកដោះគោ",
+        "removeGroupButtonLabel": "ដកចេញក្រុមជម្រើស",
+        "dragToReorder": "អូសដើម្បីរៀងលំដាប់ឡើងវិញ",
+        "optionLabel": "ស្លាកជម្រើស",
+        "priceModifier": "ការកែប្រែតម្លៃ",
+        "choicePlaceholder": "ឧ. ទឹកដោះគោឡូដ",
+        "addChoiceButton": "បន្ថែមជម្រើស",
+        "removeChoiceButtonLabel": "ដកចេញជម្រើស"
+      },
+      "templateMenu": {
+        "triggerButton": "គំរូ",
+        "header": "គំរូដែលបានរក្សាទុក",
+        "useButton": "ប្រើប្រាស់",
+        "editTooltip": "កែសម្រួលគំរូ",
+        "deleteTooltip": "លុបគំរូ",
+        "optionsCount": "{count} ជម្រើស",
+        "saveAsTemplateButton": "រក្សាទុកជាគំរូ"
+      },
+      "templateEditor": {
+        "title": "កែសម្រួលគំរូ",
+        "subtitle": "ធ្វើបច្ចុប្បន្នភាពក្រុមជម្រើសដែលបានរក្សាទុកនេះសម្រាប់មុខទំនិញនាពេលអនាគត។",
+        "nameLabel": "ឈ្មោះគំរូ",
+        "namePlaceholder": "ឧ. ប្រភេទទឹកដោះគោ",
+        "addChoiceButton": "បន្ថែមជម្រើស",
+        "cancelButton": "បោះបង់",
+        "saveButton": "រក្សាទុកគំរូ",
+        "validation": {
+          "nameRequired": "ត្រូវការឈ្មោះគំរូ",
+          "optionLabelRequired": "ស្លាកជម្រើសគឺត្រូវបានទាមទារ",
+          "optionsRequired": "ត្រូវការជម្រើសយ៉ាងហោចណាស់មួយ",
+          "duplicateName": "គំរូដែលមានឈ្មោះនេះមានរួចហើយ"
+        },
+        "toastSaved": "ក្រុមជម្រើសត្រូវបានរក្សាទុកជាគំរូ",
+        "toastUpdated": "គំរូត្រូវបានធ្វើបច្ចុប្បន្នភាព",
+        "toastDeleted": "គំរូត្រូវបានលុប",
+        "toastApplied": "បានអនុវត្ត {name}",
+        "toastError": "មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។",
+        "deleteConfirm": "លុបគំរូ \"{name}\"?",
+        "replaceConfirm": "ជំនួសគំរូ \"{name}\" ដែលមានស្រាប់?",
+        "duplicateApplyConfirm": "\"{name}\" មានរួចហើយ។ តើបន្ថែមច្បាប់ចម្លងមួយទៀតទេ?"
+      },
+      "buttons": {
+        "reset": "កែសម្រួលឡើងវិញ",
+        "save": "រក្សាទុកវត្ថុ",
+        "saving": "កំពុងបង្កើត..."
+      },
+      "placeholders": {
+        "selectCategory": "ជ្រើសរើសចំណាត់ថ្នាក់"
+      },
+      "skuLabel": "SKU:",
+      "productValidation": {
+        "size": {
+          "required": "ទំហំគឺត្រូវបានទាមទារ",
+          "priceInvalid": "តម្លៃត្រូវតែជាលេខដែលមានសុពលភាព"
+        },
+        "choice": {
+          "labelRequired": "ស្លាកជម្រើសគឺត្រូវបានទាមទារ",
+          "priceModifierInvalid": "ការកែប្រែតម្លៃត្រូវតែជាលេខដែលមានសុពលភាព"
+        },
+        "optionGroup": {
+          "nameRequired": "ឈ្មោះក្រុមគឺត្រូវបានទាមទារ",
+          "choicesRequired": "ពេលហោះហើរយ៉ាងហោចណាស់មួយគឺត្រូវបានទាមទារ"
+        },
+        "product": {
+          "nameRequired": "ឈ្មោះផលិតផលគឺត្រូវបានទាមទារ",
+          "nameTooLong": "ឈ្មោះវែងពេក",
+          "categoryRequired": "ចំណាត់ថ្នាក់គឺត្រូវបានទាមទារ",
+          "priceRequired": "តម្លៃគឺត្រូវបានទាមទារ",
+          "pricePositive": "តម្លៃត្រូវតែធំជាង ០",
+          "priceRequiredAndPositive": "តម្លៃគឺត្រូវបានទាមទារ & តម្លៃត្រូវតែធំជាង ០",
+          "sizesRequired": "ទំហំយ៉ាងហោចណាស់មួយគឺត្រូវបានទាមទារ",
+          "sizePricePositive": "តម្លៃទំហំត្រូវតែធំជាង ០"
+        }
+      }
+    }
+  },
+  "category": {
+    "categoryManagement": "ការគ្រប់គ្រងប្រភេទទំនិញ",
+    "categorySubtitle": "គ្រប់គ្រងកាតាឡុកប្រភេទទំនិញ ការកំណត់តម្លៃ និងកម្រិតស្តុករបស់ហាងអ្នក។",
+    "newCategory": "បង្កើតប្រភេទទំនិញថ្មី",
+    "searchPlaceholder": "ស្វែងរក...",
+    "categoryName": "ឈ្មោះប្រភេទទំនិញ",
+    "itemsCount": "ចំនួនទំនិញ",
+    "status": "ស្ថានភាព",
+    "actions": "សកម្មភាព",
+    "items": "មុខទំនិញ",
+    "active": "សកម្ម",
+    "inactive": "អសកម្ម",
+    "edit": "កែប្រែ",
+    "delete": "លុប",
+    "showing": "បង្ហាញ {from}–{to} នៃ {total} ទំនិញ",
+    "to": "ដល់",
+    "of": "នៃ",
+    "noCategoriesFound": "រកមិនឃើញប្រភេទទំនិញទេ",
+    "noCategoriesSubtitle": "មិនមានប្រភេទទំនិញត្រូវបង្ហាញនៅពេលនេះទេ។",
+    "editCategory": "កែប្រែប្រភេទទំនិញ",
+    "addCategory": "បន្ថែមប្រភេទទំនិញថ្មី",
+    "editDescription": "ធ្វើបច្ចុប្បន្នភាពព័ត៌មានលម្អិតអំពីប្រភេទទំនិញខាងក្រោម។",
+    "addDescription": "បំពេញព័ត៌មានលម្អិតខាងក្រោមដើម្បីបង្កើតប្រភេទទំនិញថ្មី។",
+    "deleteCategory": "លុបប្រភេទទំនិញ",
+    "deleteConfirmation": "តើអ្នកពិតជាចង់លុបប្រភេទទំនិញនេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានឡើយ។",
+    "deleteWarning": "អ្នកហៀបនឹងលុបប្រភេទទំនិញ៖",
+    "cancel": "បោះបង់",
+    "toastSuccess": "បានលុបប្រភេទទំនិញដោយជោគជ័យ",
+    "toastError": "មិនអាចលុបប្រភេទទំនិញបានទេ",
+    "deleteDisabledTooltip": "ប្រភេទទំនិញនេះមិនអាចលុបបានទេ ដោយសារវានៅមានផលិតផល",
+    "form": {
+      "categoryNameLabel": "ឈ្មោះប្រភេទទំនិញ",
+      "categoryPlaceholder": "ឧ. កាហ្វេ, នំផ្អែម, តែ",
+      "categoryStatusLabel": "ស្ថានភាពប្រភេទទំនិញ",
+      "saveCategory": "រក្សាទុកប្រភេទទំនិញ",
+      "updateCategory": "ធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញ",
+      "nameRequiredError": "សូមបំពេញឈ្មោះប្រភេទទំនិញ",
+      "toastUpdateSuccess": "បានធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញដោយជោគជ័យ",
+      "toastCreateSuccess": "បានបង្កើតប្រភេទទំនិញដោយជោគជ័យ",
+      "toastUpdateError": "មិនអាចធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញបានទេ",
+      "toastCreateError": "មិនអាចបង្កើតប្រភេទទំនិញបានទេ"
+    }
+  },
+  "analytics": {
+    "monthsShort": [
+      "មករា",
+      "កុម្ភៈ",
+      "មីនា",
+      "មេសា",
+      "ឧសភា",
+      "មិថុនា",
+      "កក្កដា",
+      "សីហា",
+      "កញ្ញា",
+      "តុលា",
+      "វិច្ឆិកា",
+      "ធ្នូ"
+    ],
+    "title": "ការវិភាគសម្រាប់អ្នកគ្រប់គ្រង",
+    "premium": "ពិសេស",
+    "exportReport": "ទាញយករបាយការណ៍",
+    "viewAll": "មើលទាំងអស់",
+    "viewInventory": "មើលសារពើភ័ណ្ឌ",
+    "bestSelling": "មុខទំនិញលក់ដាច់បំផុតទាំង ៥",
+    "lowestSelling": "មុខទំនិញលក់តិចបំផុតទាំង ៥",
+    "noItemData": "មិនមានទិន្នន័យលក់សម្រាប់រយៈពេលនេះទេ។",
+    "loadError": "មិនអាចទាញយកទិន្នន័យមុខទំនិញបានទេ។",
+    "lowStockAlerts": "ការជូនដំណឹងអំពីស្តុកទាប",
+    "insightOfTheWeek": "ការវិភាគសំខាន់ប្រចាំសប្តាហ៍",
+    "insightBody": "ការលក់ \"Artisan Latte\" បានកើនឡើង ១៥% បន្ទាប់ពីបានផ្លាស់ទីវាទៅកំពូលនៃផ្ទាំងឌីជីថលពេលព្រឹក។",
+    "range": {
+      "today": "ថ្ងៃនេះ",
+      "yesterday": "ម្សិលមិញ",
+      "last7Days": "៧ ថ្ងៃចុងក្រោយ",
+      "monthly": "ខែនេះ",
+      "yearly": "ឆ្នាំនេះ"
+    },
+    "globalFilter": {
+      "today": "ថ្ងៃនេះ",
+      "yesterday": "ម្សិលមិញ",
+      "last7Days": "៧ ថ្ងៃចុងក្រោយ",
+      "thisMonth": "ខែនេះ",
+      "thisYear": "ឆ្នាំនេះ",
+      "custom": "ជ្រើសរើសកាលបរិច្ឆេទ",
+      "from": "ពី",
+      "to": "ដល់",
+      "apply": "អនុវត្ត"
+    },
+    "kpi": {
+      "netSales": "ការលក់សុទ្ធ",
+      "totalOrders": "ការបញ្ជាទិញសរុប",
+      "avgTicket": "តម្លៃមធ្យមក្នុងមួយវិក្កយបត្រ",
+      "activeStaff": "បុគ្គលិកសកម្ម",
+      "vsLastPeriod": "ធៀបនឹងរយៈពេលមុន",
+      "currentlyClockedIn": "កំពុងបំពេញការងារ"
+    },
+    "chart": {
+      "netSalesOverview": "ទិដ្ឋភាពទូទៅនៃការលក់សុទ្ធ",
+      "subtitle": "ប្រៀបធៀបលទ្ធផលតាមកម្រិតពេលវេលាដែលអ្នកបានជ្រើសរើស។"
+    },
+    "granularity": {
+      "weekly": "សប្តាហ៍",
+      "monthly": "ខែ",
+      "yearly": "ឆ្នាំ"
+    },
+    "period": {
+      "thisWeek": "សប្តាហ៍នេះ",
+      "thisMonth": "ខែនេះ",
+      "thisYear": "ឆ្នាំនេះ",
+      "dateRange": "ចន្លោះកាលបរិច្ឆេទ"
+    },
+    "table": {
+      "item": "មុខទំនិញ",
+      "category": "ប្រភេទ",
+      "unitsSold": "ចំនួនលក់",
+      "status": "ស្ថានភាព",
+      "remaining": "នៅសល់"
+    },
+    "stock": {
+      "critical": "ធ្ងន់ធ្ងរ",
+      "lowStock": "ស្តុកទាប",
+      "unitsLeft": "នៅសល់ {count} ឯកតា",
+      "allStocked": "គ្រឿងផ្សំទាំងអស់មានស្តុកគ្រប់គ្រាន់!"
+    }
+  },
+  "promotions": {
+    "title": "ការគ្រប់គ្រងប្រូម៉ូសិន",
+    "subtitle": "បង្កើត និងតាមដានយុទ្ធនាការទីផ្សាររបស់អ្នក",
+    "searchPlaceholder": "ស្វែងរកប្រូម៉ូសិន...",
+    "addPromotion": "បន្ថែមប្រូម៉ូសិន",
+    "filters": {
+      "clear": "សម្អាតតម្រង"
+    },
+    "loading": "កំពុងផ្ទុកប្រូម៉ូសិន...",
+    "empty": "រកមិនឃើញប្រូម៉ូសិន",
+    "pagination": "បង្ហាញ {start} ដល់ {end} នៃ {total} ប្រូម៉ូសិន",
+    "confirmDelete": "លុបប្រូម៉ូសិន \"{name}\"? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "stats": {
+      "active": "ប្រូម៉ូសិនកំពុងដំណើរការ",
+      "redeemed": "បានប្រើសរុប",
+      "upcoming": "ការផ្តល់ជូននាពេលខាងមុខ"
+    },
+    "table": {
+      "name": "ឈ្មោះប្រូម៉ូសិន",
+      "type": "ប្រភេទ",
+      "value": "តម្លៃ",
+      "startDate": "ថ្ងៃចាប់ផ្តើម",
+      "endDate": "ថ្ងៃបញ្ចប់",
+      "status": "ស្ថានភាព",
+      "actions": "សកម្មភាព",
+      "code": "កូដ"
+    },
+    "types": {
+      "PERCENTAGE": "ភាគរយ",
+      "FIXED_AMOUNT": "ចំនួនថេរ",
+      "BOGO": "ទិញ ១ បាន ១"
+    },
+    "state": {
+      "active": "កំពុងដំណើរការ",
+      "scheduled": "គ្រោងទុក",
+      "expired": "ផុតកំណត់",
+      "inactive": "អសកម្ម"
+    },
+    "value": {
+      "percentage": "បញ្ចុះ {value}%",
+      "fixed": "បញ្ចុះ {value}",
+      "freeItem": "ទំនិញឥតគិតថ្លៃ"
+    },
+    "form": {
+      "addTitle": "បន្ថែមប្រូម៉ូសិនថ្មី",
+      "editTitle": "កែសម្រួលប្រូម៉ូសិន",
+      "name": "ឈ្មោះប្រូម៉ូសិន",
+      "namePlaceholder": "ឧ. បញ្ចុះតម្លៃនំចុងសប្តាហ៍",
+      "code": "កូដប្រូម៉ូ (ស្រេចចិត្ត)",
+      "codePlaceholder": "ឧ. WEEKEND15",
+      "type": "ប្រភេទ",
+      "value": "តម្លៃ",
+      "bogoHint": "ទិញ ១ បាន ១ មិនត្រូវការតម្លៃទេ។",
+      "startDate": "ថ្ងៃចាប់ផ្តើម",
+      "endDate": "ថ្ងៃបញ្ចប់",
+      "conditionsTitle": "លក្ខខណ្ឌ និងវិសាលភាព",
+      "scopeAll": "ម៉ឺនុយទាំងអស់",
+      "scopeAllHint": "អនុវត្តលើផលិតផលទាំងអស់។",
+      "scopeSpecific": "ជ្រើសរើសជាក់លាក់",
+      "scopeSpecificHint": "អនុវត្តលើប្រភេទ ឬទំនិញដែលបានជ្រើស។",
+      "chooseItems": "ជ្រើសរើសប្រភេទ និងទំនិញ",
+      "editSelection": "បានជ្រើស {count} — កែសម្រួល",
+      "activeLabel": "សកម្ម",
+      "activeHint": "ធ្វើឱ្យប្រូម៉ូសិននេះអាចប្រើបានភ្លាមៗ។",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "create": "បង្កើតប្រូម៉ូសិន",
+      "errors": {
+        "nameRequired": "តម្រូវឱ្យមានឈ្មោះ",
+        "valueInvalid": "បញ្ចូលតម្លៃត្រឹមត្រូវ",
+        "percentageMax": "ភាគរយមិនអាចលើស ១០០ ទេ",
+        "dateOrder": "ថ្ងៃបញ្ចប់ត្រូវនៅក្រោយថ្ងៃចាប់ផ្តើម",
+        "scopeRequired": "ជ្រើសរើសយ៉ាងហោចណាស់ប្រភេទ ឬទំនិញមួយ"
+      }
+    },
+    "selector": {
+      "title": "ជ្រើសរើសទំនិញ",
+      "subtitle": "ជ្រើសរើសផលិតផលដើម្បីអនុវត្តប្រូម៉ូសិន",
+      "searchPlaceholder": "ស្វែងរកទំនិញតាមឈ្មោះ",
+      "itemsTab": "ទំនិញ",
+      "categoriesTab": "ប្រភេទ",
+      "selectAll": "ជ្រើសរើសទំនិញទាំងអស់",
+      "itemsAvailable": "មានទំនិញ {count}",
+      "noItems": "រកមិនឃើញទំនិញ",
+      "noCategories": "រកមិនឃើញប្រភេទ",
+      "selectedCount": "បានជ្រើស {count}",
+      "breakdown": "ទំនិញ {items}, ប្រភេទ {categories}",
+      "inOtherPromotion": "នៅក្នុងប្រូម៉ូសិនផ្សេង",
+      "addSelected": "បន្ថែមទំនិញដែលបានជ្រើស"
+    },
+    "toast": {
+      "loadFailed": "ផ្ទុកប្រូម៉ូសិនបរាជ័យ",
+      "created": "បានបង្កើតប្រូម៉ូសិន",
+      "updated": "បានធ្វើបច្ចុប្បន្នភាពប្រូម៉ូសិន",
+      "saveFailed": "រក្សាទុកប្រូម៉ូសិនបរាជ័យ",
+      "deleted": "បានលុបប្រូម៉ូសិន",
+      "deleteFailed": "លុបប្រូម៉ូសិនបរាជ័យ"
+    }
+  },
+  "reports": {
+    "title": "របាយការណ៍សង្ខេបការលក់",
+    "subtitle": "ការបែងចែកចំណូលប្រចាំថ្ងៃ ប្រាក់ក្នុងថត និងវិធីសាស្ត្របង់ប្រាក់។",
+    "loading": "កំពុងផ្ទុករបាយការណ៍...",
+    "total_revenue_today": "សរុបប្រាក់ចំណូលថ្ងៃនេះ",
+    "cash_drawer_expected": "ប្រាក់សាច់ដែលរំពឹងទុក",
+    "khqr_expected": "KHQR ដែលរំពឹងទុក",
+    "showing_for": "របាយការណ៍របស់ថ្ងៃនេះ",
+    "paymentMethods": "វិធីសាលបង់ប្រាក់",
+    "date": "កាលបរិច្ឆេទលម្អិត",
+    "filters": {
+      "all": "ទាំងអស់",
+      "cash": "សាច់ប្រាក់",
+      "khqr": "KHQR",
+      "cod": "បង់ប្រាក់ពេលដឹកជញ្ជូន",
+      "apply": "អនុវត្តតម្រង",
+      "clear": "សម្អាតតម្រង"
+    },
+    "errors": {
+      "fetchDailyOverviewFailed": "មិនអាចផ្ទុកសង្ខេបរបាយការណ៍ប្រចាំថ្ងៃបានទេ។"
+    },
+    "table": {
+      "time": "ពេលវេលា",
+      "orderId": "លេខលម្អិត",
+      "type": "ប្រភេទអតិថិជន",
+      "payment": "ស្ថានភាពបង់ប្រាក់",
+      "method": "វិធីសាលបង់ប្រាក់",
+      "total": "ថ្លៃសរុប",
+      "takeaway": "យកចេញក្រៅ",
+      "dineIn": "ក្នុងស្ថាប័ន",
+      "empty": "មិនមានលម្អិតដែលរកឃើញ"
+    }
+  },
+  "report": {
+    "errors": {
+      "summaryFailed": "មិនអាចផ្ទុកសង្ខេបលក្ខណ៍ប័ណ្ណបានទេ។",
+      "ordersFailed": "មិនអាចផ្ទុកលម្អិតបានទេ។",
+      "fetchDailyOverviewFailed": "មិនអាចផ្ទុកលម្អិតលម្អិតបានទេ។"
+    }
+  }
+}

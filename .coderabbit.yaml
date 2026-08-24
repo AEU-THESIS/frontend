@@ -1,0 +1,52 @@
+# .coderabbit.yaml
+language: 'en-US'
+
+# Feeds CodeRabbit the local intelligence rules written in our markdown files
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - 'AI_INSTRUCTIONS.md'
+      - 'DEVELOPER_GUIDE.md'
+
+reviews:
+  # 'assertive' ensures CodeRabbit acts strictly like a lead engineer enforcing constraints.
+  profile: 'assertive'
+
+  auto_review:
+    enabled: true
+    base_branches:
+      - 'dev'
+      - 'main'
+
+  # Granular enforcement rules. CodeRabbit will flag PRs that violate these frontend constraints.
+  path_instructions:
+    - path: 'src/**/*.vue'
+      instructions: |
+        - **FATAL ERROR**: The Options API is strictly BANNED. Enforce `<script setup lang="ts">` exclusively.
+        - **BANNED**: Magic Strings. Enforce `vue-i18n` using `const { t } = useI18n()` for all English templates.
+        - **BANNED**: Writing vanilla CSS. Enforce Tailwind CSS usage.
+        - **BANNED**: Raw generic HTML interface elements. Enforce unified Shadcn-Vue structural primitives from `src/components/ui/`.
+        - Ensure two-way bindings like `v-model` mathematically precede standard HTML attributes like `type` or `@submit`.
+
+    - path: 'src/api/**/*.ts'
+      instructions: |
+        - This is the ONLY domain where network calls occur. 
+        - **BANNED**: `src/services/` does not exist here. Flag PRs aggressively if someone creates it.
+        - Export standard vanilla async functions executing Axios calls.
+        - Direct usage of native `fetch` API is banned; the unified Axios interceptor instance must be referenced.
+
+    - path: 'src/store/**/*.ts'
+      instructions: |
+        - Pinia Stores must mathematically conform to the Composition API Setup Store syntax.
+        - The store must strictly be the only proxy caching sensitive auth mechanics to `localStorage`.
+
+    - path: 'src/views/**/*.vue'
+      instructions: |
+        - **BANNED**: Hardcoded route URLs (e.g. `router.push('/dashboard')`). Enforce dynamic routing mapping via `APP_ROUTES` imported from `src/constants/appRoutes.ts`.
+
+    - path: 'src/**'
+      instructions: |
+        - **BANNED**: The explicit `any` TypeScript type is strictly prohibited and fails the CI pipeline.
+        - **BANNED**: Manual form validation logic natively inside Vue files. Ensure all payload arguments are strictly mapped to Zod schemas in `src/validations/` prior to triggering the network.
+        - File Naming: All domain code must use standard `camelCase.ts` or Vue PascalCase (`LoginView.vue`).
