@@ -2,8 +2,14 @@ name: Deploy Frontend (Staging)
 
 on:
   push:
-    branches: ['prod']
+    tags:
+      - 'staging-*'
+      - 'v*-staging*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing Docker image tag to deploy (e.g. staging-v1.0.0)'
+        required: false
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/routin-cafe-frontend
@@ -45,7 +51,13 @@ jobs:
       - name: Generate image tags
         id: meta
         run: |
-          TAG="staging-${GITHUB_SHA::7}"
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="staging-${GITHUB_SHA::7}"
+          fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
@@ -91,7 +103,7 @@ jobs:
             set -euo pipefail
             APP_DIR="${{ secrets.APP_DIR }}"
             if [ -z "$APP_DIR" ]; then
-              APP_DIR="$HOME/projects/rountin-cafe/staging"
+              APP_DIR="$HOME/projects/rountine-cafe/staging"
             fi
 
             echo "==> Deploying frontend to Staging: $APP_DIR"
