@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { storeToRefs } from 'pinia'
-import ExcelJS from 'exceljs'
+import type ExcelJS from 'exceljs'
 import { Wallet, Receipt, Download, LoaderCircle } from 'lucide-vue-next'
 import { Card } from '@/components/ui/card'
 import {
@@ -171,7 +171,8 @@ const exportExcel = async () => {
       t(`inventory.expenseReport.excel.${key}`, params ?? {})
     const monthNames = tm('analytics.monthsShort') as unknown as string[]
 
-    const workbook = new ExcelJS.Workbook()
+    const { default: ExcelJSLib } = await import('exceljs')
+    const workbook = new ExcelJSLib.Workbook()
     workbook.creator = 'RoutinCafe POS'
     const currency = shopSettingsStore.currency_symbol
     const moneyFormat = `"${currency}"#,##0.00`

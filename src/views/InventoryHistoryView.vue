@@ -13,7 +13,7 @@ import {
   Download,
   LoaderCircle,
 } from 'lucide-vue-next'
-import ExcelJS from 'exceljs'
+import type ExcelJS from 'exceljs'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -342,7 +342,8 @@ const exportExcel = async () => {
       t(`inventory.history.excel.${key}`, { item: itemName, ...params })
     const monthNames = tm('analytics.monthsShort') as unknown as string[]
 
-    const workbook = new ExcelJS.Workbook()
+    const { default: ExcelJSLib } = await import('exceljs')
+    const workbook = new ExcelJSLib.Workbook()
     workbook.creator = 'RoutinCafe POS'
     const currency = shopSettingsStore.currency_symbol
     const moneyFormat = `"${currency}"#,##0.00`
