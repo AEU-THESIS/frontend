@@ -181,6 +181,7 @@
       "pos": "POS",
       "orders": "Order",
       "orderHistory": "Order History",
+      "inventoryExpenseReport": "Expense Report",
       "categories": "Categories",
       "products": "Product",
       "promotions": "Promotion",
@@ -470,6 +471,14 @@
       "unitCost": "Unit Cost",
       "notes": "Notes",
       "by": "By",
+      "export": "Export Excel",
+      "exportError": "Unable to export the stock history.",
+      "filters": {
+        "type": "Type",
+        "in": "In",
+        "out": "Out",
+        "both": "Both"
+      },
       "summary": {
         "currentStock": "Current Stock",
         "averageDailyUsage": "Average Daily Usage",
@@ -479,6 +488,34 @@
         "category": "Category",
         "unit": "Unit",
         "reorderLevel": "Reorder Level"
+      },
+      "excel": {
+        "title": "Stock History — {item}",
+        "subtitle": "Stock movement history — additions and removals.",
+        "filterLine": "Date Range: {start} → {end}   •   Item: {item}   •   Type: {type}   •   Unit: {unit}   •   Category: {category}",
+        "kpiCurrentStock": "CURRENT STOCK",
+        "kpiCurrentStockCaption": "Value: {value}",
+        "kpiTotalIn": "TOTAL IN",
+        "kpiTotalInCaption": "Stock added this period",
+        "kpiTotalOut": "TOTAL OUT",
+        "kpiTotalOutCaption": "Stock consumed this period",
+        "chartTitle": "Value Over Time",
+        "chartLabel": "Daily Net Value Change",
+        "movementHistory": "Movement History",
+        "multiMonthNote": "This range spans multiple months — see the monthly sheets below for the full movement list.",
+        "tableDate": "Date",
+        "tableType": "Type",
+        "tableQuantity": "Quantity",
+        "tableUnit": "Unit",
+        "tableValue": "Value",
+        "tableUnitCost": "Unit Cost",
+        "tableNotes": "Notes",
+        "tableBy": "By",
+        "typeAdd": "Add",
+        "typeRemove": "Remove",
+        "totalRow": "TOTAL",
+        "footerHeading": "REPORT SCOPE  •  STOCK MOVEMENT HISTORY ONLY",
+        "footerBody": "Includes stock additions and removals for {item} in the selected period. Does not reflect shop-wide inventory value or other items."
       }
     },
     "messages": {
@@ -493,6 +530,49 @@
       "deleteError": "Unable to remove supply.",
       "adjustSuccess": "Stock adjusted.",
       "adjustError": "Unable to adjust stock."
+    },
+    "expenseReport": {
+      "title": "Purchase Spend Report",
+      "subtitle": "Purchase spend only — not profit or cost of goods sold.",
+      "totalSpend": "Total Purchase Spend",
+      "purchaseCount": "Purchase Transactions",
+      "chartTitle": "Spend Over Time",
+      "breakdownTitle": "Spend by Item",
+      "export": "Export Excel",
+      "exportError": "Unable to export the report.",
+      "loadError": "Unable to load the expense report.",
+      "empty": "No purchases in this period.",
+      "emptyHint": "Try a different date range.",
+      "table": {
+        "item": "Item",
+        "unit": "Unit",
+        "quantity": "Quantity Purchased",
+        "totalSpend": "Total Spend"
+      },
+      "excel": {
+        "title": "Expense Report",
+        "subtitle": "Purchase spend on restocking — not profit or cost of goods sold.",
+        "filterLine": "Date Range: {start} → {end}   •   Item: {item}   •   Group By: {groupBy}   •   Currency: {currency}",
+        "allItems": "All Items",
+        "groupByDay": "Day",
+        "kpiTotalSpend": "TOTAL PURCHASE SPEND",
+        "kpiTotalSpendCaption": "{count} purchases",
+        "kpiTransactions": "PURCHASE TRANSACTIONS",
+        "kpiTransactionsCaption": "Stock-in / stock-increase records",
+        "kpiAverage": "AVERAGE PURCHASE",
+        "kpiAverageCaption": "Average per transaction",
+        "chartLabel": "Daily Purchase Spend",
+        "purchaseHistory": "Purchase History",
+        "multiMonthNote": "This range spans multiple months — see the monthly sheets below for the full record list.",
+        "tableDate": "Date",
+        "tableItem": "Item",
+        "tableQuantity": "Quantity",
+        "tableUnitCost": "Unit Cost",
+        "tableTotal": "Total",
+        "totalRow": "TOTAL",
+        "footerHeading": "REPORT SCOPE  •  PURCHASE SPEND ONLY",
+        "footerBody": "Includes stock-in and stock-increase history records for the selected period. This report does not calculate profit, COGS, or current inventory value."
+      }
     }
   },
   "common": {

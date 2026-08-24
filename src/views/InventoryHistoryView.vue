@@ -4,7 +4,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-vue-next'
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Download,
+  LoaderCircle,
+} from 'lucide-vue-next'
+import ExcelJS from 'exceljs'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -14,14 +23,31 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
 import GlobalDateFilter from '@/components/analytics/GlobalDateFilter.vue'
 import { resolveGlobalRange } from '@/components/analytics/globalRange'
 import type { GlobalRangeKey, GlobalRangeValue } from '@/types/analytics.types'
+import type { AdjustmentType, InventoryHistoryEntry } from '@/types/inventory.types'
 import { useInventoryStore } from '@/store/useInventoryStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { APP_ROUTES } from '@/constants/appRoutes'
+import {
+  EXCEL_MAX_ROWS_PER_SHEET,
+  chunkSheetName,
+  downloadWorkbook,
+  excelHeaderCellStyle,
+  groupByMonth,
+  renderExcelBarChartImage,
+  shouldSplitByMonth,
+  writeExcelBanner,
+  writeExcelFooter,
+  writeExcelKpiRow,
+  writeExcelNote,
+  writeExcelSectionHeading,
+  type ExcelKpiBlock,
+} from '@/utils/excelExport'
 
-const { t, locale } = useI18n()
+const { t, tm, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const inventoryStore = useInventoryStore()
@@ -134,6 +160,16 @@ const summaryStats = computed(() => [
   },
 ])
 
+// --- Movement type filter: In / Out / Both ---
+// "all" (Both) omits the param entirely, so the server returns every
+// movement; the Total In/Out summary always reflects the full period
+// regardless of this filter — only the listed rows narrow.
+const typeFilter = ref<'all' | AdjustmentType>('all')
+const typeFilterOptions = computed<{ value: AdjustmentType; label: string }[]>(() => [
+  { value: 'add', label: t('inventory.history.filters.in') },
+  { value: 'remove', label: t('inventory.history.filters.out') },
+])
+
 // --- Pagination (server-driven) ---
 const PAGE_SIZE = 10
 const currentPage = ref(1)
@@ -164,6 +200,7 @@ const load = () => {
     .fetchHistory(itemId.value, {
       from: range.value.startDate,
       to: range.value.endDate,
+      type: typeFilter.value === 'all' ? undefined : typeFilter.value,
       page: currentPage.value,
       limit: PAGE_SIZE,
     })
@@ -175,8 +212,9 @@ const goToPage = (page: number) => {
   currentPage.value = next
   load()
 }
-// Changing the period resets to the first page and refetches from the server.
-watch(range, () => {
+// Changing the period or the movement-type filter resets to the first page
+// and refetches from the server.
+watch([range, typeFilter], () => {
   currentPage.value = 1
   load()
 })
@@ -190,6 +228,283 @@ onMounted(async () => {
   await inventoryStore.ensureItem(itemId.value)
   load()
 })
+
+// --- Excel export ---
+// Same report template as the Expense Report export: a main sheet with a
+// banner, KPI cards, and an embedded chart, followed by the movement table —
+// inline if it fits in one month, or split into one sheet per month once the
+// range spans many (a "Yearly" export, say), same as Expense Report.
+const isExporting = ref(false)
+
+const slugify = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+
+// Grouped by the same local calendar day the on-screen Date column renders,
+// so an exported record lands in the same month a user would expect from
+// looking at the table.
+const localDateKey = (iso: string) => {
+  const d = new Date(iso)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+const MOVEMENT_TABLE_COLUMNS = [
+  { width: 18 },
+  { width: 10 },
+  { width: 12 },
+  { width: 10 },
+  { width: 14 },
+  { width: 14 },
+  { width: 24 },
+  { width: 18 },
+]
+
+// Writes the header/rows/Total-row for the movement table starting at
+// `startRow`, with autofilter over the header. Reused for the inline
+// (single-month) case and each per-month sheet. The Total row sums the
+// signed Value column — a net dollar change for the movements on that sheet.
+const writeMovementTable = (
+  targetSheet: ExcelJS.Worksheet,
+  startRow: number,
+  rows: InventoryHistoryEntry[],
+  unit: string,
+  moneyFormat: string,
+  headers: string[],
+  typeLabels: { add: string; remove: string },
+  totalRowLabel: string
+) => {
+  const headerRow = targetSheet.getRow(startRow)
+  headers.forEach((label, idx) => {
+    const cell = headerRow.getCell(idx + 1)
+    cell.value = label
+    excelHeaderCellStyle(cell, idx >= 2 ? 'right' : 'left')
+  })
+  targetSheet.autoFilter = {
+    from: { row: startRow, column: 1 },
+    to: { row: startRow, column: headers.length },
+  }
+
+  rows.forEach((entry, idx) => {
+    const row = targetSheet.getRow(startRow + 1 + idx)
+    const signedValue =
+      entry.value === null ? null : entry.type === 'add' ? entry.value : -entry.value
+    const values: (string | number)[] = [
+      formatDate(entry.createdAt),
+      entry.type === 'add' ? typeLabels.add : typeLabels.remove,
+      entry.quantityChanged,
+      unit,
+      signedValue ?? '',
+      entry.unitCost ?? '',
+      entry.notes ?? '',
+      entry.user ?? '',
+    ]
+    values.forEach((value, colIdx) => {
+      const cell = row.getCell(colIdx + 1)
+      cell.value = value
+      if (colIdx === 2) cell.alignment = { horizontal: 'right' }
+      if ((colIdx === 4 || colIdx === 5) && value !== '') cell.numFmt = moneyFormat
+    })
+  })
+
+  const totalRowIndex = startRow + 1 + rows.length
+  const totalRow = targetSheet.getRow(totalRowIndex)
+  totalRow.getCell(2).value = totalRowLabel
+  totalRow.getCell(2).font = { bold: true }
+  const sheetTotal = rows.reduce((sum, entry) => {
+    if (entry.value === null) return sum
+    return sum + (entry.type === 'add' ? entry.value : -entry.value)
+  }, 0)
+  totalRow.getCell(5).value = Math.round(sheetTotal * 100) / 100
+  totalRow.getCell(5).font = { bold: true }
+  totalRow.getCell(5).numFmt = moneyFormat
+
+  return totalRowIndex + 1
+}
+
+const exportExcel = async () => {
+  if (!totalItems.value || isExporting.value) return
+  isExporting.value = true
+  try {
+    const entries = await inventoryStore.fetchAllHistory(itemId.value, {
+      from: range.value.startDate,
+      to: range.value.endDate,
+      type: typeFilter.value === 'all' ? undefined : typeFilter.value,
+    })
+
+    const itemName = item.value?.name ?? t('inventory.history.title')
+    const hx = (key: string, params?: Record<string, unknown>) =>
+      t(`inventory.history.excel.${key}`, { item: itemName, ...params })
+    const monthNames = tm('analytics.monthsShort') as unknown as string[]
+
+    const workbook = new ExcelJS.Workbook()
+    workbook.creator = 'RoutinCafe POS'
+    const currency = shopSettingsStore.currency_symbol
+    const moneyFormat = `"${currency}"#,##0.00`
+    const startLabel = range.value.startDate.slice(0, 10)
+    const endLabel = range.value.endDate.slice(0, 10)
+    const unit = unitLabel.value
+
+    const sheet = workbook.addWorksheet(t('inventory.history.title'))
+    sheet.columns = MOVEMENT_TABLE_COLUMNS
+
+    const typeFilterLabel =
+      typeFilter.value === 'all'
+        ? t('inventory.history.filters.both')
+        : typeFilter.value === 'add'
+          ? t('inventory.history.filters.in')
+          : t('inventory.history.filters.out')
+    let cursor = writeExcelBanner(
+      sheet,
+      1,
+      6,
+      hx('title'),
+      hx('subtitle'),
+      hx('filterLine', {
+        start: startLabel,
+        end: endLabel,
+        type: typeFilterLabel,
+        unit: unit || '—',
+        category: item.value?.category?.name ?? '—',
+      })
+    )
+
+    const kpiBlocks: ExcelKpiBlock[] = [
+      {
+        from: 1,
+        to: 2,
+        header: hx('kpiCurrentStock'),
+        value: `${formatNumber(item.value?.quantity ?? 0)} ${unit}`,
+        caption: hx('kpiCurrentStockCaption', { value: formatMoney(item.value?.totalValue ?? 0) }),
+      },
+      {
+        from: 3,
+        to: 4,
+        header: hx('kpiTotalIn'),
+        value: `${formatNumber(totalIn.value)} ${unit}`,
+        caption: hx('kpiTotalInCaption'),
+      },
+      {
+        from: 5,
+        to: 6,
+        header: hx('kpiTotalOut'),
+        value: `${formatNumber(totalOut.value)} ${unit}`,
+        caption: hx('kpiTotalOutCaption'),
+      },
+    ]
+    cursor = writeExcelKpiRow(sheet, cursor, kpiBlocks)
+
+    // --- Value Over Time: embedded chart image (net signed value per day) ---
+    cursor = writeExcelSectionHeading(sheet, cursor, 6, hx('chartTitle'))
+    const dayTotals = new Map<string, number>()
+    for (const entry of entries) {
+      if (entry.value === null) continue
+      const key = localDateKey(entry.createdAt)
+      const signed = entry.type === 'add' ? entry.value : -entry.value
+      dayTotals.set(key, (dayTotals.get(key) ?? 0) + signed)
+    }
+    const chartPoints = [...dayTotals.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, value]) => ({
+        label: `${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}`,
+        value: Math.round(value * 100) / 100,
+      }))
+    if (chartPoints.length > 0) {
+      const chartDataUrl = await renderExcelBarChartImage(chartPoints, {
+        title: hx('chartLabel'),
+        valuePrefix: currency,
+      })
+      const imageId = workbook.addImage({ base64: chartDataUrl, extension: 'png' })
+      sheet.addImage(imageId, { tl: { col: 0, row: cursor - 1 }, ext: { width: 560, height: 236 } })
+      cursor += 15
+    }
+    cursor += 1
+
+    // --- Movement History: inline if it's one month, per-month sheets otherwise ---
+    cursor = writeExcelSectionHeading(sheet, cursor, 6, hx('movementHistory'))
+    const monthGroups = groupByMonth(entries, entry => localDateKey(entry.createdAt), monthNames)
+    const tableHeaders = [
+      hx('tableDate'),
+      hx('tableType'),
+      hx('tableQuantity'),
+      hx('tableUnit'),
+      hx('tableValue'),
+      hx('tableUnitCost'),
+      hx('tableNotes'),
+      hx('tableBy'),
+    ]
+    const typeLabels = { add: hx('typeAdd'), remove: hx('typeRemove') }
+    const totalRowLabel = hx('totalRow')
+
+    if (!shouldSplitByMonth(monthGroups.length, entries.length)) {
+      cursor = writeMovementTable(
+        sheet,
+        cursor,
+        entries,
+        unit,
+        moneyFormat,
+        tableHeaders,
+        typeLabels,
+        totalRowLabel
+      )
+      cursor += 1
+    } else {
+      cursor = writeExcelNote(sheet, cursor, 6, hx('multiMonthNote'))
+      cursor += 1
+
+      for (const month of monthGroups) {
+        if (month.items.length <= EXCEL_MAX_ROWS_PER_SHEET) {
+          const monthSheet = workbook.addWorksheet(month.label)
+          monthSheet.columns = MOVEMENT_TABLE_COLUMNS
+          writeMovementTable(
+            monthSheet,
+            1,
+            month.items,
+            unit,
+            moneyFormat,
+            tableHeaders,
+            typeLabels,
+            totalRowLabel
+          )
+          continue
+        }
+        for (let start = 0; start < month.items.length; start += EXCEL_MAX_ROWS_PER_SHEET) {
+          const chunk = month.items.slice(start, start + EXCEL_MAX_ROWS_PER_SHEET)
+          const chunkSheet = workbook.addWorksheet(
+            chunkSheetName(month.label, start + 1, start + chunk.length)
+          )
+          chunkSheet.columns = MOVEMENT_TABLE_COLUMNS
+          writeMovementTable(
+            chunkSheet,
+            1,
+            chunk,
+            unit,
+            moneyFormat,
+            tableHeaders,
+            typeLabels,
+            totalRowLabel
+          )
+        }
+      }
+    }
+
+    writeExcelFooter(sheet, cursor, 6, hx('footerHeading'), hx('footerBody'))
+
+    await downloadWorkbook(
+      workbook,
+      `stock-history_${slugify(itemName)}_${startLabel}_${endLabel}.xlsx`
+    )
+  } catch {
+    toast.error(t('inventory.history.exportError'))
+  } finally {
+    isExporting.value = false
+  }
+}
 </script>
 
 <template>
@@ -237,7 +552,26 @@ onMounted(async () => {
               {{ t(opt.label) }}
             </Button>
           </div>
+          <AppSelect
+            v-model="typeFilter"
+            :options="typeFilterOptions"
+            :label="undefined"
+            :all-option-label="t('inventory.history.filters.both')"
+            :placeholder="t('inventory.history.filters.type')"
+            class="w-32"
+          />
           <GlobalDateFilter v-model="range" />
+          <Button
+            type="button"
+            variant="tertiary"
+            :disabled="!totalItems || isExporting"
+            class="h-auto rounded-xl border border-slate-100 bg-white px-3.5 py-2 text-xs font-bold text-[#1A1C1C] shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-800 dark:bg-stone-900/50 dark:text-stone-100 dark:hover:bg-stone-800"
+            @click="exportExcel"
+          >
+            <LoaderCircle v-if="isExporting" class="mr-1.5 size-3.5 animate-spin" />
+            <Download v-else class="mr-1.5 size-3.5" />
+            {{ t('inventory.history.export') }}
+          </Button>
         </div>
       </div>
 

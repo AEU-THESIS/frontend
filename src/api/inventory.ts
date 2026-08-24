@@ -1,6 +1,10 @@
 import http from './api'
 import type {
   InventoryAdjustmentPayload,
+  InventoryExpenseReportByDay,
+  InventoryExpenseReportByIngredient,
+  InventoryExpenseReportQuery,
+  InventoryExpenseReportRaw,
   InventoryHistoryQuery,
   InventoryHistoryResponse,
   InventoryItem,
@@ -9,6 +13,7 @@ import type {
 } from '@/types/inventory.types'
 import {
   inventoryAdjustmentSchema,
+  inventoryExpenseReportQuerySchema,
   inventoryHistoryQuerySchema,
   inventoryItemSchema,
 } from '@/validations/inventoryValidation'
@@ -101,5 +106,38 @@ export const adjustInventoryItem = async (
     `${INVENTORY_ENDPOINT}/${id}/adjustments`,
     parsedPayload
   )
+  return res.data
+}
+
+export const getInventoryExpenseReportByDay = async (
+  params: Omit<InventoryExpenseReportQuery, 'groupBy'>
+): Promise<InventoryExpenseReportByDay> => {
+  const parsedParams = inventoryExpenseReportQuerySchema.parse({ ...params, groupBy: 'day' })
+  const res = await http.get<InventoryExpenseReportByDay>(`${INVENTORY_ENDPOINT}/expense-report`, {
+    params: parsedParams,
+  })
+  return res.data
+}
+
+export const getInventoryExpenseReportByIngredient = async (
+  params: Omit<InventoryExpenseReportQuery, 'groupBy'>
+): Promise<InventoryExpenseReportByIngredient> => {
+  const parsedParams = inventoryExpenseReportQuerySchema.parse({ ...params, groupBy: 'ingredient' })
+  const res = await http.get<InventoryExpenseReportByIngredient>(
+    `${INVENTORY_ENDPOINT}/expense-report`,
+    { params: parsedParams }
+  )
+  return res.data
+}
+
+// Individual purchase records (unaggregated) — fetched only when exporting,
+// since the Excel workbook needs per-transaction rows rather than totals.
+export const getInventoryExpenseReportRecords = async (
+  params: Omit<InventoryExpenseReportQuery, 'groupBy'>
+): Promise<InventoryExpenseReportRaw> => {
+  const parsedParams = inventoryExpenseReportQuerySchema.parse({ ...params, groupBy: 'raw' })
+  const res = await http.get<InventoryExpenseReportRaw>(`${INVENTORY_ENDPOINT}/expense-report`, {
+    params: parsedParams,
+  })
   return res.data
 }

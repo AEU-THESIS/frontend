@@ -4,6 +4,9 @@ import {
   adjustInventoryItem,
   createInventoryItem,
   deleteInventoryItem,
+  getInventoryExpenseReportByDay,
+  getInventoryExpenseReportByIngredient,
+  getInventoryExpenseReportRecords,
   getInventoryHistory,
   getInventoryItems,
   getInventoryValuation,
@@ -12,6 +15,9 @@ import {
 } from '@/api/inventory'
 import type {
   InventoryAdjustmentPayload,
+  InventoryExpenseByDay,
+  InventoryExpenseByIngredient,
+  InventoryExpenseReportQuery,
   InventoryHistoryEntry,
   InventoryHistoryQuery,
   InventoryHistoryResponse,
@@ -31,8 +37,16 @@ export const useInventoryStore = defineStore('inventory', () => {
     totalPages: 1,
   })
   const historyTotals = ref<InventoryHistoryResponse['totals']>({ totalIn: 0, totalOut: 0 })
+  const expenseByDay = ref<InventoryExpenseByDay[]>([])
+  const expenseByIngredient = ref<InventoryExpenseByIngredient[]>([])
+  const expenseSummary = ref<{ totalSpend: number; purchaseCount: number; currency: string }>({
+    totalSpend: 0,
+    purchaseCount: 0,
+    currency: '$',
+  })
   const isLoading = ref(false)
   const isHistoryLoading = ref(false)
+  const isExpenseReportLoading = ref(false)
   const isSaving = ref(false)
 
   // Whole-shop inventory value, independent of the list's active filters.
@@ -103,6 +117,26 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
+  // Fetched only when exporting — the on-screen table is paginated (10/page),
+  // but the export needs every movement in the range. Pages through the same
+  // endpoint at its max page size rather than adding a separate unpaginated
+  // backend route.
+  const fetchAllHistory = async (
+    id: number,
+    params: Omit<InventoryHistoryQuery, 'page' | 'limit'>
+  ) => {
+    const limit = 100
+    let page = 1
+    let all: InventoryHistoryEntry[] = []
+    for (;;) {
+      const res = await getInventoryHistory(id, { ...params, page, limit })
+      all = all.concat(res.items)
+      if (page >= res.pagination.totalPages) break
+      page += 1
+    }
+    return all
+  }
+
   // Direct navigation to an item's history page has no cached list to read from,
   // and a list narrowed by search/status filters can legitimately exclude the
   // requested item. There is no by-ID endpoint, so refetch unfiltered and look
@@ -156,6 +190,41 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
+  let currentExpenseReportRequestId = 0
+
+  // Fetches both groupings for the selected range in parallel and commits them
+  // together, so the chart (by day) and the breakdown table (by ingredient)
+  // never show two different periods at once.
+  const fetchExpenseReport = async (params: Omit<InventoryExpenseReportQuery, 'groupBy'>) => {
+    currentExpenseReportRequestId += 1
+    const requestId = currentExpenseReportRequestId
+    isExpenseReportLoading.value = true
+    try {
+      const [byDay, byIngredient] = await Promise.all([
+        getInventoryExpenseReportByDay(params),
+        getInventoryExpenseReportByIngredient(params),
+      ])
+      if (requestId === currentExpenseReportRequestId) {
+        expenseByDay.value = byDay.data
+        expenseByIngredient.value = byIngredient.data
+        expenseSummary.value = {
+          totalSpend: byDay.totalSpend,
+          purchaseCount: byDay.purchaseCount,
+          currency: byDay.currency,
+        }
+      }
+    } finally {
+      if (requestId === currentExpenseReportRequestId) {
+        isExpenseReportLoading.value = false
+      }
+    }
+  }
+
+  // Fetched only when exporting — the Excel workbook needs per-transaction
+  // rows, which the on-screen report never otherwise needs.
+  const fetchExpenseRecords = (params: Omit<InventoryExpenseReportQuery, 'groupBy'>) =>
+    getInventoryExpenseReportRecords(params)
+
   const adjustItem = async (id: number, payload: InventoryAdjustmentPayload) => {
     isSaving.value = true
     try {
@@ -175,6 +244,10 @@ export const useInventoryStore = defineStore('inventory', () => {
     historyPagination,
     historyTotals,
     isHistoryLoading,
+    expenseByDay,
+    expenseByIngredient,
+    expenseSummary,
+    isExpenseReportLoading,
     totalInventoryValue,
     isLoading,
     isSaving,
@@ -187,6 +260,9 @@ export const useInventoryStore = defineStore('inventory', () => {
     ensureItem,
     fetchValuation,
     fetchHistory,
+    fetchAllHistory,
+    fetchExpenseReport,
+    fetchExpenseRecords,
     addItem,
     editItem,
     removeItem,

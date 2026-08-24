@@ -29,10 +29,23 @@ export const inventoryHistoryQuerySchema = z
   .object({
     from: isoDateTime.optional(),
     to: isoDateTime.optional(),
+    type: z.enum(['add', 'remove']).optional(),
     page: z.number().int().positive().optional(),
     limit: z.number().int().positive().max(100).optional(),
   })
   .refine(data => !(data.from && data.to) || Date.parse(data.from) <= Date.parse(data.to), {
     message: 'from must be earlier than or equal to to',
     path: ['from'],
+  })
+
+// Mirrors the backend's inventoryExpenseReportQuerySchema.
+export const inventoryExpenseReportQuerySchema = z
+  .object({
+    startDate: isoDateTime,
+    endDate: isoDateTime,
+    groupBy: z.enum(['day', 'ingredient', 'raw']),
+  })
+  .refine(data => Date.parse(data.startDate) <= Date.parse(data.endDate), {
+    message: 'startDate must be earlier than or equal to endDate',
+    path: ['startDate'],
   })
