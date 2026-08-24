@@ -79,8 +79,6 @@ jobs:
         with:
           context: .
           push: true
-          build-args: |
-            VITE_API_URL=/api
           tags: |
             ${{ steps.image.outputs.name }}:${{ steps.meta.outputs.tag }}
             ${{ steps.image.outputs.name }}:staging
