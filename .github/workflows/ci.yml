@@ -43,8 +43,6 @@ jobs:
         with:
           context: .
           push: false
-          build-args: |
-            VITE_API_URL=/api
           tags: aeu-thesis-frontend:ci
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend

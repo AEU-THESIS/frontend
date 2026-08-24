@@ -36,8 +36,11 @@ export interface HttpInstance extends Omit<
   ): Promise<R>
 }
 
+const apiBase = import.meta.env.VITE_API_URL || ''
+const baseURL = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase
+
 const http = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
