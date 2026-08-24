@@ -15,7 +15,7 @@ RUN npm ci
 COPY . .
 
 # Set default API target build argument (can be overridden during build)
-ARG VITE_API_URL=/api
+ARG VITE_API_URL=""
 ENV VITE_API_URL=$VITE_API_URL
 
 # Build for production

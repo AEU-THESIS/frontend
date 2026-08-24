@@ -37,8 +37,11 @@ export interface PublicHttpInstance extends Omit<
 
 const DEV_TELEGRAM_USER = { id: 999999, username: 'dev_customer', first_name: 'Dev' }
 
+const apiBase = import.meta.env.VITE_API_URL || ''
+const baseURL = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase
+
 const publicHttp = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL,
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 }) as PublicHttpInstance
