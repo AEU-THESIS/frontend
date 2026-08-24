@@ -1,0 +1,85 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: ['dev', 'prod', 'main', 'feature/**', 'feat/**', 'fix/**', 'chore/**']
+  pull_request:
+    branches: ['dev', 'prod', 'main']
+  workflow_dispatch:
+
+concurrency:
+  group: ci-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and build
+        run: npm run build
+
+  docker-build:
+    name: Docker Build Validation
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image (dry run, no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          build-args: |
+            VITE_API_URL=/api
+          tags: aeu-thesis-frontend:ci
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  secret-scan:
+    name: Secret & Credential Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail if a real .env is tracked
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env is tracked by git. Remove it: git rm --cached .env"
+            exit 1
+          fi
+          echo "OK: .env is not tracked."
+
+  notify-dev-merge:
+    name: Telegram Alert (dev merge)
+    needs: [verify, docker-build, secret-scan]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/dev' && secrets.TELEGRAM_BOT_TOKEN != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram notification
+        run: |
+          STATUS="${{ (contains(needs.verify.result, 'failure') || contains(needs.docker-build.result, 'failure') || contains(needs.secret-scan.result, 'failure')) && '❌ Failed' || '✅ Succeeded' }}"
+          TEXT="<b>🚀 Frontend CI (${STATUS})</b>%0A<b>Branch:</b> <code>dev</code> (Merged)%0A<b>Author:</b> ${{ github.actor }}%0A<b>Commit:</b> <a href=\"https://github.com/${{ github.repository }}/commit/${{ github.sha }}\">${{ github.sha }}</a>"
+
+          TOPIC_PARAM=""
+          if [ -n "${{ secrets.TELEGRAM_TOPIC_ID }}" ]; then
+            TOPIC_PARAM="&message_thread_id=${{ secrets.TELEGRAM_TOPIC_ID }}"
+          fi
+
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}${TOPIC_PARAM}&parse_mode=HTML&text=${TEXT}" >/dev/null || true
