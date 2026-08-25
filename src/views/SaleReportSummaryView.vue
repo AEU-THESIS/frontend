@@ -18,10 +18,10 @@
             :label="t('reports.total_revenue_today')"
             :value="formattedTotalRevenue"
             :icon="DollarSign"
-            label-class="text-xs md:text-sm font-medium"
-            value-class="text-lg md:text-xl font-bold"
-            bg-color-class="bg-[#FDF2F0]"
-            icon-color-class="text-[#E26D5C]"
+            label-class="text-xs md:text-sm font-medium dark:text-stone-300"
+            value-class="text-lg md:text-xl font-bold dark:text-stone-100"
+            bg-color-class="bg-[#FDF2F0] dark:bg-rose-950/30 dark:border dark:border-rose-900/30"
+            icon-color-class="text-[#E26D5C] dark:text-rose-400"
           />
 
           <StaffStatCard
@@ -29,10 +29,10 @@
             :label="t('reports.cash_drawer_expected')"
             :value="formattedCashTotal"
             :icon="Wallet"
-            label-class="text-xs md:text-sm font-medium"
-            value-class="text-lg md:text-xl font-bold"
-            bg-color-class="bg-[#F0FDF4]"
-            icon-color-class="text-[#22C55E]"
+            label-class="text-xs md:text-sm font-medium dark:text-stone-300"
+            value-class="text-lg md:text-xl font-bold dark:text-stone-100"
+            bg-color-class="bg-[#F0FDF4] dark:bg-emerald-950/30 dark:border dark:border-emerald-900/30"
+            icon-color-class="text-[#22C55E] dark:text-emerald-400"
           />
 
           <StaffStatCard
@@ -40,15 +40,15 @@
             :label="t('reports.khqr_expected')"
             :value="formattedKhqrTotal"
             :icon="QrCode"
-            label-class="text-xs md:text-sm font-medium"
-            value-class="text-lg md:text-xl font-bold"
-            bg-color-class="bg-[#F8FAFC]"
-            icon-color-class="text-slate-400"
+            label-class="text-xs md:text-sm font-medium dark:text-stone-300"
+            value-class="text-lg md:text-xl font-bold dark:text-stone-100"
+            bg-color-class="bg-[#F8FAFC] dark:bg-stone-800/50 dark:border dark:border-stone-700/50"
+            icon-color-class="text-slate-400 dark:text-stone-400"
           />
         </div>
 
         <Card
-          class="gap-0 overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm flex flex-col"
+          class="gap-0 overflow-hidden rounded-xl border border-transparent dark:border-stone-800 bg-white dark:bg-stone-900 p-0 text-[#1A1C1C] dark:text-stone-100 shadow-sm flex flex-col"
         >
           <!-- Filter Panel -->
           <FilterPanel
@@ -70,7 +70,7 @@
                 v-model="reportStore.selectedDate"
                 type="date"
                 :max="todayIsoDate"
-                class="h-10 w-full cursor-pointer rounded-md border-none bg-stone-50 px-3 text-sm text-[#1A1C1C] transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:bg-stone-800 dark:text-stone-100"
+                class="h-10 w-full cursor-pointer rounded-md border border-stone-200/60 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 text-sm text-[#1A1C1C] dark:text-stone-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
               />
             </div>
 
@@ -84,11 +84,17 @@
             />
           </FilterPanel>
 
-          <div v-if="reportStore.isLoading" class="p-10 text-center text-sm text-[#A3A3A3]">
+          <div
+            v-if="reportStore.isLoading"
+            class="p-10 text-center text-sm text-[#A3A3A3] dark:text-stone-500"
+          >
             {{ t('reports.loading') }}
           </div>
 
-          <div v-else-if="reportStore.error" class="p-10 text-center text-sm text-red-500">
+          <div
+            v-else-if="reportStore.error"
+            class="p-10 text-center text-sm text-red-500 dark:text-red-400"
+          >
             {{ t(reportStore.error) }}
           </div>
 
@@ -96,7 +102,9 @@
             <div class="overflow-x-auto">
               <table class="w-full min-w-[820px] text-left">
                 <thead>
-                  <tr class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3]">
+                  <tr
+                    class="bg-[#FCFCFC] dark:bg-stone-950/50 text-[11px] font-black uppercase text-[#A3A3A3] dark:text-stone-400 border-b border-[#F2F2F2] dark:border-stone-800"
+                  >
                     <th class="px-6 py-4">{{ t('reports.table.time') }}</th>
                     <th class="px-6 py-4">{{ t('reports.table.orderId') }}</th>
                     <th class="px-6 py-4">{{ t('reports.table.type') }}</th>
@@ -107,7 +115,10 @@
                 </thead>
                 <tbody>
                   <tr v-if="filteredOrders.length === 0">
-                    <td colspan="6" class="p-10 text-center text-sm text-[#A3A3A3]">
+                    <td
+                      colspan="6"
+                      class="p-10 text-center text-sm text-[#A3A3A3] dark:text-stone-500"
+                    >
                       {{ t('reports.table.empty') }}
                     </td>
                   </tr>
@@ -115,27 +126,33 @@
                     v-for="order in paginatedOrders"
                     v-else
                     :key="order.id"
-                    class="border-t border-[#F2F2F2] text-sm"
+                    class="border-t border-[#F2F2F2] dark:border-stone-800 text-sm hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition-colors"
                   >
-                    <td class="px-6 py-4 text-[#6B6B6B]">{{ formatTime(order.createdAt) }}</td>
-                    <td class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</td>
-                    <td class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</td>
+                    <td class="px-6 py-4 text-[#6B6B6B] dark:text-stone-400">
+                      {{ formatTime(order.createdAt) }}
+                    </td>
+                    <td class="px-6 py-4 font-semibold text-[#1A1C1C] dark:text-stone-200">
+                      #{{ order.orderNumber }}
+                    </td>
+                    <td class="px-6 py-4 text-[#1A1C1C] dark:text-stone-300">
+                      {{ orderTypeLabel(order.orderType) }}
+                    </td>
                     <td class="px-6 py-4 text-center">
                       <span
                         class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
                         :class="
                           order.paymentStatus === 'paid'
-                            ? 'bg-[#F0FDF4] text-[#22C55E]'
-                            : 'bg-[#FDF2F0] text-[#E26D5C]'
+                            ? 'bg-[#F0FDF4] dark:bg-emerald-950/40 text-[#22C55E] dark:text-emerald-400'
+                            : 'bg-[#FDF2F0] dark:bg-rose-950/40 text-[#E26D5C] dark:text-rose-400'
                         "
                       >
                         {{ order.paymentStatus }}
                       </span>
                     </td>
-                    <td class="px-6 py-4 text-center uppercase text-[#6B6B6B]">
+                    <td class="px-6 py-4 text-center uppercase text-[#6B6B6B] dark:text-stone-400">
                       {{ order.paymentMethod }}
                     </td>
-                    <td class="px-6 py-4 text-center font-bold">
+                    <td class="px-6 py-4 text-center font-bold text-[#1A1C1C] dark:text-stone-100">
                       {{ formatUsd(order.totalAmount) }}
                     </td>
                   </tr>
@@ -145,7 +162,7 @@
 
             <div
               v-if="filteredOrders.length > 0"
-              class="flex items-center justify-between border-t border-[#F2F2F2] px-6 py-4 text-xs font-semibold text-[#A3A3A3]"
+              class="flex items-center justify-between border-t border-[#F2F2F2] dark:border-stone-800 px-6 py-4 text-xs font-semibold text-[#A3A3A3] dark:text-stone-400"
             >
               <div>
                 {{
@@ -160,20 +177,22 @@
               <div class="flex items-center gap-4 text-stone-900 dark:text-stone-100">
                 <button
                   :disabled="currentPage === 1"
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
+                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-transparent select-none"
                   @click="prevPage"
                 >
-                  <ChevronLeft class="h-4 w-4 text-stone-400" />
+                  <ChevronLeft class="h-4 w-4 text-stone-400 dark:text-stone-500" />
                 </button>
 
-                <span class="text-xs font-bold"> Page {{ currentPage }} of {{ totalPages }} </span>
+                <span class="text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Page {{ currentPage }} of {{ totalPages }}
+                </span>
 
                 <button
                   :disabled="currentPage === totalPages"
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
+                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-transparent select-none"
                   @click="nextPage"
                 >
-                  <ChevronRight class="h-4 w-4 text-stone-400" />
+                  <ChevronRight class="h-4 w-4 text-stone-400 dark:text-stone-500" />
                 </button>
               </div>
             </div>
