@@ -1,10 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getReportToday } from '@/api/report'
+import {
+  exportSalesSummary as fetchSalesSummaryWorkbook,
+  getReportToday,
+  salesSummaryFileName,
+} from '@/api/report'
 import type { DailySummary, OrderRow, PaymentMethodFilter } from '@/types/order.types'
 import { getTodayOrders } from '@/api/order'
+import { downloadBlob } from '@/utils/download'
 
 const localIsoDate = (d: Date) => new Intl.DateTimeFormat('en-CA').format(d)
+
+/** 'exported' once the file downloads; 'empty' when the window sold nothing. */
+export type SalesSummaryExportOutcome = 'exported' | 'empty'
 
 export const useReportStore = defineStore('report', () => {
   const summary = ref<DailySummary>({
@@ -18,10 +26,21 @@ export const useReportStore = defineStore('report', () => {
     null
   )
   const isLoading = ref(false)
+  const isExporting = ref(false)
   const error = ref<string | null>(null) // now holds an i18n KEY, not raw text
 
   const selectedDate = ref<string>(localIsoDate(new Date()))
+  /** Inclusive end of the filter window; equal to `selectedDate` for a single day. */
+  const selectedEndDate = ref<string>(localIsoDate(new Date()))
   const selectedPaymentMethod = ref<PaymentMethodFilter>('all')
+
+  // A reversed window would return nothing at all, so clamp the end up to the
+  // start rather than letting the request 400.
+  const effectiveEndDate = computed(() =>
+    selectedEndDate.value && selectedEndDate.value >= selectedDate.value
+      ? selectedEndDate.value
+      : selectedDate.value
+  )
 
   const chronologicalOrders = computed(() =>
     [...orders.value].sort(
@@ -40,9 +59,10 @@ export const useReportStore = defineStore('report', () => {
 
     // Independent settlement: a summary failure shouldn't wipe out orders that DID load, and vice versa
     const results = await Promise.allSettled([
-      getReportToday(selectedDate.value),
+      getReportToday(selectedDate.value, effectiveEndDate.value),
       getTodayOrders({
         date: selectedDate.value,
+        endDate: effectiveEndDate.value,
         paymentMethod:
           selectedPaymentMethod.value === 'all' ? undefined : selectedPaymentMethod.value,
       }),
@@ -76,6 +96,33 @@ export const useReportStore = defineStore('report', () => {
     isLoading.value = false
   }
 
+  /**
+   * Downloads the "Menu Performance" workbook for a date range. The server owns
+   * the aggregation and the file itself (GET /api/reports/exports/sales-summary),
+   * so this only saves what comes back.
+   *
+   * Resolves to 'empty' when the window has no sales — the endpoint answers 204,
+   * which arrives as an empty body. API/validation failures reject for the caller
+   * to surface.
+   */
+  const exportSalesSummary = async (
+    startDate: string,
+    endDate: string
+  ): Promise<SalesSummaryExportOutcome> => {
+    const range = { startDate, endDate }
+
+    isExporting.value = true
+    try {
+      const workbook = await fetchSalesSummaryWorkbook(range)
+      if (!workbook) return 'empty'
+
+      downloadBlob(workbook, salesSummaryFileName(range))
+      return 'exported'
+    } finally {
+      isExporting.value = false
+    }
+  }
+
   return {
     summary,
     orders,
@@ -83,9 +130,13 @@ export const useReportStore = defineStore('report', () => {
     isTruncated,
     chronologicalOrders,
     isLoading,
+    isExporting,
     error,
     selectedDate,
+    selectedEndDate,
+    effectiveEndDate,
     selectedPaymentMethod,
     fetchDailyOverview,
+    exportSalesSummary,
   }
 })

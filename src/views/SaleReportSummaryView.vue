@@ -3,13 +3,25 @@
     <div class="flex-1 overflow-y-auto custom-scrollbar px-10 py-10">
       <div class="w-full space-y-8">
         <!-- Header -->
-        <div>
-          <h1 class="text-3xl font-bold text-[#1A1C1C] dark:text-stone-50">
-            {{ t('reports.title') }}
-          </h1>
-          <p class="mt-1 text-sm text-[#737373] dark:text-stone-400">
-            {{ t('reports.subtitle') }}
-          </p>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-[#1A1C1C] dark:text-stone-50">
+              {{ t('reports.title') }}
+            </h1>
+            <p class="mt-1 text-sm text-[#737373] dark:text-stone-400">
+              {{ t('reports.subtitle') }}
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            variant="primary"
+            class="h-10 shrink-0 px-5"
+            @click="isExportDialogOpen = true"
+          >
+            <FileSpreadsheet class="h-4 w-4" />
+            {{ t('reports.export.button') }}
+          </Button>
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -53,24 +65,42 @@
           <!-- Filter Panel -->
           <FilterPanel
             :has-active-filters="hasActiveFilters"
-            actions-class="col-span-12 sm:col-span-4"
+            actions-class="col-span-12 lg:col-span-3"
             @submit="applyFilters"
             @clear="clearFilters"
           >
-            <!-- Date Filter -->
-            <div class="flex flex-col gap-1 col-span-12 sm:col-span-4">
-              <label
+            <!-- Start Date Filter -->
+            <div class="flex flex-col gap-1 col-span-12 sm:col-span-6 lg:col-span-3">
+              <Label
                 for="report-filter-date"
                 class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
               >
-                {{ t('reports.date') }}
-              </label>
-              <input
+                {{ t('reports.startDate') }}
+              </Label>
+              <AppInput
                 id="report-filter-date"
                 v-model="reportStore.selectedDate"
                 type="date"
                 :max="todayIsoDate"
-                class="h-10 w-full cursor-pointer rounded-md border-none bg-stone-50 px-3 text-sm text-[#1A1C1C] transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:bg-stone-800 dark:text-stone-100"
+                class="h-10 w-full cursor-pointer rounded-md border-none bg-stone-50 px-3 text-sm text-[#1A1C1C] shadow-none transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:bg-stone-800 dark:text-stone-100"
+              />
+            </div>
+
+            <!-- End Date Filter -->
+            <div class="flex flex-col gap-1 col-span-12 sm:col-span-6 lg:col-span-3">
+              <Label
+                for="report-filter-end-date"
+                class="text-xs font-semibold uppercase tracking-wide text-[#1A1C1C]/50 dark:text-stone-400"
+              >
+                {{ t('reports.endDate') }}
+              </Label>
+              <AppInput
+                id="report-filter-end-date"
+                v-model="reportStore.selectedEndDate"
+                type="date"
+                :min="reportStore.selectedDate"
+                :max="todayIsoDate"
+                class="h-10 w-full cursor-pointer rounded-md border-none bg-stone-50 px-3 text-sm text-[#1A1C1C] shadow-none transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:bg-stone-800 dark:text-stone-100"
               />
             </div>
 
@@ -80,7 +110,7 @@
               :options="paymentMethodOptions"
               :label="t('reports.paymentMethods')"
               :all-option-label="t('reports.filters.all')"
-              class="w-full col-span-12 sm:col-span-4"
+              class="w-full col-span-12 sm:col-span-6 lg:col-span-3"
             />
           </FilterPanel>
 
@@ -93,55 +123,72 @@
           </div>
 
           <template v-else>
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[820px] text-left">
-                <thead>
-                  <tr class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3]">
-                    <th class="px-6 py-4">{{ t('reports.table.time') }}</th>
-                    <th class="px-6 py-4">{{ t('reports.table.orderId') }}</th>
-                    <th class="px-6 py-4">{{ t('reports.table.type') }}</th>
-                    <th class="px-6 py-4 text-center">{{ t('reports.table.payment') }}</th>
-                    <th class="px-6 py-4 text-center">{{ t('reports.table.method') }}</th>
-                    <th class="px-6 py-4 text-center">{{ t('reports.table.total') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="filteredOrders.length === 0">
-                    <td colspan="6" class="p-10 text-center text-sm text-[#A3A3A3]">
-                      {{ t('reports.table.empty') }}
-                    </td>
-                  </tr>
-                  <tr
-                    v-for="order in paginatedOrders"
-                    v-else
-                    :key="order.id"
-                    class="border-t border-[#F2F2F2] text-sm"
+            <Table class="min-w-[820px] text-left">
+              <TableHeader>
+                <TableRow
+                  class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
+                >
+                  <TableHead class="px-6 py-4">{{ t('reports.table.time') }}</TableHead>
+                  <TableHead class="px-6 py-4">{{ t('reports.table.orderId') }}</TableHead>
+                  <TableHead class="px-6 py-4">{{ t('reports.table.type') }}</TableHead>
+                  <TableHead class="px-6 py-4 text-center">
+                    {{ t('reports.table.payment') }}
+                  </TableHead>
+                  <TableHead class="px-6 py-4 text-center">
+                    {{ t('reports.table.method') }}
+                  </TableHead>
+                  <TableHead class="px-6 py-4 text-center">
+                    {{ t('reports.table.total') }}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                <TableEmpty
+                  v-if="filteredOrders.length === 0"
+                  :colspan="6"
+                  class="text-[#A3A3A3] dark:text-stone-500"
+                >
+                  {{ t('reports.table.empty') }}
+                </TableEmpty>
+
+                <TableRow
+                  v-for="order in paginatedOrders"
+                  v-else
+                  :key="order.id"
+                  class="border-[#F2F2F2] text-sm dark:border-stone-800"
+                >
+                  <TableCell class="px-6 py-4 text-[#6B6B6B] dark:text-stone-400">
+                    <div class="font-medium text-[#1A1C1C] dark:text-stone-100">
+                      {{ formatDate(order.createdAt) }}
+                    </div>
+                    <div class="text-xs">{{ formatTime(order.createdAt) }}</div>
+                  </TableCell>
+                  <TableCell class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</TableCell>
+                  <TableCell class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</TableCell>
+                  <TableCell class="px-6 py-4 text-center">
+                    <span
+                      class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
+                      :class="
+                        order.paymentStatus === 'paid'
+                          ? 'bg-[#F0FDF4] text-[#22C55E]'
+                          : 'bg-[#FDF2F0] text-[#E26D5C]'
+                      "
+                    >
+                      {{ order.paymentStatus }}
+                    </span>
+                  </TableCell>
+                  <TableCell
+                    class="px-6 py-4 text-center uppercase text-[#6B6B6B] dark:text-stone-400"
                   >
-                    <td class="px-6 py-4 text-[#6B6B6B]">{{ formatTime(order.createdAt) }}</td>
-                    <td class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</td>
-                    <td class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</td>
-                    <td class="px-6 py-4 text-center">
-                      <span
-                        class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
-                        :class="
-                          order.paymentStatus === 'paid'
-                            ? 'bg-[#F0FDF4] text-[#22C55E]'
-                            : 'bg-[#FDF2F0] text-[#E26D5C]'
-                        "
-                      >
-                        {{ order.paymentStatus }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 text-center uppercase text-[#6B6B6B]">
-                      {{ order.paymentMethod }}
-                    </td>
-                    <td class="px-6 py-4 text-center font-bold">
-                      {{ formatUsd(order.totalAmount) }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                    {{ order.paymentMethod }}
+                  </TableCell>
+                  <TableCell class="px-6 py-4 text-center font-bold">
+                    {{ formatUsd(order.totalAmount) }}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
 
             <div
               v-if="filteredOrders.length > 0"
@@ -181,17 +228,41 @@
         </Card>
       </div>
     </div>
+
+    <ExportSalesSummaryDialog
+      v-model:open="isExportDialogOpen"
+      :default-date="reportStore.selectedDate"
+      :max-date="todayIsoDate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ref, computed, onMounted } from 'vue'
-import { DollarSign, Wallet, QrCode, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import {
+  DollarSign,
+  Wallet,
+  QrCode,
+  ChevronLeft,
+  ChevronRight,
+  FileSpreadsheet,
+} from 'lucide-vue-next'
 import StaffStatCard from '@/components/staff/StaffStatCard.vue'
 import { Card } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Label } from '@/components/ui/label'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
+import ExportSalesSummaryDialog from '@/components/reports/ExportSalesSummaryDialog.vue'
 import { useReportStore } from '@/store/useReportStore'
 
 const { t } = useI18n()
@@ -202,14 +273,21 @@ const todayIsoDate = new Intl.DateTimeFormat('en-CA').format(today)
 
 const formatUsd = (amount: number | string) => `$${Number(amount).toFixed(2)}`
 
+const isExportDialogOpen = ref(false)
+
+// Only the methods `todayOrdersFiltersSchema` accepts — anything else makes the
+// orders request throw on parse, which `fetchDailyOverview` swallows, leaving the
+// table silently showing the previous result.
 const paymentMethodOptions = computed(() => [
   { value: 'cash', label: t('reports.filters.cash') },
   { value: 'khqr', label: t('reports.filters.khqr') },
-  { value: 'cod', label: t('reports.filters.cod') },
 ])
 
 const hasActiveFilters = computed(
-  () => reportStore.selectedDate !== todayIsoDate || reportStore.selectedPaymentMethod !== 'all'
+  () =>
+    reportStore.selectedDate !== todayIsoDate ||
+    reportStore.selectedEndDate !== todayIsoDate ||
+    reportStore.selectedPaymentMethod !== 'all'
 )
 
 /**
@@ -252,12 +330,19 @@ const prevPage = () => {
 }
 
 const applyFilters = async () => {
+  // The end input's `min` can't fix a value already picked before the start moved
+  // past it, so snap it up rather than showing a window the fetch won't honour.
+  if (reportStore.selectedEndDate < reportStore.selectedDate) {
+    reportStore.selectedEndDate = reportStore.selectedDate
+  }
+
   currentPage.value = 1
   await reportStore.fetchDailyOverview()
 }
 
 const clearFilters = async () => {
   reportStore.selectedDate = todayIsoDate
+  reportStore.selectedEndDate = todayIsoDate
   reportStore.selectedPaymentMethod = 'all'
   currentPage.value = 1
 
@@ -278,6 +363,15 @@ const formattedCashTotal = computed(() =>
 const formattedKhqrTotal = computed(() =>
   formatUsdWithKhr(reportStore.summary.khqr_total, reportStore.summary.exchange_rate)
 )
+
+// The list can span several days now, so a bare clock time is ambiguous — each
+// row carries its calendar date above the time.
+const formatDate = (isoString: string) =>
+  new Date(isoString).toLocaleDateString(undefined, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 
 const formatTime = (isoString: string) =>
   new Date(isoString).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })

@@ -146,6 +146,8 @@ export interface OrderDetail extends OrderResult {
   createdAt: string
   updatedAt: string
   userId: number | null
+  /** Staff member who created the order. Null for guest (Telegram) pre-orders. */
+  user?: { id: number; name: string } | null
   tableSessionId: number | null
   promotionId: number | null
   // Amount the applied promotion took off. totalAmount is the net (post-discount)
@@ -187,6 +189,8 @@ export interface PaginatedOrders {
 export interface OrderRow {
   id: number
   orderNumber: string
+  /** Staff member who created the order. Null for guest (Telegram) pre-orders. */
+  user?: { id: number; name: string } | null
   orderType: 'dine_in' | 'takeaway'
   paymentStatus: string
   paymentMethod: 'cash' | 'khqr'
@@ -215,7 +219,9 @@ export interface DailySummary {
   exchange_rate: number
 }
 export interface TodayOrdersFilters {
-  date?: string // YYYY-MM-DD
+  date?: string // YYYY-MM-DD — start of the window
+  /** Inclusive end of the window. Defaults to `date`, i.e. a single day. */
+  endDate?: string // YYYY-MM-DD
   paymentMethod?: 'cash' | 'khqr'
 }
 

@@ -790,6 +790,8 @@
     "showing_for": "Today's Report Lists",
     "paymentMethods": "Payment Methods",
     "date": "Date Reports",
+    "startDate": "From Date",
+    "endDate": "To Date",
     "filters": {
       "all": "All",
       "cash": "Cash",
@@ -802,7 +804,7 @@
       "fetchDailyOverviewFailed": "Failed to load daily sales summary."
     },
     "table": {
-      "time": "Timestamp",
+      "time": "Date & Time",
       "orderId": "Order ID",
       "type": "Customer Type",
       "payment": "Payment Status",
@@ -812,6 +814,25 @@
       "dineIn": "Dine-in",
       "empty": "No Orders Found",
       "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports"
+    },
+    "export": {
+      "button": "Export Excel",
+      "title": "Export Sales Summary",
+      "description": "Pick the period to export. The workbook lists one row-block per day, with every item split by payment method.",
+      "startDate": "From Date",
+      "endDate": "To Date",
+      "submit": "Export",
+      "exporting": "Preparing...",
+      "success": "Sales summary exported.",
+      "warnings": {
+        "noData": "No paid orders were found in that period."
+      },
+      "errors": {
+        "required": "Choose both a start and an end date.",
+        "invalidRange": "The end date must be on or after the start date.",
+        "future": "You can't export a date in the future.",
+        "failed": "Failed to export the sales summary."
+      }
     }
   },
   "menuManagement": {
