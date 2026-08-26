@@ -31,10 +31,6 @@ onMounted(async () => {
   orderStore.subscribeToOrderStream()
 })
 
-onUnmounted(() => {
-  orderStore.unsubscribeFromOrderStream()
-})
-
 // ── 2. Metrics & Live Filtering Computations ───────────────────────
 const counts = computed(() => {
   return {

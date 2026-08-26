@@ -57,6 +57,7 @@ import { Textarea } from '@/components/ui/textarea'
 import ImageUpload from '@/components/common/ImageUpload.vue'
 import { useInventoryStore } from '@/store/useInventoryStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import { useNotificationStore } from '@/store/useNotificationStore'
 import type { AdjustmentType, InventoryItem, InventoryStatus } from '@/types/inventory.types'
 import { getImageUrl } from '@/utils/image'
 import { getCategories } from '@/api/product'
@@ -69,6 +70,21 @@ const { t, locale } = useI18n()
 const router = useRouter()
 const inventoryStore = useInventoryStore()
 const shopSettingsStore = useShopSettingsStore()
+const notificationStore = useNotificationStore()
+
+// Real-time synchronization: refresh inventory table and valuation when stock alerts occur
+watch(
+  () => notificationStore.notifications[0]?.id,
+  (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      const latest = notificationStore.notifications[0]
+      if (latest?.type === 'low_stock' || latest?.type === 'out_of_stock') {
+        inventoryStore.fetchItems(inventoryQueryFilters.value).catch(() => {})
+        inventoryStore.fetchValuation().catch(() => {})
+      }
+    }
+  }
+)
 const {
   items,
   isLoading,

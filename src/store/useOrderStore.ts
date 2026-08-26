@@ -9,6 +9,7 @@ import {
   rejectPreOrder as rejectPreOrderApi,
 } from '@/api/order'
 import { useAuthStore } from './useAuthStore'
+import { useNotificationStore } from './useNotificationStore'
 import type { OrderDetail } from '@/types/order.types'
 
 let audioCtx: AudioContext | null = null
@@ -287,6 +288,17 @@ export const useOrderStore = defineStore('orders', () => {
       }
     }
 
+    const handleNotificationCreated = (data: string) => {
+      try {
+        const newNotification = JSON.parse(data)
+        const notificationStore = useNotificationStore()
+        notificationStore.handleSseNotification(newNotification)
+        console.log(`🔔 SSE: New Notification! ${newNotification.type}`)
+      } catch (err) {
+        console.error('Error parsing SSE notification_created event:', err)
+      }
+    }
+
     const startStream = async () => {
       try {
         const response = await fetch(sseUrl, {
@@ -339,6 +351,8 @@ export const useOrderStore = defineStore('orders', () => {
                 handleOrderCreated(dataStr)
               } else if (eventName === 'order_updated') {
                 handleOrderUpdated(dataStr)
+              } else if (eventName === 'notification_created') {
+                handleNotificationCreated(dataStr)
               }
             }
           }

@@ -1,19 +1,43 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useNotificationStore } from '@/store/useNotificationStore'
 import { ROLES } from '@/constants/roles'
 import SystemPreferenceDialog from '@/components/layout/SystemPreferenceDialog.vue'
+import NotificationDropdown from '@/components/layout/NotificationDropdown.vue'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 
 const isProfileMenuOpen = ref(false)
 const isSystemSettingsOpen = ref(false)
+
+onMounted(() => {
+  if (authStore.isAuthenticated()) {
+    notificationStore.fetchUnreadCount()
+  }
+})
+
+const toggleNotifications = () => {
+  notificationStore.isDropdownOpen = !notificationStore.isDropdownOpen
+  if (notificationStore.isDropdownOpen) {
+    isProfileMenuOpen.value = false
+    notificationStore.fetchNotifications(1)
+  }
+}
+
+const toggleProfileMenu = () => {
+  isProfileMenuOpen.value = !isProfileMenuOpen.value
+  if (isProfileMenuOpen.value) {
+    notificationStore.isDropdownOpen = false
+  }
+}
 
 const pageTitle = computed(() => {
   switch (route.name) {
@@ -69,10 +93,12 @@ const isAdmin = computed(() => authStore.user?.role === ROLES.ADMIN)
 const openSystemSettings = () => {
   isSystemSettingsOpen.value = true
   isProfileMenuOpen.value = false
+  notificationStore.isDropdownOpen = false
 }
 
 const goToShopSetting = () => {
   isProfileMenuOpen.value = false
+  notificationStore.isDropdownOpen = false
   router.push({ name: APP_ROUTES.SETTINGS.name })
 }
 
@@ -97,11 +123,41 @@ const getProfileImageUrl = (path: string | undefined | null) => {
       </p>
     </div>
     <div class="flex items-center gap-3">
-      <button
-        class="w-10 h-10 rounded-full flex items-center justify-center text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-      >
-        <span class="material-symbols-outlined text-[22px]">notifications</span>
-      </button>
+      <!-- Notification Bell Button & Dropdown -->
+      <div class="relative">
+        <!-- Backdrop -->
+        <div
+          v-if="notificationStore.isDropdownOpen"
+          class="fixed inset-0 z-40"
+          @click="notificationStore.isDropdownOpen = false"
+        ></div>
+
+        <button
+          type="button"
+          class="relative z-50 w-10 h-10 rounded-full flex items-center justify-center text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+          :class="{
+            'bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200':
+              notificationStore.isDropdownOpen,
+          }"
+          @click="toggleNotifications"
+        >
+          <span class="material-symbols-outlined text-[22px]">notifications</span>
+
+          <!-- Unread Badge -->
+          <span
+            v-if="notificationStore.unreadCount > 0"
+            class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-stone-900 animate-in zoom-in duration-150"
+          >
+            {{ notificationStore.unreadCount > 99 ? '99+' : notificationStore.unreadCount }}
+          </span>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <NotificationDropdown
+          v-if="notificationStore.isDropdownOpen"
+          @close="notificationStore.isDropdownOpen = false"
+        />
+      </div>
 
       <!-- Profile Dropdown -->
       <div class="relative">
@@ -114,7 +170,7 @@ const getProfileImageUrl = (path: string | undefined | null) => {
 
         <div
           class="relative z-50 w-9 h-9 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center ml-2 cursor-pointer ring-2 ring-transparent hover:ring-amber-700 transition-all text-stone-700 dark:text-stone-300 font-bold text-[13px] select-none overflow-hidden"
-          @click="isProfileMenuOpen = !isProfileMenuOpen"
+          @click="toggleProfileMenu"
         >
           <img
             v-if="authStore.user?.image_url || authStore.user?.imageUrl"

@@ -1218,5 +1218,34 @@
       "deleted": "Promotion deleted",
       "deleteFailed": "Failed to delete promotion"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "delete": "Delete",
+    "select": "Select",
+    "cancel": "Cancel",
+    "selectAll": "Select all",
+    "deleteSelected": "Delete ({count})",
+    "confirmClearAll": "Clear all notifications?",
+    "empty": "No notifications yet",
+    "emptySubtitle": "We'll notify you when important events happen",
+    "loadingMore": "Loading older notifications...",
+    "defaultTitle": "Notification",
+    "types": {
+      "pre_order": "New Pre-Order",
+      "new_pre_order": "New Pre-Order",
+      "low_stock": "Low Stock Alert",
+      "out_of_stock": "Out of Stock",
+      "promotion_activated": "Promotion Activated",
+      "promotion_deactivated": "Promotion Deactivated"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago"
+    }
   }
 }
