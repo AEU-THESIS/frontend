@@ -492,7 +492,7 @@ onMounted(() => {
   inventoryStore.fetchValuation().catch(() => {
     toast.error(t('inventory.messages.loadError'))
   })
-  getCategories()
+  getCategories({ type: 'inventory' })
     .then(result => {
       categories.value = result
     })
@@ -504,12 +504,7 @@ onMounted(() => {
   <div
     class="h-full overflow-y-auto bg-[#F9FAFB] p-8 text-[#1A1C1C] dark:bg-stone-900 dark:text-stone-100"
   >
-    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex gap-3 items-center">
-        <div class="w-auto">
-          <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p>
-        </div>
-      </div>
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
       <Button
         class="h-11 rounded-xl bg-primary px-6 font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
         @click="openSupplyModal('add')"
@@ -935,10 +930,10 @@ onMounted(() => {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
     >
       <Card
-        class="w-full max-w-[520px] gap-0 overflow-hidden rounded-2xl border-none bg-white p-0 dark:border dark:border-stone-800 dark:bg-stone-900"
+        class="flex max-h-[90vh] w-full max-w-[520px] flex-col gap-0 overflow-hidden rounded-2xl border-none bg-white p-0 dark:border dark:border-stone-800 dark:bg-stone-900"
       >
         <header
-          class="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-stone-800"
+          class="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-stone-800"
         >
           <h2 class="text-lg font-black text-[#1A1C1C] dark:text-stone-100">
             {{ getModalTitle() }}
@@ -948,7 +943,7 @@ onMounted(() => {
           </Button>
         </header>
 
-        <div class="space-y-4 p-6">
+        <div class="flex-1 space-y-4 overflow-y-auto p-6">
           <Label
             class="flex flex-col items-start gap-2 text-xs font-black text-[#737373] dark:text-stone-400"
           >
@@ -1083,7 +1078,7 @@ onMounted(() => {
         </div>
 
         <footer
-          class="flex justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4 dark:border-stone-800 dark:bg-stone-800"
+          class="flex shrink-0 justify-end gap-3 border-t border-slate-100 bg-[#FAFAFA] px-6 py-4 dark:border-stone-800 dark:bg-stone-800"
         >
           <Button
             variant="tertiary"

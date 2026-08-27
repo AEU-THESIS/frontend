@@ -1134,10 +1134,20 @@
     "toastSuccess": "Category deleted successfully",
     "toastError": "Failed to delete category",
     "deleteDisabledTooltip": "This category cannot be deleted because it still contains products",
+    "tabs": {
+      "product": "Product Categories",
+      "inventory": "Inventory Categories"
+    },
     "form": {
       "categoryNameLabel": "Category Name",
       "categoryPlaceholder": "e.g. Coffee, Pastries, Teas",
       "categoryStatusLabel": "Category Status",
+      "categoryTypeLabel": "Category Type",
+      "categoryTypeHint": "Choose what this category is used to organize.",
+      "typeProduct": "Product",
+      "typeProductHint": "Shown on the POS menu and customer ordering screen.",
+      "typeInventory": "Inventory",
+      "typeInventoryHint": "Used only to group stock supplies.",
       "saveCategory": "Save Category",
       "updateCategory": "Update Category",
       "nameRequiredError": "Category name is required",

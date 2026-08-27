@@ -519,7 +519,7 @@ const exportExcel = async () => {
           <Button
             variant="tertiary"
             size="icon"
-            class="size-9 rounded-xl border border-slate-200 dark:border-stone-700"
+            class="size-9 shrink-0 rounded-xl border border-slate-200 dark:border-stone-700"
             :title="t('inventory.history.back')"
             @click="goBack"
           >
@@ -533,9 +533,9 @@ const exportExcel = async () => {
         </div>
 
         <!-- Period filter (shared with the dashboard): quick tabs + dropdown -->
-        <div class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-nowrap items-center gap-2 overflow-x-auto lg:gap-3">
           <div
-            class="flex items-center gap-1 rounded-xl border border-slate-100 bg-white p-1 dark:border-stone-800 dark:bg-stone-900/50"
+            class="hidden shrink-0 items-center gap-1 overflow-x-auto rounded-xl border border-slate-100 bg-white p-1 lg:flex dark:border-stone-800 dark:bg-stone-900/50"
           >
             <Button
               v-for="opt in rangeOptions"
@@ -543,7 +543,7 @@ const exportExcel = async () => {
               type="button"
               variant="tertiary"
               :class="[
-                'h-auto rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all',
+                'h-auto shrink-0 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all',
                 activeTab === opt.key
                   ? 'bg-[#D2691E] text-white shadow-sm hover:bg-[#D2691E] hover:text-white'
                   : 'text-[#737373] hover:bg-slate-50 hover:text-[#1A1C1C] dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100',
@@ -559,19 +559,20 @@ const exportExcel = async () => {
             :label="undefined"
             :all-option-label="t('inventory.history.filters.both')"
             :placeholder="t('inventory.history.filters.type')"
-            class="w-32"
+            class="w-28 shrink-0 lg:w-32"
           />
           <GlobalDateFilter v-model="range" />
           <Button
             type="button"
             variant="tertiary"
             :disabled="!totalItems || isExporting"
-            class="h-auto rounded-xl border border-slate-100 bg-white px-3.5 py-2 text-xs font-bold text-[#1A1C1C] shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-800 dark:bg-stone-900/50 dark:text-stone-100 dark:hover:bg-stone-800"
+            :title="t('inventory.history.export')"
+            class="h-auto shrink-0 rounded-xl border border-slate-100 bg-white px-3.5 py-2 text-xs font-bold text-[#1A1C1C] shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-800 dark:bg-stone-900/50 dark:text-stone-100 dark:hover:bg-stone-800"
             @click="exportExcel"
           >
-            <LoaderCircle v-if="isExporting" class="mr-1.5 size-3.5 animate-spin" />
-            <Download v-else class="mr-1.5 size-3.5" />
-            {{ t('inventory.history.export') }}
+            <LoaderCircle v-if="isExporting" class="size-3.5 animate-spin sm:mr-1.5" />
+            <Download v-else class="size-3.5 sm:mr-1.5" />
+            <span class="hidden sm:inline">{{ t('inventory.history.export') }}</span>
           </Button>
         </div>
       </div>

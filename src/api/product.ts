@@ -1,9 +1,9 @@
 import http from './api'
-import type { Product, Category, ProductResponse } from '@/types/product.types'
+import type { Product, Category, CategoryType, ProductResponse } from '@/types/product.types'
 import type { CreateProductPayload } from '@/validations/productValidation'
 
-export const getCategories = async (): Promise<Category[]> => {
-  const res = await http.get<Category[]>('/api/categories')
+export const getCategories = async (params: { type?: CategoryType } = {}): Promise<Category[]> => {
+  const res = await http.get<Category[]>('/api/categories', { params })
   return res.data
 }
 
@@ -67,6 +67,7 @@ export const getProductDetail = async (productId: number): Promise<Product> => {
 export const createCategory = async (data: {
   name: string
   isActive: boolean
+  type: CategoryType
 }): Promise<Category> => {
   const res = await http.post<Category>('/api/categories', data)
   return res.data
@@ -77,6 +78,7 @@ export const updateCategory = async (
   data: {
     name: string
     isActive: boolean
+    type: CategoryType
   }
 ): Promise<Category> => {
   const res = await http.put<Category>(`/api/categories/${categoryId}`, data)

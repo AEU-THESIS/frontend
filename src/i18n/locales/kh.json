@@ -1058,10 +1058,20 @@
     "toastSuccess": "បានលុបប្រភេទទំនិញដោយជោគជ័យ",
     "toastError": "មិនអាចលុបប្រភេទទំនិញបានទេ",
     "deleteDisabledTooltip": "ប្រភេទទំនិញនេះមិនអាចលុបបានទេ ដោយសារវានៅមានផលិតផល",
+    "tabs": {
+      "product": "ប្រភេទទំនិញលក់",
+      "inventory": "ប្រភេទសម្ភារៈស្តុក"
+    },
     "form": {
       "categoryNameLabel": "ឈ្មោះប្រភេទទំនិញ",
       "categoryPlaceholder": "ឧ. កាហ្វេ, នំផ្អែម, តែ",
       "categoryStatusLabel": "ស្ថានភាពប្រភេទទំនិញ",
+      "categoryTypeLabel": "ប្រភេទនៃការប្រើប្រាស់",
+      "categoryTypeHint": "ជ្រើសរើសថាប្រភេទទំនិញនេះប្រើសម្រាប់អ្វី។",
+      "typeProduct": "ទំនិញលក់",
+      "typeProductHint": "បង្ហាញនៅលើម៉ឺនុយ POS និងអេក្រង់បញ្ជាទិញអតិថិជន។",
+      "typeInventory": "សម្ភារៈស្តុក",
+      "typeInventoryHint": "ប្រើសម្រាប់ដាក់ជាក្រុមសម្ភារៈស្តុកតែប៉ុណ្ណោះ។",
       "saveCategory": "រក្សាទុកប្រភេទទំនិញ",
       "updateCategory": "ធ្វើបច្ចុប្បន្នភាពប្រភេទទំនិញ",
       "nameRequiredError": "សូមបំពេញឈ្មោះប្រភេទទំនិញ",

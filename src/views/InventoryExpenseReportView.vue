@@ -300,19 +300,10 @@ const exportExcel = async () => {
   >
     <div class="w-full space-y-6">
       <!-- Header -->
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 class="font-headline-lg text-xl font-bold text-on-background">
-            {{ t('inventory.expenseReport.title') }}
-          </h1>
-          <p class="mt-1 text-sm font-medium text-[#737373] dark:text-stone-400">
-            {{ t('inventory.expenseReport.subtitle') }}
-          </p>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-end">
+        <div class="flex flex-nowrap items-center gap-2 overflow-x-auto lg:gap-3">
           <div
-            class="flex items-center gap-1 rounded-xl border border-slate-100 bg-white p-1 dark:border-stone-800 dark:bg-stone-900/50"
+            class="hidden shrink-0 items-center gap-1 overflow-x-auto rounded-xl border border-slate-100 bg-white p-1 lg:flex dark:border-stone-800 dark:bg-stone-900/50"
           >
             <Button
               v-for="opt in rangeOptions"
@@ -320,7 +311,7 @@ const exportExcel = async () => {
               type="button"
               variant="tertiary"
               :class="[
-                'h-auto rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all',
+                'h-auto shrink-0 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all',
                 activeTab === opt.key
                   ? 'bg-[#D2691E] text-white shadow-sm hover:bg-[#D2691E] hover:text-white'
                   : 'text-[#737373] hover:bg-slate-50 hover:text-[#1A1C1C] dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100',
@@ -335,7 +326,7 @@ const exportExcel = async () => {
             type="button"
             variant="tertiary"
             :disabled="!hasData || isExporting"
-            class="h-auto rounded-xl border border-slate-100 bg-white px-3.5 py-2 text-xs font-bold text-[#1A1C1C] shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-800 dark:bg-stone-900/50 dark:text-stone-100 dark:hover:bg-stone-800"
+            class="h-auto shrink-0 rounded-xl border border-slate-100 bg-white px-3.5 py-2 text-xs font-bold text-[#1A1C1C] shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-800 dark:bg-stone-900/50 dark:text-stone-100 dark:hover:bg-stone-800"
             @click="exportExcel"
           >
             <LoaderCircle v-if="isExporting" class="mr-1.5 size-3.5 animate-spin" />
