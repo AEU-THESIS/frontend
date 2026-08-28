@@ -20,6 +20,7 @@ const pageTitle = computed(() => {
     case APP_ROUTES.STAFF.name:
       return t('staff.title')
     case APP_ROUTES.CATEGORIES.name:
+      return t('category.categoryManagement')
     case APP_ROUTES.HOME.name:
       return t('navbar.menuManagement')
     case APP_ROUTES.ORDERS.name:
@@ -29,11 +30,11 @@ const pageTitle = computed(() => {
     case APP_ROUTES.DASHBOARD.name:
       return t('sidebar.items.dashboard')
     case APP_ROUTES.INVENTORY.name:
-      return t('sidebar.items.inventory')
+      return t('inventory.title')
     case APP_ROUTES.INVENTORY_HISTORY.name:
       return t('inventory.history.title')
     case APP_ROUTES.SALE_REPORTS.name:
-      return t('sidebar.items.saleReports')
+      return t('reports.title')
     case APP_ROUTES.PRODUCT.name:
       return t('menuManagement.title')
     case APP_ROUTES.PROMOTIONS.name:
@@ -48,10 +49,18 @@ const pageTitle = computed(() => {
 })
 
 const pageSubtitle = computed(() => {
-  if (route.name === APP_ROUTES.INVENTORY.name) {
-    return t('inventory.subtitle')
+  switch (route.name) {
+    case APP_ROUTES.INVENTORY.name:
+      return t('inventory.subtitle')
+    case APP_ROUTES.CATEGORIES.name:
+      return t('category.categorySubtitle')
+    case APP_ROUTES.PRODUCT.name:
+      return t('menuManagement.subtitle')
+    case APP_ROUTES.SALE_REPORTS.name:
+      return t('reports.subtitle')
+    case APP_ROUTES.SETTINGS.name:
+      return t('settings.subtitle')
   }
-
   return ''
 })
 const userInitials = computed(() => {
