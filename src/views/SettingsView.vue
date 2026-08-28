@@ -166,22 +166,22 @@ onMounted(loadSettings)
       class="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6 lg:p-8"
       @submit.prevent="saveSettings"
     >
-      <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1
-            class="font-headline text-2xl font-extrabold tracking-normal text-stone-900 dark:text-stone-50"
-          >
-            {{ t('settings.title') }}
-          </h1>
-          <p class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">
-            {{ t('settings.subtitle') }}
-          </p>
-        </div>
+      <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+        <!--
+          <div>
+            <h1 class="font-headline text-2xl font-extrabold tracking-normal text-stone-900 dark:text-stone-50">
+              {{ t('settings.title') }}
+            </h1>
+            <p class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">
+              {{ t('settings.subtitle') }}
+            </p>
+          </div> 
+  -->
 
         <Button
           type="submit"
           :disabled="isLoading || isSaving"
-          class="h-10 rounded-lg bg-stone-900 px-5 text-sm font-bold text-white shadow-sm hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-stone-200"
+          class="h-10 rounded-lg bg-stone-900 px-5 text-sm font-bold text-white shadow-sm hover:bg-stone-800 disabled:opacity-50 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-stone-200"
         >
           <span class="material-symbols-outlined text-[18px]">save</span>
           {{ isSaving ? t('settings.actions.saving') : t('settings.actions.saveChanges') }}

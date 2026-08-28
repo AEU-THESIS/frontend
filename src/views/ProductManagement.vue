@@ -225,7 +225,7 @@ onUnmounted(() => {
     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex gap-3 items-center">
         <div class="w-auto">
-          <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p>
+          <!-- <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p> -->
         </div>
       </div>
       <button

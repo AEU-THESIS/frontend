@@ -148,13 +148,6 @@ const openAddDialog = () => {
 <template>
   <!-- Main Content (Canvas) -->
   <main class="p-8 mb-10 overflow-y-auto">
-    <div class="mb-8">
-      <h1 class="font-headline-lg text-[24px] font-bold text-on-background mb-[4px]">
-        {{ $t('category.categoryManagement') }}
-      </h1>
-      <p class="text-[14px]">{{ $t('category.categorySubtitle') }}</p>
-    </div>
-
     <!-- Table  -->
     <div
       class="bg-white dark:bg-stone-900 rounded-xl shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden"
