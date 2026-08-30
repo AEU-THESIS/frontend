@@ -169,27 +169,27 @@
     "your_shop": "Your Shop",
     "shop_logo": "Shop Logo",
     "sections": {
-      "home": "Home",
-      "pos": "POS & Order",
+      "overview": "Overview",
+      "sales": "Sales",
+      "menu": "Menu",
       "inventory": "Inventory",
       "reports": "Reports",
-      "settings": "Settings",
-      "marketing": "Marketing"
+      "administration": "Administration"
     },
     "items": {
       "dashboard": "Dashboard",
       "pos": "POS",
-      "orders": "Orders",
+      "orders": "Order",
       "orderHistory": "Order History",
-      "blockedCustomers": "Blocklist",
-      "inventory": "Inventory",
-      "products": "Product",
       "categories": "Categories",
-      "saleReports": "Sale",
-      "analytics": "Analytics",
+      "products": "Product",
+      "promotions": "Promotion",
+      "inventory": "Supplies",
+      "saleReports": "Sale Summary",
       "staff": "Staff",
-      "config": "Shop Settings",
-      "promotions": "Promotions"
+      "config": "Shop Setting",
+      "blockedCustomers": "Blocklist",
+      "analytics": "Analytics"
     }
   },
   "navbar": {

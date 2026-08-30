@@ -169,27 +169,27 @@
     "your_shop": "ហាងរបស់អ្នក",
     "shop_logo": "និមិត្តសញ្ញាហាង",
     "sections": {
-      "home": "ទំព័រដើម",
-      "pos": "ផលិតផលលក់ POS",
+      "overview": "ទិដ្ឋភាពទូទៅ",
+      "sales": "ការលក់",
+      "menu": "ម៉ឺនុយ",
       "inventory": "សារពើភ័ណ្ឌ",
       "reports": "របាយការណ៍",
-      "settings": "ការកំណត់",
-      "marketing": "ទីផ្សារ"
+      "administration": "រដ្ឋបាល"
     },
     "items": {
       "dashboard": "ផ្ទាំងគ្រប់គ្រង",
       "pos": "POS",
       "orders": "ការបញ្ជាទិញ",
       "orderHistory": "ប្រវត្តិនៃការបញ្ជាទិញ",
-      "blockedCustomers": "បញ្ជីរារាំង",
-      "inventory": "សារពើភ័ណ្ឌ",
-      "products": "ផលិតផល",
       "categories": "ប្រភេទ",
-      "saleReports": "របាយការណ៍លក់",
-      "analytics": "វិភាគ",
+      "products": "ផលិតផល",
+      "promotions": "ប្រូម៉ូសិន",
+      "inventory": "សម្ភារៈផ្គត់ផ្គង់",
+      "saleReports": "សង្ខេបការលក់",
       "staff": "បុគ្គលិក",
-      "config": "ការកំណត់",
-      "promotions": "ប្រូម៉ូសិន"
+      "config": "ការកំណត់ហាង",
+      "blockedCustomers": "បញ្ជីរារាំង",
+      "analytics": "វិភាគ"
     }
   },
   "navbar": {
