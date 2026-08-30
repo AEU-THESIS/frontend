@@ -59,6 +59,8 @@ export const getOrdersParamsSchema = z.object({
   search: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  // "My sales" filter; the backend forces a Cashier onto their own id.
+  userId: z.number().int().positive().optional(),
   page: z.number().int().positive().optional(),
   limit: z.number().int().positive().optional(),
 })

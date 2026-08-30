@@ -29,6 +29,9 @@ export const getOrders = async (params?: {
   search?: string
   startDate?: string
   endDate?: string
+  // Restrict to one cashier's orders. A Cashier is clamped to their own id
+  // server-side, so it can only ever return their own sales.
+  userId?: number
   page?: number
   limit?: number
 }): Promise<PaginatedOrders> => {

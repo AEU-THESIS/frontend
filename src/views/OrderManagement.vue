@@ -11,6 +11,7 @@ import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
 import BlockCustomerDialog from '@/components/order/BlockCustomerDialog.vue'
 import { useAuthStore } from '@/store/useAuthStore'
 import { ROLES } from '@/constants/roles'
+import { cashierName } from '@/utils/cashier'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
@@ -787,10 +788,13 @@ const handlePrint = () => {
               class="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800/40 print:p-0 print:border-0 print:bg-transparent"
             >
               <p class="text-[10px] font-bold text-stone-400 uppercase tracking-wide">
-                {{ t('orderDashboard.stationLabel') }}
+                {{ t('orderHistory.cashier') }}
               </p>
-              <p class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1 uppercase">
-                {{ t('sidebar.station') }}
+              <p
+                class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1 truncate"
+                :title="cashierName(selectedOrder.user, t('common.systemCashier'))"
+              >
+                {{ cashierName(selectedOrder.user, t('common.systemCashier')) }}
               </p>
             </div>
 
