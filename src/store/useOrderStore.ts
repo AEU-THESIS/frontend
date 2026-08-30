@@ -105,6 +105,8 @@ export const useOrderStore = defineStore('orders', () => {
     hasComp?: boolean
     startDate?: string
     endDate?: string
+    // Restrict to one cashier's orders; the backend clamps a Cashier to their own id.
+    userId?: number
     page?: number
     limit?: number
   }) => {
@@ -117,6 +119,7 @@ export const useOrderStore = defineStore('orders', () => {
         hasComp: filters.hasComp || undefined,
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined,
+        userId: filters.userId || undefined,
         page: filters.page || 1,
         limit: filters.limit || 10,
       })

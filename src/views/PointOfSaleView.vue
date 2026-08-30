@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useProductStore } from '@/store/useProductStore'
 import { useCartStore } from '@/store/useCartStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import { useAuthStore } from '@/store/useAuthStore'
 import type { Product } from '@/types/product.types'
 import type { OrderResult, CheckoutSuccessData } from '@/types/order.types'
 import { PRICE_MODE } from '@/constants/product'
@@ -19,6 +20,7 @@ const { t } = useI18n()
 const productStore = useProductStore()
 const cartStore = useCartStore()
 const shopSettingsStore = useShopSettingsStore()
+const authStore = useAuthStore()
 
 const searchInput = ref('')
 const selectedProductForOptions = ref<Product | null>(null)
@@ -113,6 +115,9 @@ const handlePaymentSuccess = (result: OrderResult) => {
     changeKHR,
     // Free (loyalty-stamp) lines captured at checkout, for the receipt's free-items note.
     freeItems: cartStore.lastCompItems,
+    // The signed-in cashier is the one the server recorded on the order, so the
+    // receipt can print "Served by" without another round trip.
+    servedBy: authStore.user?.name ?? null,
   }
   isSuccessModalOpen.value = true
 }

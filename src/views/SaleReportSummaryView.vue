@@ -123,13 +123,14 @@
           </div>
 
           <template v-else>
-            <Table class="min-w-[820px] text-left">
+            <Table class="min-w-[940px] text-left">
               <TableHeader>
                 <TableRow
                   class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
                 >
                   <TableHead class="px-6 py-4">{{ t('reports.table.time') }}</TableHead>
                   <TableHead class="px-6 py-4">{{ t('reports.table.orderId') }}</TableHead>
+                  <TableHead class="px-6 py-4">{{ t('reports.table.cashier') }}</TableHead>
                   <TableHead class="px-6 py-4">{{ t('reports.table.type') }}</TableHead>
                   <TableHead class="px-6 py-4 text-center">
                     {{ t('reports.table.payment') }}
@@ -146,7 +147,7 @@
               <TableBody>
                 <TableEmpty
                   v-if="filteredOrders.length === 0"
-                  :colspan="6"
+                  :colspan="7"
                   class="text-[#A3A3A3] dark:text-stone-500"
                 >
                   {{ t('reports.table.empty') }}
@@ -165,6 +166,20 @@
                     <div class="text-xs">{{ formatTime(order.createdAt) }}</div>
                   </TableCell>
                   <TableCell class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</TableCell>
+
+                  <!-- Cashier who took the order ("System" when none was recorded) -->
+                  <TableCell class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1.5">
+                      {{ cashierName(order.user, t('common.systemCashier')) }}
+                      <span
+                        v-if="isOwnOrder(order)"
+                        class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
+                      >
+                        {{ t('reports.table.you') }}
+                      </span>
+                    </span>
+                  </TableCell>
+
                   <TableCell class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</TableCell>
                   <TableCell class="px-6 py-4 text-center">
                     <span
@@ -264,9 +279,19 @@ import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import ExportSalesSummaryDialog from '@/components/reports/ExportSalesSummaryDialog.vue'
 import { useReportStore } from '@/store/useReportStore'
+import { useAuthStore } from '@/store/useAuthStore'
+import { cashierName } from '@/utils/cashier'
+import type { OrderRow } from '@/types/order.types'
 
 const { t } = useI18n()
 const reportStore = useReportStore()
+const authStore = useAuthStore()
+
+// Marks the signed-in user's own rows so a cashier can spot their sales at a glance.
+const isOwnOrder = (order: OrderRow) => {
+  const currentUserId = authStore.user?.user_id ?? authStore.user?.id
+  return currentUserId != null && order.user?.id === currentUserId
+}
 
 const today = new Date()
 const todayIsoDate = new Intl.DateTimeFormat('en-CA').format(today)

@@ -15,6 +15,7 @@ import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
 import BlockCustomerDialog from '@/components/order/BlockCustomerDialog.vue'
 import { useAuthStore } from '@/store/useAuthStore'
 import { ROLES } from '@/constants/roles'
+import { cashierName } from '@/utils/cashier'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
@@ -32,6 +33,13 @@ const formatOrderTotal = (order: OrderDetail) => {
     return `${riel.toLocaleString()}៛`
   }
   return `$${Number(order.totalAmount).toFixed(2)}`
+}
+
+// Marks the signed-in user's own rows so a cashier can spot their sales at a glance
+// in a list that mixes every cashier's orders.
+const isOwnOrder = (order: OrderDetail) => {
+  const currentUserId = authStore.user?.user_id ?? authStore.user?.id
+  return currentUserId != null && order.user?.id === currentUserId
 }
 
 // ── Void / cancel-item action state ───────────────────────────────
@@ -466,6 +474,7 @@ const confirmRejectPreOrder = async () => {
               <th class="py-4 px-6">{{ t('orderHistory.table.dateTime') }}</th>
               <th class="py-4 px-6">{{ t('orderHistory.table.orderId') }}</th>
               <th class="py-4 px-6">{{ t('orderHistory.table.customer') }}</th>
+              <th class="py-4 px-6">{{ t('orderHistory.table.cashier') }}</th>
               <th class="py-4 px-6 text-center">{{ t('orderHistory.table.payment') }}</th>
               <th class="py-4 px-6 text-center">{{ t('orderHistory.table.fulfillment') }}</th>
               <th class="py-4 px-6 text-right">{{ t('orderHistory.table.total') }}</th>
@@ -496,6 +505,19 @@ const confirmRejectPreOrder = async () => {
               </td>
               <td class="py-3.5 px-6 capitalize">
                 {{ order.customerName || t(`cart.${order.orderType}`) }}
+              </td>
+
+              <!-- Cashier who took the order ("System" when none was recorded) -->
+              <td class="py-3.5 px-6 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1.5">
+                  {{ cashierName(order.user, t('common.systemCashier')) }}
+                  <span
+                    v-if="isOwnOrder(order)"
+                    class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
+                  >
+                    {{ t('orderHistory.table.you') }}
+                  </span>
+                </span>
               </td>
 
               <!-- Payment Status Badge -->
@@ -555,7 +577,7 @@ const confirmRejectPreOrder = async () => {
 
             <!-- Table empty state -->
             <tr v-if="historyOrders.length === 0 && !loading">
-              <td colspan="6" class="py-24">
+              <td colspan="7" class="py-24">
                 <div
                   class="flex flex-col items-center justify-center text-center text-stone-400 font-semibold gap-3"
                 >
@@ -679,10 +701,13 @@ const confirmRejectPreOrder = async () => {
               class="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800/40 print:p-0 print:border-0 print:bg-transparent"
             >
               <p class="text-[10px] font-bold text-stone-400 uppercase tracking-wide">
-                {{ t('orderDashboard.stationLabel') }}
+                {{ t('orderHistory.cashier') }}
               </p>
-              <p class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1 uppercase">
-                {{ t('sidebar.station') }}
+              <p
+                class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1 truncate"
+                :title="cashierName(selectedOrder.user, t('common.systemCashier'))"
+              >
+                {{ cashierName(selectedOrder.user, t('common.systemCashier')) }}
               </p>
             </div>
 

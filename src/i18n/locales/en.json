@@ -253,6 +253,7 @@
     "paymentSuccessful": "Payment Successful!",
     "orderPlacedDesc": "The transaction completed cleanly, and the order has been recorded.",
     "orderNumber": "Order Number",
+    "servedBy": "Served By",
     "changeReturned": "Change Returned",
     "newOrder": "New Order",
     "printReceipt": "Print Receipt",
@@ -508,7 +509,8 @@
     "all": "All",
     "select": "Select",
     "applyFilters": "Apply Filters",
-    "clearFilters": "Clear Filters"
+    "clearFilters": "Clear Filters",
+    "systemCashier": "System"
   },
   "offline": {
     "noConnection": "No Connection",
@@ -765,13 +767,16 @@
     "yesterday": "Yesterday",
     "last7Days": "Last 7 Days",
     "customRange": "Custom Range",
+    "cashier": "Cashier",
     "table": {
       "dateTime": "Date & Time",
       "orderId": "Order ID",
       "customer": "Customer",
+      "cashier": "Cashier",
       "payment": "Payment",
       "fulfillment": "Fulfillment",
-      "total": "Total Price"
+      "total": "Total Price",
+      "you": "You"
     },
     "noHistory": "No historical transactions found matching criteria.",
     "reprintReceipt": "Reprint Receipt",
@@ -806,6 +811,7 @@
     "table": {
       "time": "Date & Time",
       "orderId": "Order ID",
+      "cashier": "Cashier",
       "type": "Customer Type",
       "payment": "Payment Status",
       "method": "Method",
@@ -813,7 +819,8 @@
       "takeaway": "Takeaway",
       "dineIn": "Dine-in",
       "empty": "No Orders Found",
-      "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports"
+      "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports",
+      "you": "You"
     },
     "export": {
       "button": "Export Excel",
