@@ -6,13 +6,14 @@ import { useNotificationStore } from '@/store/useNotificationStore'
 import { useAuthStore } from '@/store/useAuthStore'
 import { ROLES } from '@/constants/roles'
 import { formatTimeAgo } from '@/utils/timeAgo'
+import { Button } from '@/components/ui/button'
 import type { NotificationItem, NotificationType } from '@/types/notification.types'
 
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const router = useRouter()
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
@@ -78,6 +79,22 @@ const getIconClass = (type: NotificationType | string) => {
   }
 }
 
+const getNotificationTitle = (item: NotificationItem) => {
+  if (item.type && te(`notifications.types.${item.type}`)) {
+    if (item.data?.orderNumber) {
+      return `${t(`notifications.types.${item.type}`)} #${item.data.orderNumber}`
+    }
+    if (item.data?.ingredientName) {
+      return `${t(`notifications.types.${item.type}`)}: ${item.data.ingredientName}`
+    }
+    if (item.data?.promotionName) {
+      return `${t(`notifications.types.${item.type}`)}: ${item.data.promotionName}`
+    }
+    return t(`notifications.types.${item.type}`)
+  }
+  return item.data?.title || t('notifications.defaultTitle')
+}
+
 const handleNotificationClick = async (item: NotificationItem) => {
   if (isSelectMode.value) {
     toggleSelection(item.id)
@@ -89,8 +106,11 @@ const handleNotificationClick = async (item: NotificationItem) => {
   }
   emit('close')
 
-  if (item.data?.navigateTo && typeof item.data.navigateTo === 'string') {
-    router.push(item.data.navigateTo)
+  const target = item.data?.navigateTo
+  if (typeof target === 'string' && target.startsWith('/') && !target.startsWith('//')) {
+    router.push(target).catch(() => {
+      /* navigation aborted or route not found */
+    })
   }
 }
 
@@ -204,37 +224,41 @@ onUnmounted(() => {
 
         <div class="flex items-center gap-2">
           <!-- Mark All As Read -->
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            class="h-auto p-0 text-xs font-semibold text-amber-700 dark:text-amber-500 hover:text-amber-800 dark:hover:text-amber-400 hover:bg-transparent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             :disabled="notificationStore.unreadCount === 0"
-            class="text-xs font-semibold text-amber-700 dark:text-amber-500 hover:text-amber-800 dark:hover:text-amber-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             @click="handleMarkAllAsRead"
           >
             {{ t('notifications.markAllAsRead') }}
-          </button>
+          </Button>
 
           <span class="text-stone-300 dark:text-stone-700">|</span>
 
           <!-- Multi-select toggle -->
-          <button
+          <Button
             v-if="visibleNotifications.length > 0"
             type="button"
-            class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
+            variant="ghost"
+            class="h-auto p-0 text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-transparent transition-colors"
             @click="toggleSelectMode"
           >
             {{ t('notifications.select') }}
-          </button>
+          </Button>
 
           <!-- Clear All Trigger -->
-          <button
+          <Button
             v-if="visibleNotifications.length > 0"
             type="button"
-            class="p-1 rounded-lg text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+            variant="ghost"
+            size="icon"
+            class="w-7 h-7 rounded-lg text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
             :title="t('notifications.clearAll')"
             @click="showConfirmClearAll = true"
           >
             <span class="material-symbols-outlined text-[18px]">delete_sweep</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -247,20 +271,24 @@ onUnmounted(() => {
           {{ t('notifications.confirmClearAll') }}
         </span>
         <div class="flex items-center gap-1.5">
-          <button
+          <Button
             type="button"
-            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-colors"
+            variant="destructive"
+            size="sm"
+            class="h-7 px-2.5 text-xs font-semibold rounded-lg"
             @click="handleClearAll"
           >
             {{ t('notifications.clearAll') }}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            class="px-2.5 py-1 text-xs font-medium rounded-lg text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors"
+            variant="ghost"
+            size="sm"
+            class="h-7 px-2.5 text-xs font-medium rounded-lg text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800"
             @click="showConfirmClearAll = false"
           >
             {{ t('notifications.cancel') }}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -279,23 +307,26 @@ onUnmounted(() => {
         </label>
 
         <div class="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="destructive"
+            size="sm"
             :disabled="selectedIds.length === 0"
-            class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+            class="h-7 px-2.5 rounded-lg text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
             @click="handleDeleteSelected"
           >
             <span class="material-symbols-outlined text-[14px]">delete</span>
             {{ t('notifications.deleteSelected', { count: selectedIds.length }) }}
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
-            class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
+            variant="ghost"
+            class="h-auto p-0 text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-transparent transition-colors"
             @click="toggleSelectMode"
           >
             {{ t('notifications.cancel') }}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -377,7 +408,7 @@ onUnmounted(() => {
                   : 'text-stone-600 dark:text-stone-400'
               "
             >
-              {{ item.data?.title || t('notifications.defaultTitle') }}
+              {{ getNotificationTitle(item) }}
             </h4>
             <span class="text-[11px] text-stone-400 dark:text-stone-500 shrink-0 font-medium">
               {{ formatTimeAgo(item.createdAt, t) }}
@@ -398,15 +429,17 @@ onUnmounted(() => {
           ></span>
 
           <!-- Single Delete Button (visible on hover / focus) -->
-          <button
+          <Button
             v-if="!isSelectMode"
             type="button"
-            class="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded-lg text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
+            variant="ghost"
+            size="icon"
+            class="opacity-0 group-hover:opacity-100 focus:opacity-100 w-7 h-7 rounded-lg text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
             :title="t('notifications.delete')"
             @click.stop="handleDeleteSingle(item.id)"
           >
             <span class="material-symbols-outlined text-[16px]">delete</span>
-          </button>
+          </Button>
         </div>
       </div>
 

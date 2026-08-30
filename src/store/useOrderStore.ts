@@ -291,9 +291,18 @@ export const useOrderStore = defineStore('orders', () => {
     const handleNotificationCreated = (data: string) => {
       try {
         const newNotification = JSON.parse(data)
-        const notificationStore = useNotificationStore()
-        notificationStore.handleSseNotification(newNotification)
-        console.log(`🔔 SSE: New Notification! ${newNotification.type}`)
+        if (
+          newNotification &&
+          typeof newNotification === 'object' &&
+          'id' in newNotification &&
+          newNotification.id != null
+        ) {
+          const notificationStore = useNotificationStore()
+          notificationStore.handleSseNotification(newNotification)
+          console.log(`🔔 SSE: New Notification! ${newNotification.type}`)
+        } else {
+          console.warn('⚠️ SSE: Received invalid notification payload:', newNotification)
+        }
       } catch (err) {
         console.error('Error parsing SSE notification_created event:', err)
       }
@@ -307,6 +316,12 @@ export const useOrderStore = defineStore('orders', () => {
           },
           signal: controller.signal,
         })
+
+        if (response.status === 401) {
+          isConnected.value = false
+          console.warn('📡 SSE: Unauthorized (401). Stopping stream reconnect.')
+          return
+        }
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)

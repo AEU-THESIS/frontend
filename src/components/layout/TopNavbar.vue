@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useNotificationStore } from '@/store/useNotificationStore'
+import { Button } from '@/components/ui/button'
 import { ROLES } from '@/constants/roles'
 import SystemPreferenceDialog from '@/components/layout/SystemPreferenceDialog.vue'
 import NotificationDropdown from '@/components/layout/NotificationDropdown.vue'
@@ -132,8 +133,14 @@ const getProfileImageUrl = (path: string | undefined | null) => {
           @click="notificationStore.isDropdownOpen = false"
         ></div>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
+          :aria-label="t('notifications.title')"
+          :aria-expanded="notificationStore.isDropdownOpen"
+          aria-haspopup="true"
+          :title="t('notifications.title')"
           class="relative z-50 w-10 h-10 rounded-full flex items-center justify-center text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           :class="{
             'bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200':
@@ -146,11 +153,12 @@ const getProfileImageUrl = (path: string | undefined | null) => {
           <!-- Unread Badge -->
           <span
             v-if="notificationStore.unreadCount > 0"
+            aria-hidden="true"
             class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-stone-900 animate-in zoom-in duration-150"
           >
             {{ notificationStore.unreadCount > 99 ? '99+' : notificationStore.unreadCount }}
           </span>
-        </button>
+        </Button>
 
         <!-- Dropdown Menu -->
         <NotificationDropdown

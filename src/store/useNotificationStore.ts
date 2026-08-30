@@ -24,6 +24,7 @@ export const useNotificationStore = defineStore('notification', () => {
   const totalPages = ref<number>(1)
   const totalCount = ref<number>(0)
   const hasFetchedList = ref<boolean>(false)
+  const lastStockAlertAt = ref<number>(0)
 
   const normalizeNotification = (n: NotificationItem): NotificationItem => ({
     ...n,
@@ -55,7 +56,7 @@ export const useNotificationStore = defineStore('notification', () => {
       } else {
         const existingIds = new Set(notifications.value.map(n => n.id))
         const newItems = normalizedItems.filter(n => !existingIds.has(n.id))
-        notifications.value = [...notifications.value, ...newItems]
+        notifications.value.push(...newItems)
       }
 
       currentPage.value = res.pagination.page
@@ -71,32 +72,30 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   const loadMore = async () => {
-    if (currentPage.value < totalPages.value && !isLoadingMore.value && !isLoading.value) {
-      await fetchNotifications(currentPage.value + 1, true)
-    }
+    if (isLoadingMore.value || currentPage.value >= totalPages.value) return
+    await fetchNotifications(currentPage.value + 1, true)
   }
 
   const markAsRead = async (id: number) => {
     const item = notifications.value.find(n => n.id === id)
-    const wasUnread = item && !item.readAt
+    if (!item || item.readAt) return
 
-    if (item && !item.readAt) {
-      item.readAt = new Date().toISOString()
-      unreadCount.value = Math.max(0, unreadCount.value - 1)
-    }
+    // Optimistic UI update
+    item.readAt = new Date().toISOString()
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
 
     try {
       await markNotificationAsRead(id)
     } catch (error) {
       console.error(`Failed to mark notification #${id} as read:`, error)
-      if (wasUnread && item) {
-        item.readAt = null
-        unreadCount.value++
-      }
+      item.readAt = null
+      unreadCount.value++
     }
   }
 
   const markAllAsRead = async () => {
+    if (unreadCount.value === 0) return
+
     const previousUnread = unreadCount.value
     const previousNotifications = notifications.value.map(n => ({ ...n }))
 
@@ -131,7 +130,7 @@ export const useNotificationStore = defineStore('notification', () => {
       await deleteNotificationApi(id)
     } catch (error) {
       console.error(`Failed to delete notification #${id}:`, error)
-      fetchNotifications(1)
+      await Promise.all([fetchNotifications(1), fetchUnreadCount()])
     }
   }
 
@@ -154,7 +153,7 @@ export const useNotificationStore = defineStore('notification', () => {
       await bulkDeleteNotificationsApi(ids)
     } catch (error) {
       console.error('Failed to bulk delete notifications:', error)
-      fetchNotifications(1)
+      await Promise.all([fetchNotifications(1), fetchUnreadCount()])
     }
   }
 
@@ -167,7 +166,7 @@ export const useNotificationStore = defineStore('notification', () => {
       await clearAllNotificationsApi()
     } catch (error) {
       console.error('Failed to clear all notifications:', error)
-      fetchNotifications(1)
+      await Promise.all([fetchNotifications(1), fetchUnreadCount()])
     }
   }
 
@@ -192,6 +191,11 @@ export const useNotificationStore = defineStore('notification', () => {
 
     notifications.value.unshift(newNotification)
 
+    // Trigger stock alert signal for reactive view syncing
+    if (newNotification.type === 'low_stock' || newNotification.type === 'out_of_stock') {
+      lastStockAlertAt.value = Date.now()
+    }
+
     // Play audible chime alert for staff
     if (newNotification.type === 'new_pre_order' || newNotification.type === 'pre_order') {
       playPreOrderSound()
@@ -210,6 +214,7 @@ export const useNotificationStore = defineStore('notification', () => {
     totalPages,
     totalCount,
     hasFetchedList,
+    lastStockAlertAt,
     fetchUnreadCount,
     fetchNotifications,
     loadMore,

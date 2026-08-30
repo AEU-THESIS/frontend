@@ -74,14 +74,13 @@ const notificationStore = useNotificationStore()
 
 // Real-time synchronization: refresh inventory table and valuation when stock alerts occur
 watch(
-  () => notificationStore.notifications[0]?.id,
-  (newId, oldId) => {
-    if (newId && newId !== oldId) {
-      const latest = notificationStore.notifications[0]
-      if (latest?.type === 'low_stock' || latest?.type === 'out_of_stock') {
-        inventoryStore.fetchItems(inventoryQueryFilters.value).catch(() => {})
-        inventoryStore.fetchValuation().catch(() => {})
-      }
+  () => notificationStore.lastStockAlertAt,
+  newTimestamp => {
+    if (newTimestamp > 0) {
+      inventoryStore
+        .fetchItems(inventoryQueryFilters.value)
+        .catch(() => toast.error(t('inventory.messages.loadError')))
+      inventoryStore.fetchValuation().catch(() => toast.error(t('inventory.messages.loadError')))
     }
   }
 )
