@@ -1233,5 +1233,34 @@
       "ordersFailed": "មិនអាចផ្ទុកលម្អិតបានទេ។",
       "fetchDailyOverviewFailed": "មិនអាចផ្ទុកលម្អិតលម្អិតបានទេ។"
     }
+  },
+  "notifications": {
+    "title": "ការជូនដំណឹង",
+    "markAllAsRead": "សម្គាល់ថាបានអានទាំងអស់",
+    "clearAll": "លុបទាំងអស់",
+    "delete": "លុប",
+    "select": "ជ្រើសរើស",
+    "cancel": "បោះបង់",
+    "selectAll": "ជ្រើសទាំងអស់",
+    "deleteSelected": "លុប ({count})",
+    "confirmClearAll": "លុបការជូនដំណឹងទាំងអស់?",
+    "empty": "មិនទាន់មានការជូនដំណឹងនៅឡើយទេ",
+    "emptySubtitle": "យើងនឹងជូនដំណឹងដល់អ្នកនៅពេលមានព្រឹត្តិការណ៍សំខាន់ៗ",
+    "loadingMore": "កំពុងផ្ទុកការជូនដំណឹងចាស់ៗ...",
+    "defaultTitle": "ការជូនដំណឹង",
+    "types": {
+      "pre_order": "ការបញ្ជាទិញទុកជាមុនថ្មី",
+      "new_pre_order": "ការបញ្ជាទិញទុកជាមុនថ្មី",
+      "low_stock": "ការព្រមានស្តុកទាប",
+      "out_of_stock": "អស់ពីស្តុក",
+      "promotion_activated": "ប្រូម៉ូសិនត្រូវបានបើកដំណើរការ",
+      "promotion_deactivated": "ប្រូម៉ូសិនត្រូវបានបិទដំណើរការ"
+    },
+    "time": {
+      "justNow": "អម្បាញ់មិញ",
+      "minutesAgo": "{count} នាទីមុន",
+      "hoursAgo": "{count} ម៉ោងមុន",
+      "daysAgo": "{count} ថ្ងៃមុន"
+    }
   }
 }
