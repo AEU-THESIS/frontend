@@ -58,7 +58,7 @@ const pageTitle = computed(() => {
     case APP_ROUTES.INVENTORY_HISTORY.name:
       return t('inventory.history.title')
     case APP_ROUTES.SALE_REPORTS.name:
-      return t('sidebar.items.saleReports')
+      return t('reports.title')
     case APP_ROUTES.PRODUCT.name:
       return t('menuManagement.title')
     case APP_ROUTES.PROMOTIONS.name:
@@ -75,6 +75,10 @@ const pageTitle = computed(() => {
 const pageSubtitle = computed(() => {
   if (route.name === APP_ROUTES.INVENTORY.name) {
     return t('inventory.subtitle')
+  }
+
+  if (route.name === APP_ROUTES.SALE_REPORTS.name) {
+    return t('reports.subtitle')
   }
 
   return ''

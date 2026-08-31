@@ -492,35 +492,10 @@ const handlePrint = () => {
           @click="openOrderDetails(order)"
         >
           <!-- Card Header -->
-          <div class="flex justify-between items-start p-5 pb-3 shrink-0">
-            <div class="min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <h2
-                  class="font-extrabold text-stone-800 dark:text-stone-50 font-headline tracking-tight text-[16px] whitespace-nowrap"
-                >
-                  #{{ order.orderNumber }}
-                </h2>
-                <!-- Payment Status Badge -->
-                <span
-                  class="px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wide uppercase shrink-0"
-                  :class="
-                    order.paymentStatus === 'paid'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30'
-                      : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200/30'
-                  "
-                >
-                  {{ t(`orderDashboard.${order.paymentStatus}`) }}
-                </span>
-              </div>
-              <p
-                class="text-[11px] font-bold text-stone-400 dark:text-stone-500 mt-1 uppercase tracking-wide"
-              >
-                {{ formatTime(order.createdAt) }} • {{ t(`cart.${order.orderType}`) }}
-              </p>
-            </div>
-
-            <!-- Status Action Trigger -->
-            <div class="relative shrink-0 ml-2">
+          <div class="flex flex-col gap-2 p-5 pb-3 shrink-0">
+            <!-- Status Action Trigger (own row at the top so it never overlaps the
+                 order number, which can be long) -->
+            <div class="relative shrink-0 self-end">
               <button
                 class="flex items-center gap-1 py-1 px-2.5 border rounded-xl text-[11px] font-extrabold uppercase transition-colors shrink-0"
                 :class="[
@@ -598,6 +573,34 @@ const handlePrint = () => {
                   </li>
                 </ul>
               </transition>
+            </div>
+
+            <!-- Order number + payment status (below the action, full width so the
+                 whole number is always readable) -->
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2
+                  class="font-extrabold text-stone-800 dark:text-stone-50 font-headline tracking-tight text-[16px] break-all"
+                >
+                  #{{ order.orderNumber }}
+                </h2>
+                <!-- Payment Status Badge -->
+                <span
+                  class="px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wide uppercase shrink-0"
+                  :class="
+                    order.paymentStatus === 'paid'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30'
+                      : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200/30'
+                  "
+                >
+                  {{ t(`orderDashboard.${order.paymentStatus}`) }}
+                </span>
+              </div>
+              <p
+                class="text-[11px] font-bold text-stone-400 dark:text-stone-500 mt-1 uppercase tracking-wide"
+              >
+                {{ formatTime(order.createdAt) }} • {{ t(`cart.${order.orderType}`) }}
+              </p>
             </div>
           </div>
 

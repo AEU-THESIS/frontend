@@ -2,17 +2,8 @@
   <div class="flex h-full flex-col bg-[#F9FAFB] dark:bg-stone-900 font-body overflow-hidden">
     <div class="flex-1 overflow-y-auto custom-scrollbar px-10 py-10">
       <div class="w-full space-y-8">
-        <!-- Header -->
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-[#1A1C1C] dark:text-stone-50">
-              {{ t('reports.title') }}
-            </h1>
-            <p class="mt-1 text-sm text-[#737373] dark:text-stone-400">
-              {{ t('reports.subtitle') }}
-            </p>
-          </div>
-
+        <!-- Export action (title + description now live in the top navbar) -->
+        <div class="flex justify-end">
           <Button
             type="button"
             variant="primary"
@@ -26,34 +17,34 @@
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           <StaffStatCard
-            class="h-[90px]"
+            class="min-h-[90px]"
             :label="t('reports.total_revenue_today')"
             :value="formattedTotalRevenue"
             :icon="DollarSign"
             label-class="text-xs md:text-sm font-medium"
-            value-class="text-lg md:text-xl font-bold"
+            value-class="text-base sm:text-lg lg:text-xl font-bold"
             bg-color-class="bg-[#FDF2F0]"
             icon-color-class="text-[#E26D5C]"
           />
 
           <StaffStatCard
-            class="h-[90px]"
+            class="min-h-[90px]"
             :label="t('reports.cash_drawer_expected')"
             :value="formattedCashTotal"
             :icon="Wallet"
             label-class="text-xs md:text-sm font-medium"
-            value-class="text-lg md:text-xl font-bold"
+            value-class="text-base sm:text-lg lg:text-xl font-bold"
             bg-color-class="bg-[#F0FDF4]"
             icon-color-class="text-[#22C55E]"
           />
 
           <StaffStatCard
-            class="h-[90px]"
+            class="min-h-[90px]"
             :label="t('reports.khqr_expected')"
             :value="formattedKhqrTotal"
             :icon="QrCode"
             label-class="text-xs md:text-sm font-medium"
-            value-class="text-lg md:text-xl font-bold"
+            value-class="text-base sm:text-lg lg:text-xl font-bold"
             bg-color-class="bg-[#F8FAFC]"
             icon-color-class="text-slate-400"
           />
@@ -257,7 +248,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import {
   DollarSign,
   Wallet,
@@ -283,12 +274,17 @@ import FilterPanel from '@/components/common/FilterPanel.vue'
 import ExportSalesSummaryDialog from '@/components/reports/ExportSalesSummaryDialog.vue'
 import { useReportStore } from '@/store/useReportStore'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { cashierName } from '@/utils/cashier'
 import type { OrderRow } from '@/types/order.types'
 
 const { t } = useI18n()
 const reportStore = useReportStore()
 const authStore = useAuthStore()
+const shopSettingsStore = useShopSettingsStore()
+
+// Prefix used for a bank-specific payment filter value, e.g. "khqr:ABA".
+const BANK_FILTER_PREFIX = 'khqr:'
 
 // Marks the signed-in user's own rows so a cashier can spot their sales at a glance.
 const isOwnOrder = (order: OrderRow) => {
@@ -303,12 +299,16 @@ const formatUsd = (amount: number | string) => `$${Number(amount).toFixed(2)}`
 
 const isExportDialogOpen = ref(false)
 
-// Only the methods `todayOrdersFiltersSchema` accepts — anything else makes the
-// orders request throw on parse, which `fetchDailyOverview` swallows, leaving the
-// table silently showing the previous result.
+// Cash, all-KHQR, then one option per bank the admin configured in Shop Settings.
+// A bank value ("khqr:ABA") is mapped back to 'khqr' before the request (the store
+// only sends cash/khqr to the server) and narrowed to that bank on the client.
 const paymentMethodOptions = computed(() => [
   { value: 'cash', label: t('reports.filters.cash') },
   { value: 'khqr', label: t('reports.filters.khqr') },
+  ...shopSettingsStore.payment_banks.map(bank => ({
+    value: `${BANK_FILTER_PREFIX}${bank}`,
+    label: `${t('reports.filters.khqr')} — ${bank}`,
+  })),
 ])
 
 const hasActiveFilters = computed(
@@ -330,11 +330,28 @@ const filteredOrders = computed(() => {
     return orders
   }
 
+  // Bank-specific filter: khqr orders paid via that exact bank.
+  if (method.startsWith(BANK_FILTER_PREFIX)) {
+    const bank = method.slice(BANK_FILTER_PREFIX.length)
+    return orders.filter(
+      order => order.paymentMethod?.toLowerCase() === 'khqr' && order.bankName === bank
+    )
+  }
+
   return orders.filter(order => order.paymentMethod?.toLowerCase() === method.toLowerCase())
 })
 
 const ITEMS_PER_PAGE = 5
 const currentPage = ref(1)
+
+// Selecting a different method/bank (client-side narrowing) can shrink the result
+// set below the current page, so snap back to the first page.
+watch(
+  () => reportStore.selectedPaymentMethod,
+  () => {
+    currentPage.value = 1
+  }
+)
 
 const totalPages = computed(() => Math.ceil(filteredOrders.value.length / ITEMS_PER_PAGE) || 1)
 
