@@ -55,6 +55,7 @@ export interface InventoryHistoryEntry {
 export interface InventoryHistoryQuery {
   from?: string
   to?: string
+  type?: AdjustmentType
   page?: number
   limit?: number
 }
@@ -63,4 +64,61 @@ export interface InventoryHistoryResponse {
   items: InventoryHistoryEntry[]
   pagination: { total: number; page: number; limit: number; totalPages: number }
   totals: { totalIn: number; totalOut: number }
+}
+
+export type ExpenseReportGroupBy = 'day' | 'ingredient'
+
+/** Languages the server can write an exported workbook in. */
+export type ExportLocale = 'en' | 'kh'
+
+export interface InventoryExpenseReportQuery {
+  startDate: string
+  endDate: string
+  groupBy: ExpenseReportGroupBy
+}
+
+export interface InventoryExpenseByDay {
+  date: string
+  label: string
+  totalSpend: number
+}
+
+export interface InventoryExpenseByIngredient {
+  ingredientId: number
+  name: string
+  unitOfMeasure: string
+  quantity: number
+  totalSpend: number
+}
+
+interface InventoryExpenseReportBase {
+  period: { startDate: string; endDate: string }
+  totalSpend: number
+  purchaseCount: number
+  currency: string
+}
+
+export interface InventoryExpenseReportByDay extends InventoryExpenseReportBase {
+  groupBy: 'day'
+  data: InventoryExpenseByDay[]
+}
+
+export interface InventoryExpenseReportByIngredient extends InventoryExpenseReportBase {
+  groupBy: 'ingredient'
+  data: InventoryExpenseByIngredient[]
+}
+
+/** Query behind the server-rendered Expense Report workbook. */
+export interface InventoryExpenseReportExportQuery {
+  startDate: string
+  endDate: string
+  locale: ExportLocale
+}
+
+/** Query behind the server-rendered Stock History workbook (one item). */
+export interface InventoryHistoryExportQuery {
+  from?: string
+  to?: string
+  type?: AdjustmentType
+  locale: ExportLocale
 }

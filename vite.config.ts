@@ -33,7 +33,7 @@ export default defineConfig({
           }
           return 'assets/[name]-[hash][extname]' // Standard Cache-busting hash
         },
-        // Functional manual chunks avoids TypeScript Union Type bugs in Vite
+        // Functional manual chunks avoids TypeScript Union Type bugs in Vite.
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('vue') || id.includes('pinia')) {
@@ -44,6 +44,12 @@ export default defineConfig({
             }
             if (id.includes('axios') || id.includes('zod')) {
               return 'utils'
+            }
+            if (id.includes('chart.js')) {
+              return 'chartjs'
+            }
+            if (id.includes('reka-ui')) {
+              return 'reka-ui'
             }
             return 'deps'
           }

@@ -5,6 +5,7 @@ export const APP_ROUTES = {
   ORDER_HISTORY: { path: '/orders/history', name: 'OrderHistory' },
   INVENTORY: { path: '/inventory', name: 'Inventory' },
   INVENTORY_HISTORY: { path: '/inventory/:id/history', name: 'InventoryHistory' },
+  INVENTORY_EXPENSE_REPORT: { path: '/inventory/expense-report', name: 'InventoryExpenseReport' },
   CATEGORIES: { path: '/categories', name: 'Categories' },
   SALE_REPORTS: { path: '/sale-reports', name: 'SaleReports' },
   PROMOTIONS: { path: '/promotions', name: 'Promotions' },

@@ -4,7 +4,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-vue-next'
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Download,
+  LoaderCircle,
+} from 'lucide-vue-next'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -14,9 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import AppSelect from '@/components/ui/select/AppSelect.vue'
 import GlobalDateFilter from '@/components/analytics/GlobalDateFilter.vue'
 import { resolveGlobalRange } from '@/components/analytics/globalRange'
 import type { GlobalRangeKey, GlobalRangeValue } from '@/types/analytics.types'
+import type { AdjustmentType, ExportLocale } from '@/types/inventory.types'
 import { useInventoryStore } from '@/store/useInventoryStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { APP_ROUTES } from '@/constants/appRoutes'
@@ -26,7 +36,7 @@ const route = useRoute()
 const router = useRouter()
 const inventoryStore = useInventoryStore()
 const shopSettingsStore = useShopSettingsStore()
-const { items, historyItems, historyPagination, historyTotals, isHistoryLoading } =
+const { items, historyItems, historyPagination, historyTotals, isHistoryLoading, isExporting } =
   storeToRefs(inventoryStore)
 
 const itemId = computed(() => Number(route.params.id))
@@ -134,6 +144,16 @@ const summaryStats = computed(() => [
   },
 ])
 
+// --- Movement type filter: In / Out / Both ---
+// "all" (Both) omits the param entirely, so the server returns every
+// movement; the Total In/Out summary always reflects the full period
+// regardless of this filter — only the listed rows narrow.
+const typeFilter = ref<'all' | AdjustmentType>('all')
+const typeFilterOptions = computed<{ value: AdjustmentType; label: string }[]>(() => [
+  { value: 'add', label: t('inventory.history.filters.in') },
+  { value: 'remove', label: t('inventory.history.filters.out') },
+])
+
 // --- Pagination (server-driven) ---
 const PAGE_SIZE = 10
 const currentPage = ref(1)
@@ -164,6 +184,7 @@ const load = () => {
     .fetchHistory(itemId.value, {
       from: range.value.startDate,
       to: range.value.endDate,
+      type: typeFilter.value === 'all' ? undefined : typeFilter.value,
       page: currentPage.value,
       limit: PAGE_SIZE,
     })
@@ -175,8 +196,9 @@ const goToPage = (page: number) => {
   currentPage.value = next
   load()
 }
-// Changing the period resets to the first page and refetches from the server.
-watch(range, () => {
+// Changing the period or the movement-type filter resets to the first page
+// and refetches from the server.
+watch([range, typeFilter], () => {
   currentPage.value = 1
   load()
 })
@@ -190,6 +212,28 @@ onMounted(async () => {
   await inventoryStore.ensureItem(itemId.value)
   load()
 })
+
+// The workbook is built server-side and streamed back as .xlsx bytes: it covers
+// every movement in the range, not just the page the table is showing, and
+// honours the same period and movement-type filters. `locale` picks the
+// language the server writes the file's labels, dates and numbers in.
+const exportExcel = async () => {
+  if (!totalItems.value || isExporting.value) return
+  try {
+    await inventoryStore.exportHistory(
+      itemId.value,
+      item.value?.name ?? t('inventory.history.title'),
+      {
+        from: range.value.startDate,
+        to: range.value.endDate,
+        type: typeFilter.value === 'all' ? undefined : typeFilter.value,
+        locale: locale.value as ExportLocale,
+      }
+    )
+  } catch {
+    toast.error(t('inventory.history.exportError'))
+  }
+}
 </script>
 
 <template>
@@ -203,7 +247,7 @@ onMounted(async () => {
           <Button
             variant="tertiary"
             size="icon"
-            class="size-9 rounded-xl border border-slate-200 dark:border-stone-700"
+            class="size-9 shrink-0 rounded-xl border border-slate-200 dark:border-stone-700"
             :title="t('inventory.history.back')"
             @click="goBack"
           >
@@ -217,9 +261,9 @@ onMounted(async () => {
         </div>
 
         <!-- Period filter (shared with the dashboard): quick tabs + dropdown -->
-        <div class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-nowrap items-center gap-2 overflow-x-auto lg:gap-3">
           <div
-            class="flex items-center gap-1 rounded-xl border border-slate-100 bg-white p-1 dark:border-stone-800 dark:bg-stone-900/50"
+            class="hidden shrink-0 items-center gap-1 overflow-x-auto rounded-xl border border-slate-100 bg-white p-1 lg:flex dark:border-stone-800 dark:bg-stone-900/50"
           >
             <Button
               v-for="opt in rangeOptions"
@@ -227,7 +271,7 @@ onMounted(async () => {
               type="button"
               variant="tertiary"
               :class="[
-                'h-auto rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all',
+                'h-auto shrink-0 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all',
                 activeTab === opt.key
                   ? 'bg-[#D2691E] text-white shadow-sm hover:bg-[#D2691E] hover:text-white'
                   : 'text-[#737373] hover:bg-slate-50 hover:text-[#1A1C1C] dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100',
@@ -237,7 +281,27 @@ onMounted(async () => {
               {{ t(opt.label) }}
             </Button>
           </div>
+          <AppSelect
+            v-model="typeFilter"
+            :options="typeFilterOptions"
+            :label="undefined"
+            :all-option-label="t('inventory.history.filters.both')"
+            :placeholder="t('inventory.history.filters.type')"
+            class="w-28 shrink-0 lg:w-32"
+          />
           <GlobalDateFilter v-model="range" />
+          <Button
+            type="button"
+            variant="tertiary"
+            :disabled="!totalItems || isExporting"
+            :title="t('inventory.history.export')"
+            class="h-auto shrink-0 rounded-xl border border-slate-100 bg-white px-3.5 py-2 text-xs font-bold text-[#1A1C1C] shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-800 dark:bg-stone-900/50 dark:text-stone-100 dark:hover:bg-stone-800"
+            @click="exportExcel"
+          >
+            <LoaderCircle v-if="isExporting" class="size-3.5 animate-spin sm:mr-1.5" />
+            <Download v-else class="size-3.5 sm:mr-1.5" />
+            <span class="hidden sm:inline">{{ t('inventory.history.export') }}</span>
+          </Button>
         </div>
       </div>
 

@@ -45,6 +45,7 @@ const pageTitle = computed(() => {
     case APP_ROUTES.STAFF.name:
       return t('staff.title')
     case APP_ROUTES.CATEGORIES.name:
+      return t('category.categoryManagement')
     case APP_ROUTES.HOME.name:
       return t('navbar.menuManagement')
     case APP_ROUTES.ORDERS.name:
@@ -57,6 +58,8 @@ const pageTitle = computed(() => {
       return t('sidebar.items.inventory')
     case APP_ROUTES.INVENTORY_HISTORY.name:
       return t('inventory.history.title')
+    case APP_ROUTES.INVENTORY_EXPENSE_REPORT.name:
+      return t('inventory.expenseReport.title')
     case APP_ROUTES.SALE_REPORTS.name:
       return t('sidebar.items.saleReports')
     case APP_ROUTES.PRODUCT.name:
@@ -72,13 +75,6 @@ const pageTitle = computed(() => {
   }
 })
 
-const pageSubtitle = computed(() => {
-  if (route.name === APP_ROUTES.INVENTORY.name) {
-    return t('inventory.subtitle')
-  }
-
-  return ''
-})
 const userInitials = computed(() => {
   const name = authStore.user?.name
   if (!name) return 'U' // fallback
@@ -119,9 +115,6 @@ const getProfileImageUrl = (path: string | undefined | null) => {
       <h2 class="font-bold text-stone-800 dark:text-stone-50 text-[24px] leading-tight">
         {{ pageTitle }}
       </h2>
-      <p v-if="pageSubtitle" class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">
-        {{ pageSubtitle }}
-      </p>
     </div>
     <div class="flex items-center gap-3">
       <!-- Notification Bell Button & Dropdown -->

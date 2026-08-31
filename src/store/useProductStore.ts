@@ -12,7 +12,7 @@ import {
   updateCategory as updateCategoryApi,
   deleteCategory as deleteCategoryApi,
 } from '@/api/product'
-import type { Product, Category, ProductFilters } from '@/types/product.types'
+import type { Product, Category, CategoryType, ProductFilters } from '@/types/product.types'
 import type { CreateProductPayload } from '@/validations/productValidation'
 import { uploadApi } from '@/api/upload'
 
@@ -39,11 +39,11 @@ export const useProductStore = defineStore('product', () => {
   let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null
 
   // Actions
-  const fetchCategories = async () => {
+  const fetchCategories = async (type: CategoryType = 'product') => {
     isCategoriesLoading.value = true
     lastError.value = null
     try {
-      categories.value = await getCategories()
+      categories.value = await getCategories({ type })
     } catch (err) {
       const error = err as Error
       lastError.value = error.message || 'Failed to fetch categories'
@@ -127,7 +127,7 @@ export const useProductStore = defineStore('product', () => {
     })
   }
 
-  const createCategory = async (data: { name: string; isActive: boolean }) => {
+  const createCategory = async (data: { name: string; isActive: boolean; type: CategoryType }) => {
     lastError.value = null
     try {
       const newCategory = await createCategoryApi(data)
@@ -141,7 +141,10 @@ export const useProductStore = defineStore('product', () => {
     }
   }
 
-  const updateCategory = async (categoryId: number, data: { name: string; isActive: boolean }) => {
+  const updateCategory = async (
+    categoryId: number,
+    data: { name: string; isActive: boolean; type: CategoryType }
+  ) => {
     isUpdatingCategory.value = true
     lastError.value = null
     try {
