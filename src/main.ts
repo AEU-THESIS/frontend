@@ -6,6 +6,7 @@ import i18n from './i18n'
 import './assets/css/style.css'
 import 'vue-sonner/style.css'
 import { registerGlobalComponents } from './plugins/globalComponents'
+import { useAuthStore } from './store/useAuthStore'
 
 // Disable pinch-to-zoom on iOS Safari & Telegram Mini App (matching Telegram Wallet native feel)
 if (typeof window !== 'undefined') {
@@ -49,4 +50,12 @@ registerGlobalComponents(app)
 app.use(pinia)
 app.use(router)
 app.use(i18n)
+
+// Refresh the signed-in user's role/permissions from the server on start-up so
+// a role change or deactivation applied while they were away takes effect on
+// this page load, without waiting for a re-login (AT-74). Fire-and-forget: the
+// store hydrates instantly from localStorage, and the guard re-runs reactively
+// once the fresh record arrives.
+useAuthStore().refreshUser()
+
 app.mount('#app')

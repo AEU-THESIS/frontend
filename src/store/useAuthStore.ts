@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { login, logout as logoutApi } from '@/api/auth'
+import { isAxiosError } from 'axios'
+import { login, logout as logoutApi, getMe } from '@/api/auth'
 import { UserSchema } from '@/validations/authValidation'
 import type { LoginInput } from '@/validations/authValidation'
 import type { User } from '@/types/auth.types'
@@ -56,6 +57,32 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('user', JSON.stringify(minimalUser))
   }
 
+  // Re-read the signed-in user from the server so a role change or deactivation
+  // takes effect on the next page load without re-login. The browser copy is a
+  // cache only — every API call is still authorized server-side (AT-74).
+  const refreshUser = async () => {
+    if (!token.value) return
+    try {
+      const fresh = await getMe()
+      user.value = fresh
+      const minimalUser = {
+        user_id: fresh.user_id || fresh.id,
+        shop_id: fresh.shop_id,
+        role: fresh.role,
+        name: fresh.name,
+        imageUrl: fresh.image_url || fresh.imageUrl,
+      }
+      localStorage.setItem('user', JSON.stringify(minimalUser))
+    } catch (e) {
+      // A no-longer-valid session (revoked/expired token or a deactivated
+      // account) must not keep browsing on a stale cached role. Transient
+      // network/server errors keep the cached user so the app still loads.
+      if (isAxiosError(e) && (e.response?.status === 401 || e.response?.status === 403)) {
+        await logout()
+      }
+    }
+  }
+
   const logout = async (isTokenExpired: boolean = false) => {
     // Best-effort: notify backend to blacklist the token
     // Still clear client state even if the API call fails
@@ -87,6 +114,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     getAccessToken,
     loginAction,
+    refreshUser,
     logout,
     clearSessionTerminated,
   }
