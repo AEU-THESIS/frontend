@@ -715,6 +715,22 @@ const confirmRejectPreOrder = async () => {
               class="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800/40 print:p-0 print:border-0 print:bg-transparent"
             >
               <p class="text-[10px] font-bold text-stone-400 uppercase tracking-wide">
+                {{ t('orderHistory.paymentMethod') }}
+              </p>
+              <p
+                class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1 uppercase truncate"
+              >
+                {{ selectedOrder.paymentMethod
+                }}<template v-if="selectedOrder.paymentMethod === 'khqr' && selectedOrder.bankName">
+                  — {{ selectedOrder.bankName }}</template
+                >
+              </p>
+            </div>
+
+            <div
+              class="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800/40 print:p-0 print:border-0 print:bg-transparent"
+            >
+              <p class="text-[10px] font-bold text-stone-400 uppercase tracking-wide">
                 {{ t('orderDashboard.totalItems') }}
               </p>
               <p class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1">

@@ -196,7 +196,10 @@
                   <TableCell
                     class="px-6 py-4 text-center uppercase text-[#6B6B6B] dark:text-stone-400"
                   >
-                    {{ order.paymentMethod }}
+                    {{ order.paymentMethod
+                    }}<template v-if="order.paymentMethod === 'khqr' && order.bankName">
+                      — {{ order.bankName }}</template
+                    >
                   </TableCell>
                   <TableCell class="px-6 py-4 text-center font-bold">
                     {{ formatUsd(order.totalAmount) }}

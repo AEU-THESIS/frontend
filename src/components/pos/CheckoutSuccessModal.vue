@@ -33,6 +33,16 @@ const servedByDisplay = computed(
   () => props.orderResult?.servedBy?.trim() || t('common.systemCashier')
 )
 
+// "Cash" or "KHQR — ABA" line on the receipt, so the customer sees how the sale was
+// recorded. Falls back to Cash for older results that carry no method.
+const paymentDisplay = computed(() => {
+  const result = props.orderResult
+  if (result?.paymentMethod === 'khqr') {
+    return result.bankName ? `${t('cart.khqrLabel')} — ${result.bankName}` : t('cart.khqrLabel')
+  }
+  return t('cart.cashLabel')
+})
+
 const receiptRef = ref<HTMLElement | null>(null)
 
 const handlePrintReceipt = () => {
@@ -197,6 +207,15 @@ const handlePrintReceipt = () => {
           }}</span>
           <span class="text-stone-800 dark:text-stone-200 font-extrabold">{{
             servedByDisplay
+          }}</span>
+        </div>
+
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-stone-400 dark:text-stone-500 font-bold uppercase tracking-wider">{{
+            t('cart.paidVia')
+          }}</span>
+          <span class="text-stone-800 dark:text-stone-200 font-extrabold">{{
+            paymentDisplay
           }}</span>
         </div>
         <div class="h-px bg-stone-200/50 dark:bg-stone-800/50 w-full"></div>

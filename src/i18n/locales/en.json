@@ -254,6 +254,12 @@
     "orderPlacedDesc": "The transaction completed cleanly, and the order has been recorded.",
     "orderNumber": "Order Number",
     "servedBy": "Served By",
+    "paidVia": "Paid Via",
+    "cashLabel": "Cash",
+    "khqrLabel": "KHQR",
+    "selectBank": "Select Bank",
+    "selectBankRequired": "Please select a bank",
+    "khqrExactAmountNote": "The customer pays the exact amount via bank transfer — no change is given.",
     "changeReturned": "Change Returned",
     "newOrder": "New Order",
     "printReceipt": "Print Receipt",
@@ -319,6 +325,15 @@
       "title": "Financials & Payments",
       "description": "Manage currency, exchange rates, and digital payments.",
       "bakongHelper": "Used for automatic QR generation"
+    },
+    "paymentBanks": {
+      "title": "Payment Banks",
+      "description": "Banks staff can pick when recording a KHQR (bank transfer) payment.",
+      "empty": "No banks configured yet. Add at least one for KHQR payments.",
+      "addLabel": "Add a bank",
+      "addPlaceholder": "e.g. ABA, ACLEDA, Wing",
+      "add": "Add",
+      "remove": "Remove {bank}"
     },
     "receipt": {
       "title": "Receipt Configuration",
@@ -768,6 +783,7 @@
     "last7Days": "Last 7 Days",
     "customRange": "Custom Range",
     "cashier": "Cashier",
+    "paymentMethod": "Payment",
     "table": {
       "dateTime": "Date & Time",
       "orderId": "Order ID",
