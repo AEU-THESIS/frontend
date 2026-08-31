@@ -31,13 +31,30 @@ const form = reactive({
   ownerName: '',
   phone: '',
   address: '',
-  bakongAccountId: '',
   currencySymbol: '',
   exchangeRate: '',
   receiptFooter: '',
   isOrderManagementEnabled: false,
   isShopClosed: false,
+  // Banks offered in the POS KHQR bank selector (AT-112).
+  paymentBanks: [] as string[],
 })
+
+// Draft value for the "add a bank" input in the Payment Banks section.
+const newBankName = ref('')
+
+// Add a bank to the list, ignoring blanks and case-insensitive duplicates.
+const addBank = () => {
+  const name = newBankName.value.trim()
+  if (!name) return
+  const exists = form.paymentBanks.some(bank => bank.toLowerCase() === name.toLowerCase())
+  if (!exists) form.paymentBanks.push(name)
+  newBankName.value = ''
+}
+
+const removeBank = (bank: string) => {
+  form.paymentBanks = form.paymentBanks.filter(b => b !== bank)
+}
 
 const receiptItems = [
   { nameKey: 'settings.receiptPreview.items.icedLatte', price: 3.5 },
@@ -99,7 +116,7 @@ const fillForm = (settings: ShopSettings) => {
   form.ownerName = settings.ownerName || ''
   form.phone = settings.phone || ''
   form.address = settings.address || ''
-  form.bakongAccountId = settings.bakongAccountId || ''
+  form.paymentBanks = [...(settings.paymentBanks ?? [])]
   form.currencySymbol =
     settings.currencySymbol === LEGACY_KHR_CODE ? KHR_SYMBOL : settings.currencySymbol || ''
   form.exchangeRate = getExchangeRateInputValue(settings.exchangeRate)
@@ -131,12 +148,12 @@ const saveSettings = async () => {
       owner_name: form.ownerName.trim() || null,
       phone: form.phone.trim() || null,
       address: form.address.trim() || null,
-      bakong_account_id: form.bakongAccountId.trim() || null,
       currency_symbol: form.currencySymbol.trim() || USD_SYMBOL,
       exchange_rate: getFormExchangeRate(),
       receipt_footer: form.receiptFooter.trim() || null,
       is_order_management_enabled: form.isOrderManagementEnabled,
       is_shop_closed: form.isShopClosed,
+      payment_banks: form.paymentBanks,
     })
 
     fillForm(settings)
@@ -330,20 +347,7 @@ onMounted(loadSettings)
           <Card
             class="rounded-lg border border-stone-100 bg-white p-7 shadow-sm dark:border-stone-800 dark:bg-stone-950"
           >
-            <div class="grid gap-5 lg:grid-cols-[1.7fr_0.8fr_0.9fr]">
-              <Label
-                class="flex flex-col items-start gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
-              >
-                {{ t('settings.fields.bakongAccountId') }}
-                <AppInput
-                  v-model="form.bakongAccountId"
-                  class="h-12 rounded-lg border-stone-200 bg-stone-100 px-4 text-base font-bold text-stone-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
-                />
-                <span class="text-[11px] font-extrabold uppercase tracking-wide text-stone-400">
-                  {{ t('settings.financials.bakongHelper') }}
-                </span>
-              </Label>
-
+            <div class="grid gap-5 lg:grid-cols-2">
               <Label
                 class="flex flex-col items-start gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
               >
@@ -388,6 +392,76 @@ onMounted(loadSettings)
                   </span>
                 </div>
               </Label>
+            </div>
+          </Card>
+        </section>
+
+        <section class="flex flex-col gap-4">
+          <div class="flex items-start gap-3">
+            <span
+              class="material-symbols-outlined mt-0.5 text-[21px] text-amber-800 dark:text-amber-500"
+            >
+              account_balance
+            </span>
+            <div>
+              <h2 class="font-headline text-xl font-extrabold text-stone-800 dark:text-stone-50">
+                {{ t('settings.paymentBanks.title') }}
+              </h2>
+              <p class="text-sm font-medium text-stone-500 dark:text-stone-400">
+                {{ t('settings.paymentBanks.description') }}
+              </p>
+            </div>
+          </div>
+
+          <Card
+            class="flex flex-col gap-5 rounded-lg border border-stone-100 bg-white p-7 shadow-sm dark:border-stone-800 dark:bg-stone-950"
+          >
+            <!-- Current banks as removable chips -->
+            <div v-if="form.paymentBanks.length" class="flex flex-wrap gap-2">
+              <span
+                v-for="bank in form.paymentBanks"
+                :key="bank"
+                class="inline-flex items-center gap-1.5 rounded-full border border-amber-600/30 bg-amber-50 px-3 py-1.5 text-sm font-bold text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-300"
+              >
+                {{ bank }}
+                <button
+                  type="button"
+                  class="flex items-center justify-center rounded-full text-amber-700/70 transition-colors hover:text-amber-900 dark:text-amber-400/70 dark:hover:text-amber-200"
+                  :aria-label="t('settings.paymentBanks.remove', { bank })"
+                  @click="removeBank(bank)"
+                >
+                  <span class="material-symbols-outlined text-base">close</span>
+                </button>
+              </span>
+            </div>
+            <p v-else class="text-sm font-medium text-stone-400 dark:text-stone-500">
+              {{ t('settings.paymentBanks.empty') }}
+            </p>
+
+            <!-- Add a bank -->
+            <div class="flex items-end gap-3">
+              <Label
+                class="flex flex-1 flex-col items-start gap-2 text-sm font-bold text-stone-700 dark:text-stone-200"
+              >
+                {{ t('settings.paymentBanks.addLabel') }}
+                <AppInput
+                  v-model="newBankName"
+                  :placeholder="t('settings.paymentBanks.addPlaceholder')"
+                  maxlength="191"
+                  class="h-12 rounded-lg border-stone-200 bg-stone-100 px-4 text-base font-bold text-stone-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
+                  @keydown.enter.prevent="addBank"
+                />
+              </Label>
+              <Button
+                type="button"
+                variant="secondary"
+                class="h-12 shrink-0 rounded-lg border border-stone-200 px-5 font-bold dark:border-stone-700"
+                :disabled="!newBankName.trim()"
+                @click="addBank"
+              >
+                <span class="material-symbols-outlined text-lg">add</span>
+                {{ t('settings.paymentBanks.add') }}
+              </Button>
             </div>
           </Card>
         </section>

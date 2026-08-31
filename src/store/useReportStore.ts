@@ -5,7 +5,7 @@ import {
   getReportToday,
   salesSummaryFileName,
 } from '@/api/report'
-import type { DailySummary, OrderRow, PaymentMethodFilter } from '@/types/order.types'
+import type { DailySummary, OrderRow } from '@/types/order.types'
 import { getTodayOrders } from '@/api/order'
 import { downloadBlob } from '@/utils/download'
 
@@ -32,7 +32,9 @@ export const useReportStore = defineStore('report', () => {
   const selectedDate = ref<string>(localIsoDate(new Date()))
   /** Inclusive end of the filter window; equal to `selectedDate` for a single day. */
   const selectedEndDate = ref<string>(localIsoDate(new Date()))
-  const selectedPaymentMethod = ref<PaymentMethodFilter>('all')
+  // 'all' | 'cash' | 'khqr' | 'khqr:<bank>' — a bank-specific value narrows to one
+  // bank on the client while the request still asks the server for 'khqr' orders.
+  const selectedPaymentMethod = ref<string>('all')
 
   // A reversed window would return nothing at all, so clamp the end up to the
   // start rather than letting the request 400.
@@ -57,14 +59,22 @@ export const useReportStore = defineStore('report', () => {
     isLoading.value = true
     error.value = null
 
+    // The server filter only knows cash/khqr, so a bank-specific selection asks for
+    // all khqr orders and the bank is narrowed client-side (see the view).
+    const backendMethod: 'cash' | 'khqr' | undefined =
+      selectedPaymentMethod.value === 'all'
+        ? undefined
+        : selectedPaymentMethod.value === 'cash'
+          ? 'cash'
+          : 'khqr'
+
     // Independent settlement: a summary failure shouldn't wipe out orders that DID load, and vice versa
     const results = await Promise.allSettled([
       getReportToday(selectedDate.value, effectiveEndDate.value),
       getTodayOrders({
         date: selectedDate.value,
         endDate: effectiveEndDate.value,
-        paymentMethod:
-          selectedPaymentMethod.value === 'all' ? undefined : selectedPaymentMethod.value,
+        paymentMethod: backendMethod,
       }),
     ])
 

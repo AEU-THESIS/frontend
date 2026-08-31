@@ -6,6 +6,9 @@ export interface ShopSettings {
   phone: string | null
   address: string | null
   bakongAccountId: string | null
+  // Admin-configurable list of banks for manual KHQR payments. The server always
+  // returns at least one (defaults to ["ABA"]).
+  paymentBanks: string[]
   currencySymbol: string
   // Prisma Decimal values can arrive from the API as strings; callers normalize at the boundary.
   exchangeRate: string | number
@@ -21,7 +24,10 @@ export interface UpdateShopSettingsPayload {
   owner_name: string | null
   phone: string | null
   address: string | null
-  bakong_account_id: string | null
+  // Dormant since AT-112 removed the Bakong Account ID input; kept optional so the
+  // field can be reintroduced without a breaking change.
+  bakong_account_id?: string | null
+  payment_banks: string[]
   currency_symbol: string
   exchange_rate: number
   receipt_footer: string | null

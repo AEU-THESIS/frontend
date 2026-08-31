@@ -64,6 +64,14 @@ const handlePayCash = async () => {
   await cartStore.fetchActivePromotions()
   cartStore.isCashModalOpen = true
 }
+
+// Manual KHQR (bank transfer) checkout — same promotion refresh as cash, then open
+// the KHQR modal (currency + bank selector, no numpad).
+const handlePayQr = async () => {
+  if (cartStore.items.length === 0) return
+  await cartStore.fetchActivePromotions()
+  cartStore.isKhqrModalOpen = true
+}
 </script>
 
 <template>
@@ -291,8 +299,7 @@ const handlePayCash = async () => {
         <Button
           type="button"
           :disabled="cartStore.items.length === 0"
-          variant="secondary"
-          class="h-auto bg-stone-50 hover:bg-stone-100 dark:bg-stone-850 dark:hover:bg-stone-800 border-stone-200 dark:border-stone-750 text-stone-800 dark:text-stone-100 rounded-2xl py-4.5 flex flex-col items-center justify-center gap-1.5 active:scale-98 transition-all disabled:opacity-50"
+          class="h-auto bg-primary hover:bg-primary/90 text-primary-foreground border-transparent rounded-2xl py-4.5 flex flex-col items-center justify-center gap-1.5 active:scale-98 transition-all disabled:opacity-50"
           @click="handlePayCash"
         >
           <span class="material-symbols-outlined text-2xl">payments</span>
@@ -300,8 +307,9 @@ const handlePayCash = async () => {
         </Button>
         <Button
           type="button"
-          disabled
-          class="h-auto bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 rounded-2xl py-4.5 flex flex-col items-center justify-center gap-1.5 active:scale-98 transition-all disabled:opacity-50"
+          :disabled="cartStore.items.length === 0"
+          class="h-auto bg-stone-800 hover:bg-stone-700 dark:bg-stone-100 dark:hover:bg-stone-200 text-white dark:text-stone-900 rounded-2xl py-4.5 flex flex-col items-center justify-center gap-1.5 active:scale-98 transition-all disabled:opacity-50"
+          @click="handlePayQr"
         >
           <span class="material-symbols-outlined text-2xl">qr_code_scanner</span>
           <span class="text-sm font-extrabold">{{ t('cart.payWithQR') }}</span>

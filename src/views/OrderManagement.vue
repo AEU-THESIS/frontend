@@ -492,112 +492,115 @@ const handlePrint = () => {
           @click="openOrderDetails(order)"
         >
           <!-- Card Header -->
-          <div class="flex justify-between items-start p-5 pb-3 shrink-0">
-            <div class="min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <h2
-                  class="font-extrabold text-stone-800 dark:text-stone-50 font-headline tracking-tight text-[16px] whitespace-nowrap"
-                >
-                  #{{ order.orderNumber }}
-                </h2>
-                <!-- Payment Status Badge -->
-                <span
-                  class="px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wide uppercase shrink-0"
-                  :class="
-                    order.paymentStatus === 'paid'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30'
-                      : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200/30'
-                  "
-                >
-                  {{ t(`orderDashboard.${order.paymentStatus}`) }}
-                </span>
-              </div>
+          <div class="flex flex-col gap-2.5 p-5 pb-3 shrink-0">
+            <!-- Order number (prominent, full width) + payment status badge -->
+            <div class="flex items-start justify-between gap-2">
+              <h2
+                class="font-extrabold text-stone-800 dark:text-stone-50 font-headline tracking-tight text-[15px] leading-snug break-all min-w-0"
+              >
+                #{{ order.orderNumber }}
+              </h2>
+              <!-- Payment Status Badge -->
+              <span
+                class="px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wide uppercase shrink-0 mt-0.5"
+                :class="
+                  order.paymentStatus === 'paid'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30'
+                    : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200/30'
+                "
+              >
+                {{ t(`orderDashboard.${order.paymentStatus}`) }}
+              </span>
+            </div>
+
+            <!-- Meta (time • type) on the left, status action on the right -->
+            <div class="flex items-center justify-between gap-2">
               <p
-                class="text-[11px] font-bold text-stone-400 dark:text-stone-500 mt-1 uppercase tracking-wide"
+                class="text-[11px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wide truncate"
               >
                 {{ formatTime(order.createdAt) }} • {{ t(`cart.${order.orderType}`) }}
               </p>
-            </div>
 
-            <!-- Status Action Trigger -->
-            <div class="relative shrink-0 ml-2">
-              <button
-                class="flex items-center gap-1 py-1 px-2.5 border rounded-xl text-[11px] font-extrabold uppercase transition-colors shrink-0"
-                :class="[
-                  order.fulfillmentStatus === 'pending'
-                    ? 'bg-amber-50 text-amber-700 border-amber-50'
-                    : '',
-                  order.fulfillmentStatus === 'preparing'
-                    ? 'bg-[#fcf3eb] text-[#b05a18] border-[#fcf3eb] hover:bg-orange-100/50'
-                    : '',
-                  order.fulfillmentStatus === 'ready'
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-50 hover:bg-emerald-100/50'
-                    : '',
-                  order.fulfillmentStatus === 'completed'
-                    ? 'bg-teal-50 text-teal-800 border-teal-50 hover:bg-teal-100/50'
-                    : '',
-                  order.fulfillmentStatus === 'canceled'
-                    ? 'bg-rose-50 text-rose-800 border-rose-50 hover:bg-rose-100/50'
-                    : '',
-                ]"
-                @click="
-                  !['canceled', 'pending'].includes(order.fulfillmentStatus) &&
-                  toggleDropdown($event, order.id)
-                "
-              >
-                {{ t(`orderDashboard.${order.fulfillmentStatus}`) }}
-                <!-- A canceled/voided order is terminal — no status transitions offered. -->
-                <span
-                  v-if="!['canceled', 'pending'].includes(order.fulfillmentStatus)"
-                  class="material-symbols-outlined text-[12px] font-extrabold leading-none"
-                  >arrow_drop_down</span
-                >
-              </button>
-
-              <!-- Status Transition Selection Dropdown -->
-              <transition name="pop">
-                <ul
-                  v-if="
-                    activeDropdownId === order.id &&
-                    !['canceled', 'pending'].includes(order.fulfillmentStatus)
+              <!-- Status Action Trigger -->
+              <div class="relative shrink-0">
+                <button
+                  class="flex items-center gap-1 py-1 px-2.5 border rounded-xl text-[11px] font-extrabold uppercase transition-colors shrink-0"
+                  :class="[
+                    order.fulfillmentStatus === 'pending'
+                      ? 'bg-amber-50 text-amber-700 border-amber-50'
+                      : '',
+                    order.fulfillmentStatus === 'preparing'
+                      ? 'bg-[#fcf3eb] text-[#b05a18] border-[#fcf3eb] hover:bg-orange-100/50'
+                      : '',
+                    order.fulfillmentStatus === 'ready'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-50 hover:bg-emerald-100/50'
+                      : '',
+                    order.fulfillmentStatus === 'completed'
+                      ? 'bg-teal-50 text-teal-800 border-teal-50 hover:bg-teal-100/50'
+                      : '',
+                    order.fulfillmentStatus === 'canceled'
+                      ? 'bg-rose-50 text-rose-800 border-rose-50 hover:bg-rose-100/50'
+                      : '',
+                  ]"
+                  @click="
+                    !['canceled', 'pending'].includes(order.fulfillmentStatus) &&
+                    toggleDropdown($event, order.id)
                   "
-                  class="absolute right-0 mt-2 w-36 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl rounded-2xl py-2 z-30 overflow-hidden font-semibold transition-all shrink-0"
-                  @click.stop
                 >
-                  <li
-                    v-for="st in ['preparing', 'ready', 'completed', 'canceled'] as const"
-                    :key="st"
+                  {{ t(`orderDashboard.${order.fulfillmentStatus}`) }}
+                  <!-- A canceled/voided order is terminal — no status transitions offered. -->
+                  <span
+                    v-if="!['canceled', 'pending'].includes(order.fulfillmentStatus)"
+                    class="material-symbols-outlined text-[12px] font-extrabold leading-none"
+                    >arrow_drop_down</span
                   >
-                    <a
-                      v-if="st !== order.fulfillmentStatus"
-                      href="#"
-                      class="flex items-center gap-2 px-4 py-2 text-xs text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 font-bold transition-colors"
-                      @click.prevent="handleStatusChange(order.id, st)"
+                </button>
+
+                <!-- Status Transition Selection Dropdown -->
+                <transition name="pop">
+                  <ul
+                    v-if="
+                      activeDropdownId === order.id &&
+                      !['canceled', 'pending'].includes(order.fulfillmentStatus)
+                    "
+                    class="absolute right-0 mt-2 w-36 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl rounded-2xl py-2 z-30 overflow-hidden font-semibold transition-all shrink-0"
+                    @click.stop
+                  >
+                    <li
+                      v-for="st in ['preparing', 'ready', 'completed', 'canceled'] as const"
+                      :key="st"
                     >
-                      <span
-                        class="material-symbols-outlined text-[16px] leading-none shrink-0"
-                        :class="[
-                          st === 'preparing' ? 'text-amber-600' : '',
-                          st === 'ready' ? 'text-emerald-600' : '',
-                          st === 'completed' ? 'text-teal-600' : '',
-                          st === 'canceled' ? 'text-rose-600' : '',
-                        ]"
+                      <a
+                        v-if="st !== order.fulfillmentStatus"
+                        href="#"
+                        class="flex items-center gap-2 px-4 py-2 text-xs text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 font-bold transition-colors"
+                        @click.prevent="handleStatusChange(order.id, st)"
                       >
-                        {{
-                          st === 'preparing'
-                            ? 'coffee'
-                            : st === 'ready'
-                              ? 'check_circle'
-                              : st === 'completed'
-                                ? 'done_all'
-                                : 'cancel'
-                        }}
-                      </span>
-                      {{ t(`orderDashboard.${st}`) }}
-                    </a>
-                  </li>
-                </ul>
-              </transition>
+                        <span
+                          class="material-symbols-outlined text-[16px] leading-none shrink-0"
+                          :class="[
+                            st === 'preparing' ? 'text-amber-600' : '',
+                            st === 'ready' ? 'text-emerald-600' : '',
+                            st === 'completed' ? 'text-teal-600' : '',
+                            st === 'canceled' ? 'text-rose-600' : '',
+                          ]"
+                        >
+                          {{
+                            st === 'preparing'
+                              ? 'coffee'
+                              : st === 'ready'
+                                ? 'check_circle'
+                                : st === 'completed'
+                                  ? 'done_all'
+                                  : 'cancel'
+                          }}
+                        </span>
+                        {{ t(`orderDashboard.${st}`) }}
+                      </a>
+                    </li>
+                  </ul>
+                </transition>
+              </div>
             </div>
           </div>
 
