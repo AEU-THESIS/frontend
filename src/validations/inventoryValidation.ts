@@ -49,3 +49,30 @@ export const inventoryExpenseReportQuerySchema = z
     message: 'startDate must be earlier than or equal to endDate',
     path: ['startDate'],
   })
+
+// The Excel workbooks are built server-side, so an export request is the report
+// query plus the language the file should be written in.
+const exportLocale = z.enum(['en', 'kh'])
+
+export const inventoryExpenseReportExportQuerySchema = z
+  .object({
+    startDate: isoDateTime,
+    endDate: isoDateTime,
+    locale: exportLocale,
+  })
+  .refine(data => Date.parse(data.startDate) <= Date.parse(data.endDate), {
+    message: 'startDate must be earlier than or equal to endDate',
+    path: ['startDate'],
+  })
+
+export const inventoryHistoryExportQuerySchema = z
+  .object({
+    from: isoDateTime.optional(),
+    to: isoDateTime.optional(),
+    type: z.enum(['add', 'remove']).optional(),
+    locale: exportLocale,
+  })
+  .refine(data => !(data.from && data.to) || Date.parse(data.from) <= Date.parse(data.to), {
+    message: 'from must be earlier than or equal to to',
+    path: ['from'],
+  })

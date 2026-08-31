@@ -4,12 +4,15 @@ import {
   adjustInventoryItem,
   createInventoryItem,
   deleteInventoryItem,
+  exportInventoryExpenseReport,
+  exportInventoryHistory,
   getInventoryExpenseReportByDay,
   getInventoryExpenseReportByIngredient,
-  getInventoryExpenseReportRecords,
   getInventoryHistory,
   getInventoryItems,
   getInventoryValuation,
+  inventoryExpenseReportFileName,
+  inventoryHistoryFileName,
   updateInventoryItem,
   type InventoryItemFilters,
 } from '@/api/inventory'
@@ -17,14 +20,17 @@ import type {
   InventoryAdjustmentPayload,
   InventoryExpenseByDay,
   InventoryExpenseByIngredient,
+  InventoryExpenseReportExportQuery,
   InventoryExpenseReportQuery,
   InventoryHistoryEntry,
+  InventoryHistoryExportQuery,
   InventoryHistoryQuery,
   InventoryHistoryResponse,
   InventoryItem,
   InventoryItemPayload,
   InventoryValuation,
 } from '@/types/inventory.types'
+import { downloadBlob } from '@/utils/download'
 
 export const useInventoryStore = defineStore('inventory', () => {
   const items = ref<InventoryItem[]>([])
@@ -117,26 +123,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
-  // Fetched only when exporting — the on-screen table is paginated (10/page),
-  // but the export needs every movement in the range. Pages through the same
-  // endpoint at its max page size rather than adding a separate unpaginated
-  // backend route.
-  const fetchAllHistory = async (
-    id: number,
-    params: Omit<InventoryHistoryQuery, 'page' | 'limit'>
-  ) => {
-    const limit = 100
-    let page = 1
-    let all: InventoryHistoryEntry[] = []
-    for (;;) {
-      const res = await getInventoryHistory(id, { ...params, page, limit })
-      all = all.concat(res.items)
-      if (page >= res.pagination.totalPages) break
-      page += 1
-    }
-    return all
-  }
-
   // Direct navigation to an item's history page has no cached list to read from,
   // and a list narrowed by search/status filters can legitimately exclude the
   // requested item. There is no by-ID endpoint, so refetch unfiltered and look
@@ -220,10 +206,37 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
-  // Fetched only when exporting — the Excel workbook needs per-transaction
-  // rows, which the on-screen report never otherwise needs.
-  const fetchExpenseRecords = (params: Omit<InventoryExpenseReportQuery, 'groupBy'>) =>
-    getInventoryExpenseReportRecords(params)
+  // --- Excel exports ---
+  // The server owns the aggregation, the layout and the workbook itself
+  // (GET /api/inventories/exports/...), so these only save the bytes that come
+  // back. Failures reject for the caller to surface.
+  const isExporting = ref(false)
+
+  const exportExpenseReport = async (params: InventoryExpenseReportExportQuery) => {
+    isExporting.value = true
+    try {
+      const workbook = await exportInventoryExpenseReport(params)
+      downloadBlob(workbook, inventoryExpenseReportFileName(params.startDate, params.endDate))
+    } finally {
+      isExporting.value = false
+    }
+  }
+
+  // `itemName` only names the file — the workbook's own contents come from the
+  // server, which reads the item from the id.
+  const exportHistory = async (
+    id: number,
+    itemName: string,
+    params: InventoryHistoryExportQuery & { from: string; to: string }
+  ) => {
+    isExporting.value = true
+    try {
+      const workbook = await exportInventoryHistory(id, params)
+      downloadBlob(workbook, inventoryHistoryFileName(itemName, params.from, params.to))
+    } finally {
+      isExporting.value = false
+    }
+  }
 
   const adjustItem = async (id: number, payload: InventoryAdjustmentPayload) => {
     isSaving.value = true
@@ -248,6 +261,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     expenseByIngredient,
     expenseSummary,
     isExpenseReportLoading,
+    isExporting,
     totalInventoryValue,
     isLoading,
     isSaving,
@@ -260,9 +274,9 @@ export const useInventoryStore = defineStore('inventory', () => {
     ensureItem,
     fetchValuation,
     fetchHistory,
-    fetchAllHistory,
     fetchExpenseReport,
-    fetchExpenseRecords,
+    exportExpenseReport,
+    exportHistory,
     addItem,
     editItem,
     removeItem,

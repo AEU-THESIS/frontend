@@ -45,11 +45,6 @@ export default defineConfig({
             if (id.includes('axios') || id.includes('zod')) {
               return 'utils'
             }
-            // Excel export only — dynamically imported, so this chunk is
-            // fetched on demand rather than on every page load.
-            if (id.includes('exceljs')) {
-              return 'exceljs'
-            }
             if (id.includes('chart.js')) {
               return 'chartjs'
             }

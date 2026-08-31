@@ -66,7 +66,10 @@ export interface InventoryHistoryResponse {
   totals: { totalIn: number; totalOut: number }
 }
 
-export type ExpenseReportGroupBy = 'day' | 'ingredient' | 'raw'
+export type ExpenseReportGroupBy = 'day' | 'ingredient'
+
+/** Languages the server can write an exported workbook in. */
+export type ExportLocale = 'en' | 'kh'
 
 export interface InventoryExpenseReportQuery {
   startDate: string
@@ -105,18 +108,17 @@ export interface InventoryExpenseReportByIngredient extends InventoryExpenseRepo
   data: InventoryExpenseByIngredient[]
 }
 
-export interface InventoryExpenseRecord {
-  /** Shop-local calendar day ("YYYY-MM-DD"), not a raw UTC instant. */
-  date: string
-  ingredientId: number
-  name: string
-  unitOfMeasure: string
-  quantity: number
-  unitCost: number
-  totalCost: number
+/** Query behind the server-rendered Expense Report workbook. */
+export interface InventoryExpenseReportExportQuery {
+  startDate: string
+  endDate: string
+  locale: ExportLocale
 }
 
-export interface InventoryExpenseReportRaw extends InventoryExpenseReportBase {
-  groupBy: 'raw'
-  data: InventoryExpenseRecord[]
+/** Query behind the server-rendered Stock History workbook (one item). */
+export interface InventoryHistoryExportQuery {
+  from?: string
+  to?: string
+  type?: AdjustmentType
+  locale: ExportLocale
 }

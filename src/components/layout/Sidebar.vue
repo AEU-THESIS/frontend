@@ -102,15 +102,6 @@ const navSections = computed(() => {
           route: APP_ROUTES.INVENTORY_EXPENSE_REPORT,
           icon: 'receipt_long',
         },
-        { nameKey: 'sidebar.items.categories', route: APP_ROUTES.CATEGORIES, icon: 'category' },
-        { nameKey: 'sidebar.items.products', route: APP_ROUTES.PRODUCT, icon: 'inventory_2' },
-      ],
-    },
-    {
-      titleKey: 'sidebar.sections.marketing',
-      roles: [ROLES.ADMIN, ROLES.MANAGER],
-      items: [
-        { nameKey: 'sidebar.items.promotions', route: APP_ROUTES.PROMOTIONS, icon: 'campaign' },
       ],
     },
     {
