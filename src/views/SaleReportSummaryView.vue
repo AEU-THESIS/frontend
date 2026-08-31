@@ -126,7 +126,8 @@
                     v-for="order in paginatedOrders"
                     v-else
                     :key="order.id"
-                    class="border-t border-[#F2F2F2] dark:border-stone-800 text-sm hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition-colors"
+                    class="border-t border-[#F2F2F2] dark:border-stone-800 text-sm cursor-pointer hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition-colors"
+                    @click="openOrderDetails(order)"
                   >
                     <td class="px-6 py-4 text-[#6B6B6B] dark:text-stone-400">
                       {{ formatTime(order.createdAt) }}
@@ -200,6 +201,9 @@
         </Card>
       </div>
     </div>
+
+    <!-- ── Order detail dialog (read-only "show more detail" popup) ── -->
+    <OrderDetailDialog />
   </div>
 </template>
 
@@ -212,10 +216,13 @@ import { Card } from '@/components/ui/card'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { useReportStore } from '@/store/useReportStore'
+import { useOrderStore } from '@/store/useOrderStore'
+import OrderDetailDialog from '@/components/order/OrderDetailDialog.vue'
+import type { OrderRow } from '@/types/order.types'
 
 const { t } = useI18n()
 const reportStore = useReportStore()
-
+const orderStore = useOrderStore()
 const today = new Date()
 const todayIsoDate = new Intl.DateTimeFormat('en-CA').format(today)
 
@@ -303,6 +310,10 @@ const formatTime = (isoString: string) =>
 
 const orderTypeLabel = (orderType: string) =>
   orderType === 'dine_in' ? t('reports.table.dineIn') : t('reports.table.takeaway')
+
+const openOrderDetails = async (order: OrderRow) => {
+  await orderStore.fetchSingleOrderDetail(order.id)
+}
 
 onMounted(() => {
   reportStore.fetchDailyOverview()

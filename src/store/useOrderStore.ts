@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { toast } from 'vue-sonner'
 import {
   getOrders,
   getOrderDetails,
@@ -36,6 +37,7 @@ export const useOrderStore = defineStore('orders', () => {
   const loading = ref(false)
   const selectedOrder = ref<OrderDetail | null>(null)
 
+  const detailLoading = ref(false)
   // Real-time stream controller reference
   const sseController = ref<AbortController | null>(null)
   const isConnected = ref(false)
@@ -51,31 +53,23 @@ export const useOrderStore = defineStore('orders', () => {
         if (!AudioContextClass) return
         audioCtx = new AudioContextClass()
       }
-
       if (audioCtx.state === 'suspended') {
         audioCtx.resume()
       }
-
       const ctx = audioCtx
-
       const playTone = (freq: number, start: number, duration: number) => {
         const osc = ctx.createOscillator()
         const gain = ctx.createGain()
-
         osc.type = 'sine'
         osc.frequency.value = freq
-
         gain.gain.setValueAtTime(0, start)
         gain.gain.linearRampToValueAtTime(0.15, start + 0.05)
         gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
-
         osc.connect(gain)
         gain.connect(ctx.destination)
-
         osc.start(start)
         osc.stop(start + duration)
       }
-
       // Beautiful double-chime ding-dong (C5 then E5)
       playTone(523.25, ctx.currentTime, 0.3)
       playTone(659.25, ctx.currentTime + 0.12, 0.4)
@@ -83,7 +77,6 @@ export const useOrderStore = defineStore('orders', () => {
       console.warn('⚠️ Web Audio alert blocked or failed', e)
     }
   }
-
   // ── 1. Fetch Today's Orders (Live operational dashboard data) ──────
   const fetchTodayOrders = async () => {
     loading.value = true
@@ -96,7 +89,6 @@ export const useOrderStore = defineStore('orders', () => {
       loading.value = false
     }
   }
-
   // ── 2. Fetch Historical Orders (Order history log data) ───────────
   const fetchHistoryOrders = async (filters: {
     search?: string
@@ -128,36 +120,36 @@ export const useOrderStore = defineStore('orders', () => {
       loading.value = false
     }
   }
-
   // ── 3. Fetch Single Order Details (Drill-down view) ────────────────
   const fetchSingleOrderDetail = async (id: number) => {
+    detailLoading.value = true
     try {
       const detail = await getOrderDetails(id)
       selectedOrder.value = detail
-
       // Update in local lists if present
       const liveIdx = orders.value.findIndex(o => o.id === id)
       if (liveIdx !== -1) orders.value[liveIdx] = detail
-
       const histIdx = historyOrders.value.findIndex(o => o.id === id)
       if (histIdx !== -1) historyOrders.value[histIdx] = detail
+      return detail
     } catch (error) {
       console.error(`Failed to fetch order details for #${id}:`, error)
+      toast.error('Could not load order details. Please try again.')
+      return null
+    } finally {
+      detailLoading.value = false
     }
   }
-
   // ── 4. Trigger Quick Status Updates ───────────────────────────────
   const changeStatus = async (id: number, status: string) => {
     const liveIdx = orders.value.findIndex(o => o.id === id)
     const histIdx = historyOrders.value.findIndex(o => o.id === id)
     const isSelected = selectedOrder.value && selectedOrder.value.id === id
-
     // Capture previous status
     const prevLiveStatus = liveIdx !== -1 ? orders.value[liveIdx].fulfillmentStatus : null
     const prevHistStatus = histIdx !== -1 ? historyOrders.value[histIdx].fulfillmentStatus : null
     const prevSelectedStatus =
       isSelected && selectedOrder.value ? selectedOrder.value.fulfillmentStatus : null
-
     try {
       // Optimistic Update for zero-latency lag UI
       if (liveIdx !== -1) {
@@ -169,11 +161,9 @@ export const useOrderStore = defineStore('orders', () => {
       if (isSelected && selectedOrder.value) {
         selectedOrder.value.fulfillmentStatus = status
       }
-
       await updateOrderStatus(id, status)
     } catch (error) {
       console.error('Failed to update status on server, reverting state:', error)
-
       // Revert optimistic updates
       if (liveIdx !== -1 && prevLiveStatus !== null) {
         orders.value[liveIdx].fulfillmentStatus = prevLiveStatus
@@ -184,67 +174,54 @@ export const useOrderStore = defineStore('orders', () => {
       if (isSelected && selectedOrder.value && prevSelectedStatus !== null) {
         selectedOrder.value.fulfillmentStatus = prevSelectedStatus
       }
-
       // Force reload to sync state on failure
       fetchTodayOrders()
     }
   }
-
   // Replace an order everywhere it is held (live board, history list, open drawer)
   // with the server's recalculated version after a void/cancel.
   const applyUpdatedOrder = (updated: OrderDetail) => {
     const liveIdx = orders.value.findIndex(o => o.id === updated.id)
     if (liveIdx !== -1) orders.value[liveIdx] = updated
-
     const histIdx = historyOrders.value.findIndex(o => o.id === updated.id)
     if (histIdx !== -1) historyOrders.value[histIdx] = updated
-
     if (selectedOrder.value && selectedOrder.value.id === updated.id) {
       selectedOrder.value = updated
     }
   }
-
   // ── 4b. Void a whole order (reverses the money) ───────────────────
   const voidOrder = async (id: number, reason?: string) => {
     const updated = await voidOrderApi(id, reason)
     applyUpdatedOrder(updated)
     return updated
   }
-
   // ── 4c. Cancel a single line item (partial refund) ────────────────
   const cancelItem = async (orderId: number, itemId: number) => {
     const updated = await cancelOrderItemApi(orderId, itemId)
     applyUpdatedOrder(updated)
     return updated
   }
-
   // ── 4d. Reject a pending customer pre-order (unpaid → canceled) ────
   const rejectPreOrder = async (id: number) => {
     const updated = await rejectPreOrderApi(id)
     applyUpdatedOrder(updated)
     return updated
   }
-
   // ── 5. Server-Sent Events SSE Subscriber ─────────────────────────
   const subscribeToOrderStream = () => {
     if (sseController.value) {
       return // Already subscribed
     }
-
     const authStore = useAuthStore()
     const token = authStore.getAccessToken()
-
     if (!token) {
       console.warn('❌ SSE: Token missing. Unable to stream orders.')
       return
     }
-
     const controller = new AbortController()
     sseController.value = controller
-
     const baseUrl = import.meta.env.VITE_API_URL || ''
     const sseUrl = `${baseUrl.replace(/\/$/, '')}/api/orders/stream`
-
     const handleOrderCreated = (data: string) => {
       try {
         const newOrder = JSON.parse(data) as OrderDetail
@@ -259,7 +236,6 @@ export const useOrderStore = defineStore('orders', () => {
         console.error('Error parsing SSE order_created event:', err)
       }
     }
-
     const handleOrderUpdated = (data: string) => {
       try {
         const updatedOrder = JSON.parse(data) as OrderDetail
@@ -273,12 +249,16 @@ export const useOrderStore = defineStore('orders', () => {
             orders.value.unshift(updatedOrder)
           }
         }
-
         // Update selected detail modal if open
         if (selectedOrder.value && selectedOrder.value.id === updatedOrder.id) {
-          selectedOrder.value = updatedOrder
+          selectedOrder.value = {
+            ...selectedOrder.value,
+            ...updatedOrder,
+            appliedPromotions:
+              updatedOrder.appliedPromotions ?? selectedOrder.value.appliedPromotions,
+            promotion: updatedOrder.promotion ?? selectedOrder.value.promotion,
+          }
         }
-
         console.log(
           `🔄 SSE: Order Updated! #${updatedOrder.orderNumber} -> ${updatedOrder.fulfillmentStatus}`
         )
@@ -286,7 +266,6 @@ export const useOrderStore = defineStore('orders', () => {
         console.error('Error parsing SSE order_updated event:', err)
       }
     }
-
     const startStream = async () => {
       try {
         const response = await fetch(sseUrl, {
@@ -295,36 +274,27 @@ export const useOrderStore = defineStore('orders', () => {
           },
           signal: controller.signal,
         })
-
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
-
         isConnected.value = true
         console.log('📡 SSE: Stream connection established.')
-
         const reader = response.body?.getReader()
         if (!reader) {
           throw new Error('ReadableStream reader is not available')
         }
-
         const decoder = new TextDecoder()
         let buffer = ''
-
         while (true) {
           const { value, done } = await reader.read()
           if (done) break
-
           buffer += decoder.decode(value, { stream: true })
           const parts = buffer.split('\n\n')
           buffer = parts.pop() || ''
-
           for (const part of parts) {
             if (!part.trim()) continue
-
             let eventName = 'message'
             let dataStr = ''
-
             const lines = part.split('\n')
             for (const line of lines) {
               if (line.startsWith('event:')) {
@@ -333,7 +303,6 @@ export const useOrderStore = defineStore('orders', () => {
                 dataStr = line.slice(5).trim()
               }
             }
-
             if (dataStr) {
               if (eventName === 'order_created') {
                 handleOrderCreated(dataStr)
@@ -348,13 +317,11 @@ export const useOrderStore = defineStore('orders', () => {
           console.log('📡 SSE: Stream connection aborted.')
           return
         }
-
         isConnected.value = false
         console.error(
           '❌ SSE: Connection encountered an error. Attempting auto-retry in 5s...',
           err
         )
-
         if (!controller.signal.aborted) {
           retryTimeout = setTimeout(() => {
             if (!controller.signal.aborted) {
@@ -364,10 +331,8 @@ export const useOrderStore = defineStore('orders', () => {
         }
       }
     }
-
     startStream()
   }
-
   // ── 6. SSE Stream Cleanup ─────────────────────────────────────────
   const unsubscribeFromOrderStream = () => {
     if (retryTimeout) {
@@ -381,13 +346,13 @@ export const useOrderStore = defineStore('orders', () => {
       console.log('🔌 SSE: Stream connection closed gracefully.')
     }
   }
-
   return {
     orders,
     historyOrders,
     historyPagination,
     loading,
     selectedOrder,
+    detailLoading,
     isConnected,
     fetchTodayOrders,
     fetchHistoryOrders,
