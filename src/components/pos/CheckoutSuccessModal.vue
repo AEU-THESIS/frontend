@@ -269,7 +269,7 @@ const handlePrintReceipt = () => {
         <Button
           type="button"
           variant="tertiary"
-          class="flex-1 py-4 h-auto rounded-xl font-bold border border-stone-200 dark:border-stone-750 text-stone-800 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-850 hover:no-underline flex items-center justify-center gap-2 transition-all active:scale-98"
+          class="flex-1 py-4 h-auto rounded-xl font-bold border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 hover:no-underline flex items-center justify-center gap-2 transition-all active:scale-98"
           @click="handlePrintReceipt"
         >
           <span class="material-symbols-outlined text-lg">print</span>
