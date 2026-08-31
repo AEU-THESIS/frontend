@@ -113,4 +113,5 @@ export type CreateProductPayload = z.infer<typeof createProductPayloadSchema>
 export const createCategoryPayloadSchema = z.object({
   name: z.string().min(1, 'Category name is required'),
   isActive: z.boolean(),
+  type: z.enum(['product', 'inventory']),
 })

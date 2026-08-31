@@ -222,12 +222,7 @@ onUnmounted(() => {
 <template>
   <!-- Main Content (Canvas) -->
   <main class="p-8 mb-10 overflow-y-auto">
-    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex gap-3 items-center">
-        <div class="w-auto">
-          <!-- <p class="text-[14px] truncate">{{ t('menuManagement.subtitle') }}</p> -->
-        </div>
-      </div>
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
       <button
         class="flex h-10 shrink-0 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
         @click="openAddDialog()"

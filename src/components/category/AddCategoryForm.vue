@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { SwitchRoot, SwitchThumb } from 'reka-ui'
 import { useProductStore } from '@/store/useProductStore'
 import { toast } from 'vue-sonner'
-import type { Category } from '@/types/product.types'
+import type { Category, CategoryType } from '@/types/product.types'
 import { createCategoryPayloadSchema } from '@/validations/productValidation'
 
 const emit = defineEmits<{
@@ -12,18 +12,38 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const props = defineProps<{
-  category?: Category
-}>()
+const props = withDefaults(
+  defineProps<{
+    category?: Category
+    defaultType?: CategoryType
+  }>(),
+  {
+    defaultType: 'product',
+  }
+)
 
 const productStore = useProductStore()
 const { t } = useI18n()
 const isLoading = ref(false)
 
+const typeOptions: { value: CategoryType; labelKey: string; hintKey: string }[] = [
+  {
+    value: 'product',
+    labelKey: 'category.form.typeProduct',
+    hintKey: 'category.form.typeProductHint',
+  },
+  {
+    value: 'inventory',
+    labelKey: 'category.form.typeInventory',
+    hintKey: 'category.form.typeInventoryHint',
+  },
+]
+
 const form = reactive({
   name: '',
   isActive: true,
   isDragging: false,
+  type: props.defaultType as CategoryType,
 })
 
 // Watch for category prop changes to populate form when editing
@@ -33,9 +53,11 @@ watch(
     if (newCategory) {
       form.name = newCategory.name
       form.isActive = newCategory.isActive
+      form.type = newCategory.type
     } else {
       form.name = ''
       form.isActive = true
+      form.type = props.defaultType
     }
   },
   { immediate: true }
@@ -54,6 +76,7 @@ async function handleSubmit() {
     const validationResult = createCategoryPayloadSchema.safeParse({
       name: form.name.trim(),
       isActive: form.isActive,
+      type: form.type,
     })
     if (!validationResult.success) {
       toast.error(t('category.form.invalidDataError'))
@@ -65,6 +88,7 @@ async function handleSubmit() {
       await productStore.updateCategory(props.category!.id, {
         name: form.name.trim(),
         isActive: form.isActive,
+        type: form.type,
       })
       toast.success(t('category.form.toastUpdateSuccess'))
     } else {
@@ -72,6 +96,7 @@ async function handleSubmit() {
       await productStore.createCategory({
         name: form.name.trim(),
         isActive: form.isActive,
+        type: form.type,
       })
       toast.success(t('category.form.toastCreateSuccess'))
     }
@@ -104,6 +129,44 @@ async function handleSubmit() {
         :placeholder="$t('category.form.categoryPlaceholder')"
         class="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-sm text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:border-[#C26A1A] focus:ring-2 focus:ring-[#C26A1A]/10 transition"
       />
+    </div>
+
+    <!-- Category Type -->
+    <div
+      class="bg-white dark:bg-stone-900 rounded-2xl px-5 py-5 shadow-sm border border-stone-100 dark:border-stone-800"
+    >
+      <label class="block text-sm font-semibold text-stone-800 dark:text-stone-100 mb-1">{{
+        $t('category.form.categoryTypeLabel')
+      }}</label>
+      <p class="text-xs text-stone-400 dark:text-stone-500 mb-3">
+        {{ $t('category.form.categoryTypeHint') }}
+      </p>
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          v-for="option in typeOptions"
+          :key="option.value"
+          type="button"
+          class="rounded-xl border px-4 py-3 text-left transition-colors"
+          :class="
+            form.type === option.value
+              ? 'border-[#C26A1A] bg-[#fdf4ef] dark:bg-[#C26A1A]/10'
+              : 'border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600'
+          "
+          @click="form.type = option.value"
+        >
+          <p
+            class="text-sm font-semibold"
+            :class="
+              form.type === option.value ? 'text-[#C26A1A]' : 'text-stone-700 dark:text-stone-300'
+            "
+          >
+            {{ $t(option.labelKey) }}
+          </p>
+          <p class="text-xs text-stone-400 dark:text-stone-500 mt-0.5">
+            {{ $t(option.hintKey) }}
+          </p>
+        </button>
+      </div>
     </div>
 
     <!-- Item Status -->

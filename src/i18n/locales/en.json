@@ -169,27 +169,28 @@
     "your_shop": "Your Shop",
     "shop_logo": "Shop Logo",
     "sections": {
-      "home": "Home",
-      "pos": "POS & Order",
+      "overview": "Overview",
+      "sales": "Sales",
+      "menu": "Menu",
       "inventory": "Inventory",
       "reports": "Reports",
-      "settings": "Settings",
-      "marketing": "Marketing"
+      "administration": "Administration"
     },
     "items": {
       "dashboard": "Dashboard",
       "pos": "POS",
-      "orders": "Orders",
+      "orders": "Order",
       "orderHistory": "Order History",
-      "blockedCustomers": "Blocklist",
-      "inventory": "Inventory",
-      "products": "Product",
+      "inventoryExpenseReport": "Expense Report",
       "categories": "Categories",
-      "saleReports": "Sale Report",
       "analytics": "Analytics",
+      "products": "Product",
+      "promotions": "Promotion",
+      "inventory": "Supplies",
+      "saleReports": "Sale Summary",
       "staff": "Staff",
-      "config": "Shop Settings",
-      "promotions": "Promotions"
+      "config": "Shop Setting",
+      "blockedCustomers": "Blocklist"
     }
   },
   "navbar": {
@@ -253,6 +254,13 @@
     "paymentSuccessful": "Payment Successful!",
     "orderPlacedDesc": "The transaction completed cleanly, and the order has been recorded.",
     "orderNumber": "Order Number",
+    "servedBy": "Served By",
+    "paidVia": "Paid Via",
+    "cashLabel": "Cash",
+    "khqrLabel": "KHQR",
+    "selectBank": "Select Bank",
+    "selectBankRequired": "Please select a bank",
+    "khqrExactAmountNote": "The customer pays the exact amount via bank transfer — no change is given.",
     "changeReturned": "Change Returned",
     "newOrder": "New Order",
     "printReceipt": "Print Receipt",
@@ -318,6 +326,15 @@
       "title": "Financials & Payments",
       "description": "Manage currency, exchange rates, and digital payments.",
       "bakongHelper": "Used for automatic QR generation"
+    },
+    "paymentBanks": {
+      "title": "Payment Banks",
+      "description": "Banks staff can pick when recording a KHQR (bank transfer) payment.",
+      "empty": "No banks configured yet. Add at least one for KHQR payments.",
+      "addLabel": "Add a bank",
+      "addPlaceholder": "e.g. ABA, ACLEDA, Wing",
+      "add": "Add",
+      "remove": "Remove {bank}"
     },
     "receipt": {
       "title": "Receipt Configuration",
@@ -469,6 +486,14 @@
       "unitCost": "Unit Cost",
       "notes": "Notes",
       "by": "By",
+      "export": "Export Excel",
+      "exportError": "Unable to export the stock history.",
+      "filters": {
+        "type": "Type",
+        "in": "In",
+        "out": "Out",
+        "both": "Both"
+      },
       "summary": {
         "currentStock": "Current Stock",
         "averageDailyUsage": "Average Daily Usage",
@@ -478,6 +503,34 @@
         "category": "Category",
         "unit": "Unit",
         "reorderLevel": "Reorder Level"
+      },
+      "excel": {
+        "title": "Stock History — {item}",
+        "subtitle": "Stock movement history — additions and removals.",
+        "filterLine": "Date Range: {start} → {end}   •   Item: {item}   •   Type: {type}   •   Unit: {unit}   •   Category: {category}",
+        "kpiCurrentStock": "CURRENT STOCK",
+        "kpiCurrentStockCaption": "Value: {value}",
+        "kpiTotalIn": "TOTAL IN",
+        "kpiTotalInCaption": "Stock added this period",
+        "kpiTotalOut": "TOTAL OUT",
+        "kpiTotalOutCaption": "Stock consumed this period",
+        "chartTitle": "Value Over Time",
+        "chartLabel": "Daily Net Value Change",
+        "movementHistory": "Movement History",
+        "multiMonthNote": "This range spans multiple months — see the monthly sheets below for the full movement list.",
+        "tableDate": "Date",
+        "tableType": "Type",
+        "tableQuantity": "Quantity",
+        "tableUnit": "Unit",
+        "tableValue": "Value",
+        "tableUnitCost": "Unit Cost",
+        "tableNotes": "Notes",
+        "tableBy": "By",
+        "typeAdd": "Add",
+        "typeRemove": "Remove",
+        "totalRow": "TOTAL",
+        "footerHeading": "REPORT SCOPE  •  STOCK MOVEMENT HISTORY ONLY",
+        "footerBody": "Includes stock additions and removals for {item} in the selected period. Does not reflect shop-wide inventory value or other items."
       }
     },
     "messages": {
@@ -492,6 +545,49 @@
       "deleteError": "Unable to remove supply.",
       "adjustSuccess": "Stock adjusted.",
       "adjustError": "Unable to adjust stock."
+    },
+    "expenseReport": {
+      "title": "Purchase Spend Report",
+      "subtitle": "Purchase spend only — not profit or cost of goods sold.",
+      "totalSpend": "Total Purchase Spend",
+      "purchaseCount": "Purchase Transactions",
+      "chartTitle": "Spend Over Time",
+      "breakdownTitle": "Spend by Item",
+      "export": "Export Excel",
+      "exportError": "Unable to export the report.",
+      "loadError": "Unable to load the expense report.",
+      "empty": "No purchases in this period.",
+      "emptyHint": "Try a different date range.",
+      "table": {
+        "item": "Item",
+        "unit": "Unit",
+        "quantity": "Quantity Purchased",
+        "totalSpend": "Total Spend"
+      },
+      "excel": {
+        "title": "Expense Report",
+        "subtitle": "Purchase spend on restocking — not profit or cost of goods sold.",
+        "filterLine": "Date Range: {start} → {end}   •   Item: {item}   •   Group By: {groupBy}   •   Currency: {currency}",
+        "allItems": "All Items",
+        "groupByDay": "Day",
+        "kpiTotalSpend": "TOTAL PURCHASE SPEND",
+        "kpiTotalSpendCaption": "{count} purchases",
+        "kpiTransactions": "PURCHASE TRANSACTIONS",
+        "kpiTransactionsCaption": "Stock-in / stock-increase records",
+        "kpiAverage": "AVERAGE PURCHASE",
+        "kpiAverageCaption": "Average per transaction",
+        "chartLabel": "Daily Purchase Spend",
+        "purchaseHistory": "Purchase History",
+        "multiMonthNote": "This range spans multiple months — see the monthly sheets below for the full record list.",
+        "tableDate": "Date",
+        "tableItem": "Item",
+        "tableQuantity": "Quantity",
+        "tableUnitCost": "Unit Cost",
+        "tableTotal": "Total",
+        "totalRow": "TOTAL",
+        "footerHeading": "REPORT SCOPE  •  PURCHASE SPEND ONLY",
+        "footerBody": "Includes stock-in and stock-increase history records for the selected period. This report does not calculate profit, COGS, or current inventory value."
+      }
     }
   },
   "common": {
@@ -508,7 +604,8 @@
     "all": "All",
     "select": "Select",
     "applyFilters": "Apply Filters",
-    "clearFilters": "Clear Filters"
+    "clearFilters": "Clear Filters",
+    "systemCashier": "System"
   },
   "offline": {
     "noConnection": "No Connection",
@@ -768,13 +865,17 @@
     "yesterday": "Yesterday",
     "last7Days": "Last 7 Days",
     "customRange": "Custom Range",
+    "cashier": "Cashier",
+    "paymentMethod": "Payment",
     "table": {
       "dateTime": "Date & Time",
       "orderId": "Order ID",
       "customer": "Customer",
+      "cashier": "Cashier",
       "payment": "Payment",
       "fulfillment": "Fulfillment",
-      "total": "Total Price"
+      "total": "Total Price",
+      "you": "You"
     },
     "noHistory": "No historical transactions found matching criteria.",
     "reprintReceipt": "Reprint Receipt",
@@ -793,6 +894,8 @@
     "showing_for": "Today's Report Lists",
     "paymentMethods": "Payment Methods",
     "date": "Date Reports",
+    "startDate": "From Date",
+    "endDate": "To Date",
     "filters": {
       "all": "All",
       "cash": "Cash",
@@ -805,8 +908,9 @@
       "fetchDailyOverviewFailed": "Failed to load daily sales summary."
     },
     "table": {
-      "time": "Timestamp",
+      "time": "Date & Time",
       "orderId": "Order ID",
+      "cashier": "Cashier",
       "type": "Customer Type",
       "payment": "Payment Status",
       "method": "Method",
@@ -814,7 +918,27 @@
       "takeaway": "Takeaway",
       "dineIn": "Dine-in",
       "empty": "No Orders Found",
-      "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports"
+      "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports",
+      "you": "You"
+    },
+    "export": {
+      "button": "Export Excel",
+      "title": "Export Sales Summary",
+      "description": "Pick the period to export. The workbook lists one row-block per day, with every item split by payment method.",
+      "startDate": "From Date",
+      "endDate": "To Date",
+      "submit": "Export",
+      "exporting": "Preparing...",
+      "success": "Sales summary exported.",
+      "warnings": {
+        "noData": "No paid orders were found in that period."
+      },
+      "errors": {
+        "required": "Choose both a start and an end date.",
+        "invalidRange": "The end date must be on or after the start date.",
+        "future": "You can't export a date in the future.",
+        "failed": "Failed to export the sales summary."
+      }
     }
   },
   "menuManagement": {
@@ -1029,10 +1153,20 @@
     "toastSuccess": "Category deleted successfully",
     "toastError": "Failed to delete category",
     "deleteDisabledTooltip": "This category cannot be deleted because it still contains products",
+    "tabs": {
+      "product": "Product Categories",
+      "inventory": "Inventory Categories"
+    },
     "form": {
       "categoryNameLabel": "Category Name",
       "categoryPlaceholder": "e.g. Coffee, Pastries, Teas",
       "categoryStatusLabel": "Category Status",
+      "categoryTypeLabel": "Category Type",
+      "categoryTypeHint": "Choose what this category is used to organize.",
+      "typeProduct": "Product",
+      "typeProductHint": "Shown on the POS menu and customer ordering screen.",
+      "typeInventory": "Inventory",
+      "typeInventoryHint": "Used only to group stock supplies.",
       "saveCategory": "Save Category",
       "updateCategory": "Update Category",
       "nameRequiredError": "Category name is required",
@@ -1220,6 +1354,35 @@
       "saveFailed": "Failed to save promotion",
       "deleted": "Promotion deleted",
       "deleteFailed": "Failed to delete promotion"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "delete": "Delete",
+    "select": "Select",
+    "cancel": "Cancel",
+    "selectAll": "Select all",
+    "deleteSelected": "Delete ({count})",
+    "confirmClearAll": "Clear all notifications?",
+    "empty": "No notifications yet",
+    "emptySubtitle": "We'll notify you when important events happen",
+    "loadingMore": "Loading older notifications...",
+    "defaultTitle": "Notification",
+    "types": {
+      "pre_order": "New Pre-Order",
+      "new_pre_order": "New Pre-Order",
+      "low_stock": "Low Stock Alert",
+      "out_of_stock": "Out of Stock",
+      "promotion_activated": "Promotion Activated",
+      "promotion_deactivated": "Promotion Deactivated"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago"
     }
   }
 }

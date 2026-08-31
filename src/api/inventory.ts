@@ -1,6 +1,11 @@
 import http from './api'
 import type {
   InventoryAdjustmentPayload,
+  InventoryExpenseReportByDay,
+  InventoryExpenseReportByIngredient,
+  InventoryExpenseReportExportQuery,
+  InventoryExpenseReportQuery,
+  InventoryHistoryExportQuery,
   InventoryHistoryQuery,
   InventoryHistoryResponse,
   InventoryItem,
@@ -9,6 +14,9 @@ import type {
 } from '@/types/inventory.types'
 import {
   inventoryAdjustmentSchema,
+  inventoryExpenseReportExportQuerySchema,
+  inventoryExpenseReportQuerySchema,
+  inventoryHistoryExportQuerySchema,
   inventoryHistoryQuerySchema,
   inventoryItemSchema,
 } from '@/validations/inventoryValidation'
@@ -103,3 +111,76 @@ export const adjustInventoryItem = async (
   )
   return res.data
 }
+
+export const getInventoryExpenseReportByDay = async (
+  params: Omit<InventoryExpenseReportQuery, 'groupBy'>
+): Promise<InventoryExpenseReportByDay> => {
+  const parsedParams = inventoryExpenseReportQuerySchema.parse({ ...params, groupBy: 'day' })
+  const res = await http.get<InventoryExpenseReportByDay>(`${INVENTORY_ENDPOINT}/expense-report`, {
+    params: parsedParams,
+  })
+  return res.data
+}
+
+export const getInventoryExpenseReportByIngredient = async (
+  params: Omit<InventoryExpenseReportQuery, 'groupBy'>
+): Promise<InventoryExpenseReportByIngredient> => {
+  const parsedParams = inventoryExpenseReportQuerySchema.parse({ ...params, groupBy: 'ingredient' })
+  const res = await http.get<InventoryExpenseReportByIngredient>(
+    `${INVENTORY_ENDPOINT}/expense-report`,
+    { params: parsedParams }
+  )
+  return res.data
+}
+
+// --- Excel exports ---
+// The server builds the workbooks, so these responses are binary rather than
+// the JSON envelope every other endpoint here returns. A wide range is
+// generated on demand, so both allow well past the instance's 10s default.
+
+const EXPORT_TIMEOUT_MS = 60_000
+
+/** GET the Expense Report workbook for a range, as .xlsx bytes. */
+export const exportInventoryExpenseReport = async (
+  params: InventoryExpenseReportExportQuery
+): Promise<Blob> => {
+  const parsedParams = inventoryExpenseReportExportQuerySchema.parse(params)
+  return http.get<Blob, Blob>(`${INVENTORY_ENDPOINT}/exports/expense-report`, {
+    params: parsedParams,
+    responseType: 'blob',
+    timeout: EXPORT_TIMEOUT_MS,
+  })
+}
+
+/** GET one item's Stock History workbook for a range, as .xlsx bytes. */
+export const exportInventoryHistory = async (
+  id: number,
+  params: InventoryHistoryExportQuery
+): Promise<Blob> => {
+  const parsedParams = inventoryHistoryExportQuerySchema.parse(params)
+  return http.get<Blob, Blob>(`${INVENTORY_ENDPOINT}/exports/history/${id}`, {
+    params: parsedParams,
+    responseType: 'blob',
+    timeout: EXPORT_TIMEOUT_MS,
+  })
+}
+
+// The response interceptor unwraps `response.data`, so Content-Disposition never
+// reaches a caller; both endpoints' filenames are mirrored here instead, the
+// same way the sales-summary export does it.
+
+/** Mirrors the filename the expense-report endpoint sets in Content-Disposition. */
+export const inventoryExpenseReportFileName = (startDate: string, endDate: string) =>
+  `inventory-expense-report_${startDate.slice(0, 10)}_${endDate.slice(0, 10)}.xlsx`
+
+/** Server-side slug rule: a name with no Latin characters falls back to `item`. */
+const slugifyItemName = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '') || 'item'
+
+/** Mirrors the filename the stock-history endpoint sets in Content-Disposition. */
+export const inventoryHistoryFileName = (itemName: string, from: string, to: string) =>
+  `stock-history_${slugifyItemName(itemName)}_${from.slice(0, 10)}_${to.slice(0, 10)}.xlsx`

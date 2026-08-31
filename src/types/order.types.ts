@@ -25,6 +25,9 @@ export interface CartItem {
 
 export type PaymentCurrency = 'USD' | 'KHR'
 export type OrderType = 'dine_in' | 'takeaway'
+// 'cash' = tendered at the counter; 'khqr' = a manual KHQR bank transfer recorded by
+// staff (the customer says which bank they used — see bankName). No Bakong API.
+export type PaymentMethod = 'cash' | 'khqr'
 
 export interface CartItemPayload {
   productId: number
@@ -38,7 +41,10 @@ export interface CartItemPayload {
 
 export interface CreateOrderPayload {
   orderType: OrderType
-  paymentMethod: 'cash'
+  paymentMethod: PaymentMethod
+  // Bank the customer paid via for a manual KHQR order (e.g. "ABA"). Required by the
+  // server when paymentMethod is 'khqr', omitted for cash.
+  bankName?: string
   paymentCurrency: PaymentCurrency
   // Amount handed over, in the payment currency. The server owns the total and
   // the exchange rate, so they are no longer part of the request.
@@ -58,6 +64,10 @@ export interface OrderResult {
   changeAmount: number | string
   // Server-resolved shop exchange rate applied to this order.
   exchangeRateSnapshot: number | string
+  // Echoed back so the success receipt can show "Paid via KHQR — ABA" without a
+  // follow-up fetch. bankName is null for cash orders.
+  paymentMethod?: string
+  bankName?: string | null
   paymentStatus: string
   fulfillmentStatus: string
 }
@@ -73,9 +83,26 @@ export interface CheckoutSuccessData {
   exchangeRateSnapshot: number
   changeUSD: number
   changeKHR: number
+  // How the sale was paid, shown on the receipt as "Paid via Cash" / "Paid via KHQR —
+  // ABA". bankName is only set for a KHQR payment.
+  paymentMethod?: PaymentMethod
+  bankName?: string | null
   // Complimentary (free) lines on this order, captured for the receipt's free-items
   // note. Empty/undefined for an ordinary order.
   freeItems?: { name: string; quantity: number }[]
+  // The signed-in cashier who took the sale, printed on the receipt as "Served by".
+  // Null/undefined falls back to "System" (see cashierName).
+  servedBy?: string | null
+}
+
+// The staff member who took an order. Attached to every order response (list,
+// detail and the live SSE update). Null on an order with no recorded user — an
+// order placed before cashiers were tracked, or a customer pre-order — which the
+// UI renders as "System" (see utils/cashier).
+export interface OrderCashier {
+  id: number
+  name: string
+  employeeId: string | null
 }
 
 // Lightweight promotion summary attached to an order for display in history.
@@ -146,6 +173,8 @@ export interface OrderDetail extends OrderResult {
   createdAt: string
   updatedAt: string
   userId: number | null
+  // The cashier who took the order (null for an order with no recorded user).
+  user?: OrderCashier | null
   tableSessionId: number | null
   promotionId: number | null
   // Amount the applied promotion took off. totalAmount is the net (post-discount)
@@ -164,6 +193,8 @@ export interface OrderDetail extends OrderResult {
   telegramUsername?: string | null
   paymentMethod: string
   khqrString: string | null
+  // Bank used for a manual KHQR payment (null for cash orders).
+  bankName: string | null
   // Void audit — set once a whole order is voided (refunded + canceled).
   voidedAt?: string | null
   voidReason?: string | null
@@ -190,6 +221,8 @@ export interface OrderRow {
   orderType: 'dine_in' | 'takeaway'
   paymentStatus: string
   paymentMethod: 'cash' | 'khqr'
+  // Bank used for a manual KHQR payment (null for cash), shown in Order History.
+  bankName?: string | null
   totalAmount: string | number
   // Per-order snapshot needed to display the exact riel figure the customer paid,
   // independent of the shop's current rate.
@@ -197,6 +230,8 @@ export interface OrderRow {
   changeAmount: string | number
   paymentCurrency: 'USD' | 'KHR'
   createdAt: string
+  // The cashier who took the order (null for an order with no recorded user).
+  user?: OrderCashier | null
 }
 
 export interface OrdersResponse {
@@ -215,8 +250,8 @@ export interface DailySummary {
   exchange_rate: number
 }
 export interface TodayOrdersFilters {
-  date?: string // YYYY-MM-DD
+  date?: string // YYYY-MM-DD — start of the window
+  /** Inclusive end of the window. Defaults to `date`, i.e. a single day. */
+  endDate?: string // YYYY-MM-DD
   paymentMethod?: 'cash' | 'khqr'
 }
-
-export type PaymentMethodFilter = 'all' | 'cash' | 'khqr'

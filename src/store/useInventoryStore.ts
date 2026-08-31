@@ -4,21 +4,33 @@ import {
   adjustInventoryItem,
   createInventoryItem,
   deleteInventoryItem,
+  exportInventoryExpenseReport,
+  exportInventoryHistory,
+  getInventoryExpenseReportByDay,
+  getInventoryExpenseReportByIngredient,
   getInventoryHistory,
   getInventoryItems,
   getInventoryValuation,
+  inventoryExpenseReportFileName,
+  inventoryHistoryFileName,
   updateInventoryItem,
   type InventoryItemFilters,
 } from '@/api/inventory'
 import type {
   InventoryAdjustmentPayload,
+  InventoryExpenseByDay,
+  InventoryExpenseByIngredient,
+  InventoryExpenseReportExportQuery,
+  InventoryExpenseReportQuery,
   InventoryHistoryEntry,
+  InventoryHistoryExportQuery,
   InventoryHistoryQuery,
   InventoryHistoryResponse,
   InventoryItem,
   InventoryItemPayload,
   InventoryValuation,
 } from '@/types/inventory.types'
+import { downloadBlob } from '@/utils/download'
 
 export const useInventoryStore = defineStore('inventory', () => {
   const items = ref<InventoryItem[]>([])
@@ -31,8 +43,16 @@ export const useInventoryStore = defineStore('inventory', () => {
     totalPages: 1,
   })
   const historyTotals = ref<InventoryHistoryResponse['totals']>({ totalIn: 0, totalOut: 0 })
+  const expenseByDay = ref<InventoryExpenseByDay[]>([])
+  const expenseByIngredient = ref<InventoryExpenseByIngredient[]>([])
+  const expenseSummary = ref<{ totalSpend: number; purchaseCount: number; currency: string }>({
+    totalSpend: 0,
+    purchaseCount: 0,
+    currency: '$',
+  })
   const isLoading = ref(false)
   const isHistoryLoading = ref(false)
+  const isExpenseReportLoading = ref(false)
   const isSaving = ref(false)
 
   // Whole-shop inventory value, independent of the list's active filters.
@@ -156,6 +176,68 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
+  let currentExpenseReportRequestId = 0
+
+  // Fetches both groupings for the selected range in parallel and commits them
+  // together, so the chart (by day) and the breakdown table (by ingredient)
+  // never show two different periods at once.
+  const fetchExpenseReport = async (params: Omit<InventoryExpenseReportQuery, 'groupBy'>) => {
+    currentExpenseReportRequestId += 1
+    const requestId = currentExpenseReportRequestId
+    isExpenseReportLoading.value = true
+    try {
+      const [byDay, byIngredient] = await Promise.all([
+        getInventoryExpenseReportByDay(params),
+        getInventoryExpenseReportByIngredient(params),
+      ])
+      if (requestId === currentExpenseReportRequestId) {
+        expenseByDay.value = byDay.data
+        expenseByIngredient.value = byIngredient.data
+        expenseSummary.value = {
+          totalSpend: byDay.totalSpend,
+          purchaseCount: byDay.purchaseCount,
+          currency: byDay.currency,
+        }
+      }
+    } finally {
+      if (requestId === currentExpenseReportRequestId) {
+        isExpenseReportLoading.value = false
+      }
+    }
+  }
+
+  // --- Excel exports ---
+  // The server owns the aggregation, the layout and the workbook itself
+  // (GET /api/inventories/exports/...), so these only save the bytes that come
+  // back. Failures reject for the caller to surface.
+  const isExporting = ref(false)
+
+  const exportExpenseReport = async (params: InventoryExpenseReportExportQuery) => {
+    isExporting.value = true
+    try {
+      const workbook = await exportInventoryExpenseReport(params)
+      downloadBlob(workbook, inventoryExpenseReportFileName(params.startDate, params.endDate))
+    } finally {
+      isExporting.value = false
+    }
+  }
+
+  // `itemName` only names the file — the workbook's own contents come from the
+  // server, which reads the item from the id.
+  const exportHistory = async (
+    id: number,
+    itemName: string,
+    params: InventoryHistoryExportQuery & { from: string; to: string }
+  ) => {
+    isExporting.value = true
+    try {
+      const workbook = await exportInventoryHistory(id, params)
+      downloadBlob(workbook, inventoryHistoryFileName(itemName, params.from, params.to))
+    } finally {
+      isExporting.value = false
+    }
+  }
+
   const adjustItem = async (id: number, payload: InventoryAdjustmentPayload) => {
     isSaving.value = true
     try {
@@ -175,6 +257,11 @@ export const useInventoryStore = defineStore('inventory', () => {
     historyPagination,
     historyTotals,
     isHistoryLoading,
+    expenseByDay,
+    expenseByIngredient,
+    expenseSummary,
+    isExpenseReportLoading,
+    isExporting,
     totalInventoryValue,
     isLoading,
     isSaving,
@@ -187,6 +274,9 @@ export const useInventoryStore = defineStore('inventory', () => {
     ensureItem,
     fetchValuation,
     fetchHistory,
+    fetchExpenseReport,
+    exportExpenseReport,
+    exportHistory,
     addItem,
     editItem,
     removeItem,
