@@ -450,6 +450,7 @@ onMounted(loadSettings)
                 <AppInput
                   v-model="newBankName"
                   :placeholder="t('settings.paymentBanks.addPlaceholder')"
+                  maxlength="191"
                   class="h-12 rounded-lg border-stone-200 bg-stone-100 px-4 text-base font-bold text-stone-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
                   @keydown.enter.prevent="addBank"
                 />

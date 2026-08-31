@@ -255,5 +255,3 @@ export interface TodayOrdersFilters {
   endDate?: string // YYYY-MM-DD
   paymentMethod?: 'cash' | 'khqr'
 }
-
-export type PaymentMethodFilter = 'all' | 'cash' | 'khqr'
