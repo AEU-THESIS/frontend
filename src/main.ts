@@ -56,6 +56,6 @@ app.use(i18n)
 // this page load, without waiting for a re-login (AT-74). Fire-and-forget: the
 // store hydrates instantly from localStorage, and the guard re-runs reactively
 // once the fresh record arrives.
-useAuthStore().refreshUser()
+void useAuthStore().refreshUser()
 
 app.mount('#app')
