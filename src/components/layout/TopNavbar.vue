@@ -77,10 +77,6 @@ const pageSubtitle = computed(() => {
     return t('inventory.subtitle')
   }
 
-  if (route.name === APP_ROUTES.SALE_REPORTS.name) {
-    return t('reports.subtitle')
-  }
-
   return ''
 })
 const userInitials = computed(() => {

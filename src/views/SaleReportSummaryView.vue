@@ -1,13 +1,16 @@
 <template>
   <div class="flex h-full flex-col bg-[#F9FAFB] dark:bg-stone-900 font-body overflow-hidden">
-    <div class="flex-1 overflow-y-auto custom-scrollbar px-10 py-10">
-      <div class="w-full space-y-8">
-        <!-- Export action (title + description now live in the top navbar) -->
-        <div class="flex justify-end">
+    <div class="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+      <div class="w-full space-y-6 lg:space-y-8">
+        <!-- Description (the title lives in the top navbar) + export action -->
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm text-[#737373] dark:text-stone-400">
+            {{ t('reports.subtitle') }}
+          </p>
           <Button
             type="button"
             variant="primary"
-            class="h-10 shrink-0 px-5"
+            class="h-10 shrink-0 px-5 w-full sm:w-auto"
             @click="isExportDialogOpen = true"
           >
             <FileSpreadsheet class="h-4 w-4" />
@@ -15,14 +18,16 @@
           </Button>
         </div>
 
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <!-- auto-fit wraps the tiles on the ACTUAL available width (robust to the
+             sidebar), so tablets get 1–2 full-width cards instead of 3 cramped ones. -->
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 sm:gap-6">
           <StaffStatCard
             class="min-h-[90px]"
             :label="t('reports.total_revenue_today')"
             :value="formattedTotalRevenue"
             :icon="DollarSign"
             label-class="text-xs md:text-sm font-medium"
-            value-class="text-base sm:text-lg lg:text-xl font-bold"
+            value-class="text-base sm:text-lg font-bold"
             bg-color-class="bg-[#FDF2F0]"
             icon-color-class="text-[#E26D5C]"
           />
@@ -33,7 +38,7 @@
             :value="formattedCashTotal"
             :icon="Wallet"
             label-class="text-xs md:text-sm font-medium"
-            value-class="text-base sm:text-lg lg:text-xl font-bold"
+            value-class="text-base sm:text-lg font-bold"
             bg-color-class="bg-[#F0FDF4]"
             icon-color-class="text-[#22C55E]"
           />
@@ -44,7 +49,7 @@
             :value="formattedKhqrTotal"
             :icon="QrCode"
             label-class="text-xs md:text-sm font-medium"
-            value-class="text-base sm:text-lg lg:text-xl font-bold"
+            value-class="text-base sm:text-lg font-bold"
             bg-color-class="bg-[#F8FAFC]"
             icon-color-class="text-slate-400"
           />
