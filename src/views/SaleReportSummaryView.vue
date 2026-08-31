@@ -5,7 +5,7 @@
         <!-- Description (the title lives in the top navbar) + export action -->
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm text-[#737373] dark:text-stone-400">
-            {{ t('reports.subtitle') }}
+            <!-- {{ t('reports.subtitle') }} -->
           </p>
           <Button
             type="button"

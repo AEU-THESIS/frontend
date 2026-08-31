@@ -10,6 +10,7 @@ import {
   rejectPreOrder as rejectPreOrderApi,
 } from '@/api/order'
 import { useAuthStore } from './useAuthStore'
+import { useNotificationStore } from './useNotificationStore'
 import type { OrderDetail } from '@/types/order.types'
 
 let audioCtx: AudioContext | null = null
@@ -97,6 +98,8 @@ export const useOrderStore = defineStore('orders', () => {
     hasComp?: boolean
     startDate?: string
     endDate?: string
+    // Restrict to one cashier's orders; the backend clamps a Cashier to their own id.
+    userId?: number
     page?: number
     limit?: number
   }) => {
@@ -109,6 +112,7 @@ export const useOrderStore = defineStore('orders', () => {
         hasComp: filters.hasComp || undefined,
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined,
+        userId: filters.userId || undefined,
         page: filters.page || 1,
         limit: filters.limit || 10,
       })
@@ -266,6 +270,27 @@ export const useOrderStore = defineStore('orders', () => {
         console.error('Error parsing SSE order_updated event:', err)
       }
     }
+
+    const handleNotificationCreated = (data: string) => {
+      try {
+        const newNotification = JSON.parse(data)
+        if (
+          newNotification &&
+          typeof newNotification === 'object' &&
+          'id' in newNotification &&
+          newNotification.id != null
+        ) {
+          const notificationStore = useNotificationStore()
+          notificationStore.handleSseNotification(newNotification)
+          console.log(`🔔 SSE: New Notification! ${newNotification.type}`)
+        } else {
+          console.warn('⚠️ SSE: Received invalid notification payload:', newNotification)
+        }
+      } catch (err) {
+        console.error('Error parsing SSE notification_created event:', err)
+      }
+    }
+
     const startStream = async () => {
       try {
         const response = await fetch(sseUrl, {
@@ -274,6 +299,13 @@ export const useOrderStore = defineStore('orders', () => {
           },
           signal: controller.signal,
         })
+
+        if (response.status === 401) {
+          isConnected.value = false
+          console.warn('📡 SSE: Unauthorized (401). Stopping stream reconnect.')
+          return
+        }
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -308,6 +340,8 @@ export const useOrderStore = defineStore('orders', () => {
                 handleOrderCreated(dataStr)
               } else if (eventName === 'order_updated') {
                 handleOrderUpdated(dataStr)
+              } else if (eventName === 'notification_created') {
+                handleNotificationCreated(dataStr)
               }
             }
           }
