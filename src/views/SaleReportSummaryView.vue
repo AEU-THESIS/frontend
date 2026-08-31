@@ -346,7 +346,7 @@ const filteredOrders = computed(() => {
   return orders.filter(order => order.paymentMethod?.toLowerCase() === method.toLowerCase())
 })
 
-const ITEMS_PER_PAGE = 5
+const ITEMS_PER_PAGE = 10
 const currentPage = ref(1)
 
 // Selecting a different method/bank (client-side narrowing) can shrink the result
