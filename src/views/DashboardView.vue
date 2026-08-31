@@ -21,6 +21,7 @@ import SalesBarChart from '@/components/analytics/SalesBarChart.vue'
 import ItemPeriodFilter from '@/components/analytics/ItemPeriodFilter.vue'
 import GlobalDateFilter from '@/components/analytics/GlobalDateFilter.vue'
 import { resolveGlobalRange } from '@/components/analytics/globalRange'
+import { shopDayStartUtc, shopDayEndUtc, toShopDateString } from '@/utils/shopDate'
 import type {
   GlobalRangeKey,
   GlobalRangeValue,
@@ -305,11 +306,16 @@ const fetchSellingItems = async (which: (typeof SELLING_TABLE)[keyof typeof SELL
   // Read the token live so we compare against the newest request, not a snapshot.
   const isCurrent = () => requestId === (isBest ? bestRequestId : lowestRequestId)
 
-  // A custom range overrides the preset `period` on the backend via dates.
+  // A custom range overrides the preset `period` on the backend via dates. Send
+  // the shop-local day boundaries as absolute instants so the window matches the
+  // server's calendar day regardless of this device's timezone.
   let window: { startDate: string; endDate: string } | undefined
   if (period === 'range') {
-    const { start, end } = resolveItemPeriod('range', value)
-    window = { startDate: start.toISOString(), endDate: end.toISOString() }
+    const [startDay, endDay] = value.split('..')
+    window = {
+      startDate: shopDayStartUtc(startDay).toISOString(),
+      endDate: shopDayEndUtc(endDay).toISOString(),
+    }
   }
 
   loading.value = true
@@ -391,14 +397,10 @@ const globalToItemFilter = (): { period: ItemPeriod; value: string } => {
   const key = globalRange.value.key
   if (key === 'thisMonth') return { period: 'thisMonth', value: '' }
   if (key === 'thisYear') return { period: 'thisYear', value: '' }
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const toInput = (iso: string) => {
-    const d = new Date(iso)
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-  }
+  // Map the global window's instants back to the shop-local days they cover.
   return {
     period: 'range',
-    value: `${toInput(globalRange.value.startDate)}..${toInput(globalRange.value.endDate)}`,
+    value: `${toShopDateString(globalRange.value.startDate)}..${toShopDateString(globalRange.value.endDate)}`,
   }
 }
 

@@ -1,64 +1,61 @@
 import type { GlobalRangeKey, GlobalRangeValue } from '@/types/analytics.types'
+import { shopDateString, shopDayStartUtc, shopDayEndUtc, toShopDateString } from '@/utils/shopDate'
 
-const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
-const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999)
-const addDays = (d: Date, n: number) => {
-  const copy = new Date(d)
-  copy.setDate(copy.getDate() + n)
-  return copy
-}
+/** Shop-local "YYYY-MM-DD" for the day an instant (Date or ISO string) falls on. */
+export const toDateInput = (value: Date | string) => toShopDateString(value)
 
-/** Local "YYYY-MM-DD" (avoids the UTC shift of toISOString().slice). */
-export const toDateInput = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-
-/** Parse a "YYYY-MM-DD" input as a local calendar date (not UTC midnight). */
-export const parseDateInput = (s: string) => {
-  const [y, m, d] = s.split('-').map(Number)
-  return new Date(y, (m || 1) - 1, d || 1)
+/** First day of the shop-local month `monthOffset` months from the current one. */
+const shopMonthFirst = (monthOffset: number): string => {
+  const [y, m] = shopDateString(0).split('-').map(Number)
+  const idx = y * 12 + (m - 1) + monthOffset
+  return `${Math.floor(idx / 12)}-${String((idx % 12) + 1).padStart(2, '0')}-01`
 }
 
 /**
- * Resolves a preset (or an explicit custom window) into concrete ISO
- * start/end instants. Shared by the filter component and the analytics view.
+ * Resolves a preset (or an explicit custom window) into concrete start/end
+ * instants at the shop's local day boundaries — so the window is the same
+ * calendar day the server reports on, regardless of the browser's timezone.
+ * Shared by the filter component and the analytics view.
  */
 export function resolveGlobalRange(
   key: GlobalRangeKey,
   customStart?: string,
   customEnd?: string
 ): GlobalRangeValue {
-  const now = new Date()
-  const today = startOfDay(now)
-  let start: Date
-  let end: Date
+  const today = shopDateString(0)
+  let startDay: string
+  let endDay: string
 
   switch (key) {
     case 'yesterday':
-      start = addDays(today, -1)
-      end = endOfDay(start)
+      startDay = shopDateString(-1)
+      endDay = startDay
       break
     case 'last7':
-      start = addDays(today, -6)
-      end = endOfDay(now)
+      startDay = shopDateString(-6)
+      endDay = today
       break
     case 'thisMonth':
-      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
-      end = endOfDay(now)
+      startDay = shopMonthFirst(0)
+      endDay = today
       break
     case 'thisYear':
-      start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0)
-      end = endOfDay(now)
+      startDay = `${today.slice(0, 4)}-01-01`
+      endDay = today
       break
-    case 'custom': {
-      start = customStart ? startOfDay(parseDateInput(customStart)) : today
-      end = customEnd ? endOfDay(parseDateInput(customEnd)) : endOfDay(now)
+    case 'custom':
+      startDay = customStart || today
+      endDay = customEnd || today
       break
-    }
     case 'today':
     default:
-      start = today
-      end = endOfDay(now)
+      startDay = today
+      endDay = today
   }
 
-  return { key, startDate: start.toISOString(), endDate: end.toISOString() }
+  return {
+    key,
+    startDate: shopDayStartUtc(startDay).toISOString(),
+    endDate: shopDayEndUtc(endDay).toISOString(),
+  }
 }
