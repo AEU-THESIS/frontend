@@ -55,11 +55,9 @@ const pageTitle = computed(() => {
     case APP_ROUTES.DASHBOARD.name:
       return t('sidebar.items.dashboard')
     case APP_ROUTES.INVENTORY.name:
-      return t('sidebar.items.inventory')
+      return t('inventory.title')
     case APP_ROUTES.INVENTORY_HISTORY.name:
       return t('inventory.history.title')
-    case APP_ROUTES.INVENTORY_EXPENSE_REPORT.name:
-      return t('inventory.expenseReport.title')
     case APP_ROUTES.SALE_REPORTS.name:
       return t('reports.title')
     case APP_ROUTES.PRODUCT.name:
@@ -75,6 +73,21 @@ const pageTitle = computed(() => {
   }
 })
 
+const pageSubtitle = computed(() => {
+  switch (route.name) {
+    case APP_ROUTES.INVENTORY.name:
+      return t('inventory.subtitle')
+    case APP_ROUTES.CATEGORIES.name:
+      return t('category.categorySubtitle')
+    case APP_ROUTES.PRODUCT.name:
+      return t('menuManagement.subtitle')
+    case APP_ROUTES.SALE_REPORTS.name:
+      return t('reports.subtitle')
+    case APP_ROUTES.SETTINGS.name:
+      return t('settings.subtitle')
+  }
+  return ''
+})
 const userInitials = computed(() => {
   const name = authStore.user?.name
   if (!name) return 'U' // fallback
@@ -115,6 +128,9 @@ const getProfileImageUrl = (path: string | undefined | null) => {
       <h2 class="font-bold text-stone-800 dark:text-stone-50 text-[24px] leading-tight">
         {{ pageTitle }}
       </h2>
+      <p v-if="pageSubtitle" class="mt-1 text-sm font-medium text-stone-500 dark:text-stone-400">
+        {{ pageSubtitle }}
+      </p>
     </div>
     <div class="flex items-center gap-3">
       <!-- Notification Bell Button & Dropdown -->
