@@ -576,6 +576,9 @@ watch(
               :options="categoryOptions"
               :has-selected-all-option="false"
               :placeholder="t('menuManagement.productForm.placeholders.selectCategory')"
+              class="[&_button]:!bg-stone-900 [&_button]:!border-stone-800 [&_button]:!text-stone-100 dark:bg-stone-900 dark:border-stone-800 dark:text-stone-100"
+              trigger-class="!bg-stone-900 !border-stone-800 !text-stone-100"
+              content-class="!bg-stone-900 !border-stone-800 !text-stone-100"
               @update:model-value="clearError('category')"
             />
           </div>

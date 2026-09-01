@@ -5,7 +5,7 @@
         <!-- Description (the title lives in the top navbar) + export action -->
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm text-[#737373] dark:text-stone-400">
-            {{ t('reports.subtitle') }}
+            <!-- {{ t('reports.subtitle') }} -->
           </p>
           <Button
             type="button"
@@ -26,10 +26,10 @@
             :label="t('reports.total_revenue_today')"
             :value="formattedTotalRevenue"
             :icon="DollarSign"
-            label-class="text-xs md:text-sm font-medium"
-            value-class="text-base sm:text-lg font-bold"
-            bg-color-class="bg-[#FDF2F0]"
-            icon-color-class="text-[#E26D5C]"
+            label-class="text-xs md:text-sm font-medium dark:text-stone-300"
+            value-class="text-lg md:text-xl font-bold dark:text-stone-100"
+            bg-color-class="bg-[#FDF2F0] dark:bg-rose-950/30 dark:border dark:border-rose-900/30"
+            icon-color-class="text-[#E26D5C] dark:text-rose-400"
           />
 
           <StaffStatCard
@@ -37,10 +37,10 @@
             :label="t('reports.cash_drawer_expected')"
             :value="formattedCashTotal"
             :icon="Wallet"
-            label-class="text-xs md:text-sm font-medium"
-            value-class="text-base sm:text-lg font-bold"
-            bg-color-class="bg-[#F0FDF4]"
-            icon-color-class="text-[#22C55E]"
+            label-class="text-xs md:text-sm font-medium dark:text-stone-300"
+            value-class="text-lg md:text-xl font-bold dark:text-stone-100"
+            bg-color-class="bg-[#F0FDF4] dark:bg-emerald-950/30 dark:border dark:border-emerald-900/30"
+            icon-color-class="text-[#22C55E] dark:text-emerald-400"
           />
 
           <StaffStatCard
@@ -48,15 +48,15 @@
             :label="t('reports.khqr_expected')"
             :value="formattedKhqrTotal"
             :icon="QrCode"
-            label-class="text-xs md:text-sm font-medium"
-            value-class="text-base sm:text-lg font-bold"
-            bg-color-class="bg-[#F8FAFC]"
-            icon-color-class="text-slate-400"
+            label-class="text-xs md:text-sm font-medium dark:text-stone-300"
+            value-class="text-lg md:text-xl font-bold dark:text-stone-100"
+            bg-color-class="bg-[#F8FAFC] dark:bg-stone-800/50 dark:border dark:border-stone-700/50"
+            icon-color-class="text-slate-400 dark:text-stone-400"
           />
         </div>
 
         <Card
-          class="gap-0 overflow-hidden rounded-xl border-none bg-white p-0 text-[#1A1C1C] shadow-sm flex flex-col"
+          class="gap-0 overflow-hidden rounded-xl border border-transparent dark:border-stone-800 bg-white dark:bg-stone-900 p-0 text-[#1A1C1C] dark:text-stone-100 shadow-sm flex flex-col"
         >
           <!-- Filter Panel -->
           <FilterPanel
@@ -78,7 +78,7 @@
                 v-model="reportStore.selectedDate"
                 type="date"
                 :max="todayIsoDate"
-                class="h-10 w-full cursor-pointer rounded-md border-none bg-stone-50 px-3 text-sm text-[#1A1C1C] shadow-none transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:bg-stone-800 dark:text-stone-100"
+                class="h-10 w-full cursor-pointer rounded-md border border-stone-200/60 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 text-sm text-[#1A1C1C] dark:text-stone-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
               />
             </div>
 
@@ -110,11 +110,17 @@
             />
           </FilterPanel>
 
-          <div v-if="reportStore.isLoading" class="p-10 text-center text-sm text-[#A3A3A3]">
+          <div
+            v-if="reportStore.isLoading"
+            class="p-10 text-center text-sm text-[#A3A3A3] dark:text-stone-500"
+          >
             {{ t('reports.loading') }}
           </div>
 
-          <div v-else-if="reportStore.error" class="p-10 text-center text-sm text-red-500">
+          <div
+            v-else-if="reportStore.error"
+            class="p-10 text-center text-sm text-red-500 dark:text-red-400"
+          >
             {{ t(reportStore.error) }}
           </div>
 
@@ -154,6 +160,7 @@
                   v-else
                   :key="order.id"
                   class="border-[#F2F2F2] text-sm dark:border-stone-800"
+                  @click="openOrderDetails(order)"
                 >
                   <TableCell class="px-6 py-4 text-[#6B6B6B] dark:text-stone-400">
                     <div class="font-medium text-[#1A1C1C] dark:text-stone-100">
@@ -206,7 +213,7 @@
 
             <div
               v-if="filteredOrders.length > 0"
-              class="flex items-center justify-between border-t border-[#F2F2F2] px-6 py-4 text-xs font-semibold text-[#A3A3A3]"
+              class="flex items-center justify-between border-t border-[#F2F2F2] dark:border-stone-800 px-6 py-4 text-xs font-semibold text-[#A3A3A3] dark:text-stone-400"
             >
               <div>
                 {{
@@ -221,20 +228,22 @@
               <div class="flex items-center gap-4 text-stone-900 dark:text-stone-100">
                 <button
                   :disabled="currentPage === 1"
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
+                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-transparent select-none"
                   @click="prevPage"
                 >
-                  <ChevronLeft class="h-4 w-4 text-stone-400" />
+                  <ChevronLeft class="h-4 w-4 text-stone-400 dark:text-stone-500" />
                 </button>
 
-                <span class="text-xs font-bold"> Page {{ currentPage }} of {{ totalPages }} </span>
+                <span class="text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Page {{ currentPage }} of {{ totalPages }}
+                </span>
 
                 <button
                   :disabled="currentPage === totalPages"
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
+                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-transparent select-none"
                   @click="nextPage"
                 >
-                  <ChevronRight class="h-4 w-4 text-stone-400" />
+                  <ChevronRight class="h-4 w-4 text-stone-400 dark:text-stone-500" />
                 </button>
               </div>
             </div>
@@ -243,6 +252,8 @@
       </div>
     </div>
 
+    <!-- ── Order detail dialog (read-only "show more detail" popup) ── -->
+    <OrderDetailDialog />
     <ExportSalesSummaryDialog
       v-model:open="isExportDialogOpen"
       :default-date="reportStore.selectedDate"
@@ -278,6 +289,8 @@ import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import ExportSalesSummaryDialog from '@/components/reports/ExportSalesSummaryDialog.vue'
 import { useReportStore } from '@/store/useReportStore'
+import { useOrderStore } from '@/store/useOrderStore'
+import OrderDetailDialog from '@/components/order/OrderDetailDialog.vue'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { cashierName } from '@/utils/cashier'
@@ -285,6 +298,7 @@ import type { OrderRow } from '@/types/order.types'
 
 const { t } = useI18n()
 const reportStore = useReportStore()
+const orderStore = useOrderStore()
 const authStore = useAuthStore()
 const shopSettingsStore = useShopSettingsStore()
 
@@ -428,6 +442,10 @@ const formatTime = (isoString: string) =>
 
 const orderTypeLabel = (orderType: string) =>
   orderType === 'dine_in' ? t('reports.table.dineIn') : t('reports.table.takeaway')
+
+const openOrderDetails = async (order: OrderRow) => {
+  await orderStore.fetchSingleOrderDetail(order.id)
+}
 
 onMounted(() => {
   reportStore.fetchDailyOverview()

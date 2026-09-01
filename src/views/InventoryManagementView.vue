@@ -938,7 +938,12 @@ onMounted(() => {
           <h2 class="text-lg font-black text-[#1A1C1C] dark:text-stone-100">
             {{ getModalTitle() }}
           </h2>
-          <Button variant="tertiary" size="icon" class="size-8" @click="closeSupplyModal">
+          <Button
+            variant="tertiary"
+            size="icon"
+            class="size-8 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800"
+            @click="closeSupplyModal"
+          >
             <X class="size-4" />
           </Button>
         </header>
@@ -958,10 +963,10 @@ onMounted(() => {
               :disabled="supplyModalMode === 'view'"
               :placeholder="t('inventory.form.itemNamePlaceholder')"
               :aria-invalid="hasSupplyNameError"
-              class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800"
+              class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800 dark:border-stone-700 dark:text-stone-100 dark:placeholder-stone-500"
               :class="
                 hasSupplyNameError
-                  ? 'border-rose-300 text-rose-700 focus-visible:ring-rose-200'
+                  ? 'border-rose-300 text-rose-700 focus-visible:ring-rose-200 dark:border-rose-500/80 dark:text-rose-400 dark:focus-visible:ring-rose-900/50'
                   : ''
               "
               required
@@ -969,7 +974,7 @@ onMounted(() => {
             />
             <span
               v-if="hasSupplyNameError"
-              class="text-xs font-bold text-rose-600 dark:text-rose-500"
+              class="text-xs font-bold text-rose-600 dark:text-rose-400"
             >
               {{ t('inventory.messages.nameRequired') }}
             </span>
@@ -986,7 +991,7 @@ onMounted(() => {
                 type="number"
                 min="0"
                 step="0.01"
-                class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold dark:bg-stone-800"
+                class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold dark:bg-stone-800 dark:border-stone-700 dark:text-stone-100"
                 @blur="supplyForm.quantity = toDecimal(supplyForm.quantity)"
               />
             </Label>
@@ -995,11 +1000,18 @@ onMounted(() => {
             >
               {{ t('inventory.form.unitOfMeasure') }}
               <Select v-model="supplyForm.unitOfMeasure" :disabled="supplyModalMode === 'view'">
-                <SelectTrigger class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
+                <SelectTrigger
+                  class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800 dark:border-stone-700 dark:text-stone-100"
+                >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="unit in unitOptions" :key="unit.value" :value="unit.value">
+                <SelectContent class="dark:bg-stone-800 dark:border-stone-700">
+                  <SelectItem
+                    v-for="unit in unitOptions"
+                    :key="unit.value"
+                    :value="unit.value"
+                    class="dark:focus:bg-stone-700 dark:text-stone-200"
+                  >
                     {{ t(unit.labelKey) }}
                   </SelectItem>
                 </SelectContent>
@@ -1016,14 +1028,17 @@ onMounted(() => {
               :disabled="supplyModalMode === 'view'"
               @update:model-value="value => (supplyForm.categoryId = Number(value))"
             >
-              <SelectTrigger class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800">
+              <SelectTrigger
+                class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800 dark:border-stone-700 dark:text-stone-100"
+              >
                 <SelectValue :placeholder="t('inventory.form.categoryPlaceholder')" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent class="dark:bg-stone-800 dark:border-stone-700">
                 <SelectItem
                   v-for="category in categoryOptions"
                   :key="category.value"
                   :value="category.value"
+                  class="dark:focus:bg-stone-700 dark:text-stone-200"
                 >
                   {{ category.label }}
                 </SelectItem>
@@ -1042,7 +1057,7 @@ onMounted(() => {
               min="0"
               step="0.01"
               :placeholder="t('inventory.form.minAlertPlaceholder')"
-              class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800"
+              class="h-11 rounded-xl bg-[#FAFAFA] font-bold dark:bg-stone-800 dark:border-stone-700 dark:text-stone-100 dark:placeholder-stone-500"
               @blur="supplyForm.minAlertThreshold = toDecimal(supplyForm.minAlertThreshold)"
             />
           </Label>
@@ -1058,7 +1073,7 @@ onMounted(() => {
               min="0"
               step="0.01"
               :placeholder="t('inventory.form.unitCostPlaceholder')"
-              class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold dark:bg-stone-800"
+              class="h-11 rounded-xl bg-[#FAFAFA] text-right font-bold dark:bg-stone-800 dark:border-stone-700 dark:text-stone-100 dark:placeholder-stone-500"
               @blur="supplyForm.unitCost = toDecimal(supplyForm.unitCost)"
             />
             <span class="text-[11px] font-semibold normal-case text-[#A3A3A3] dark:text-stone-500">
@@ -1082,14 +1097,14 @@ onMounted(() => {
         >
           <Button
             variant="tertiary"
-            class="h-11 rounded-xl px-6 font-bold"
+            class="h-11 w-36 rounded-xl bg-stone-100 font-bold text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-100"
             @click="closeSupplyModal"
           >
             {{ supplyModalMode === 'view' ? t('inventory.actions.close') : t('common.cancel') }}
           </Button>
           <Button
             v-if="supplyModalMode !== 'view'"
-            class="h-11 rounded-xl bg-primary px-6 font-bold text-primary-foreground hover:bg-primary/90"
+            class="h-11 w-36 rounded-xl bg-primary font-bold text-primary-foreground hover:bg-primary/90"
             :disabled="isSaving"
             @click="saveSupply"
           >

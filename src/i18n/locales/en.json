@@ -183,14 +183,14 @@
       "orderHistory": "Order History",
       "inventoryExpenseReport": "Expense Report",
       "categories": "Categories",
+      "analytics": "Analytics",
       "products": "Product",
       "promotions": "Promotion",
       "inventory": "Supplies",
       "saleReports": "Sale Summary",
       "staff": "Staff",
       "config": "Shop Setting",
-      "blockedCustomers": "Blocklist",
-      "analytics": "Analytics"
+      "blockedCustomers": "Blocklist"
     }
   },
   "navbar": {
@@ -791,6 +791,9 @@
   },
   "orderDashboard": {
     "title": "Order Management",
+    "paymentMethod": "CASH",
+    "amountReceived": "Amount Received",
+    "change": "Change Due",
     "station": "Warehouse A",
     "pending": "Pre-Orders",
     "preparing": "Preparing",

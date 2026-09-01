@@ -195,7 +195,7 @@ onMounted(loadSettings)
         <Button
           type="submit"
           :disabled="isLoading || isSaving"
-          class="h-10 rounded-lg bg-stone-900 px-5 text-sm font-bold text-white shadow-sm hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-stone-200"
+          class="h-10 rounded-lg bg-stone-900 px-5 text-sm font-bold text-white shadow-sm hover:bg-stone-800 disabled:opacity-50 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-stone-200"
         >
           <span class="material-symbols-outlined text-[18px]">save</span>
           {{ isSaving ? t('settings.actions.saving') : t('settings.actions.saveChanges') }}

@@ -290,7 +290,7 @@ const handleCheckoutSubmit = async () => {
           <Button
             variant="secondary"
             type="button"
-            class="flex-1 py-4 h-auto rounded-xl font-bold border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all"
+            class="flex-1 py-4 h-auto rounded-xl font-bold border border-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 dark:border-stone-700 text-stone-800 dark:text-stone-50 hover:bg-stone-100 transition-all"
             @click="emit('close')"
           >
             {{ t('cart.cancel') }}
@@ -324,7 +324,7 @@ const handleCheckoutSubmit = async () => {
               <Button
                 type="button"
                 variant="tertiary"
-                class="px-3 py-1 rounded-lg border border-amber-600/35 hover:border-amber-600 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-100/50 text-amber-700 dark:text-amber-400 font-extrabold text-[11px] transition-all flex items-center gap-1 active:scale-95 shadow-sm h-auto hover:no-underline"
+                class="px-3 py-1 rounded-lg border border-amber-600/35 hover:border-amber-600 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-100/50 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-extrabold text-[11px] transition-all flex items-center gap-1 active:scale-95 shadow-sm h-auto hover:no-underline"
                 @click="handleExactAmount"
               >
                 <span class="material-symbols-outlined text-[13px]">done_all</span>
@@ -348,7 +348,7 @@ const handleCheckoutSubmit = async () => {
               :key="num"
               type="button"
               variant="icon"
-              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
+              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-800 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
               @click="handleNumClick(num)"
             >
               {{ num }}
@@ -356,7 +356,7 @@ const handleCheckoutSubmit = async () => {
             <Button
               type="button"
               variant="icon"
-              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
+              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-800 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
               @click="handleNumClick('.')"
             >
               .
@@ -364,7 +364,7 @@ const handleCheckoutSubmit = async () => {
             <Button
               type="button"
               variant="icon"
-              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-850 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
+              class="py-3 sm:py-4.5 rounded-2xl bg-stone-50 hover:bg-stone-100 dark:bg-stone-950/40 dark:hover:bg-stone-800 text-xl font-extrabold text-stone-800 dark:text-stone-200 border border-stone-200/10 flex items-center justify-center transition-all active:scale-98 h-auto"
               @click="handleNumClick('0')"
             >
               0
@@ -381,7 +381,7 @@ const handleCheckoutSubmit = async () => {
           <Button
             type="button"
             variant="secondary"
-            class="w-full py-3.5 sm:py-4 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-850 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 font-extrabold text-sm border border-stone-200/15 transition-all h-auto"
+            class="w-full py-3.5 sm:py-4 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-extrabold text-sm border border-stone-200/15 transition-all h-auto"
             @click="handleClear"
           >
             {{ t('cart.clear') }}
