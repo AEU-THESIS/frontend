@@ -51,11 +51,17 @@ app.use(pinia)
 app.use(router)
 app.use(i18n)
 
-// Refresh the signed-in user's role/permissions from the server on start-up so
-// a role change or deactivation applied while they were away takes effect on
-// this page load, without waiting for a re-login (AT-74). Fire-and-forget: the
-// store hydrates instantly from localStorage, and the guard re-runs reactively
-// once the fresh record arrives.
-void useAuthStore().refreshUser()
+// Refresh the signed-in user's role/permissions from the server BEFORE mounting,
+// so the very first navigation guard evaluates the fresh role — a role change or
+// deactivation applied while they were away takes effect on this page load,
+// without a re-login (AT-74). Vue Router does not re-run a completed guard when
+// Pinia state changes later, so awaiting here (rather than fire-and-forget) is
+// what makes route access, not just the reactive menu, match the server on load.
+// refreshUser() handles its own errors and never rejects, so a failed/offline
+// refresh still mounts the app from the cached session.
+async function bootstrap() {
+  await useAuthStore().refreshUser()
+  app.mount('#app')
+}
 
-app.mount('#app')
+void bootstrap()

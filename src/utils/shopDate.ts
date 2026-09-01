@@ -7,7 +7,11 @@
 // Cambodia (Asia/Phnom_Penh) is a fixed UTC+7 with no DST, so a constant offset
 // is correct and dependency-free. Mirrors the backend's SHOP_UTC_OFFSET_MINUTES
 // (backend/src/utils/date.ts); override both together via env for other shops.
-const configuredOffset = Number(import.meta.env.VITE_SHOP_UTC_OFFSET_MINUTES)
+// An empty env var (`VITE_SHOP_UTC_OFFSET_MINUTES=`) must NOT be read as 0 —
+// Number('') is 0 — or the client would switch to UTC while the backend stays
+// on UTC+7, shifting every report window by seven hours. Blank/unset → UTC+7.
+const rawOffset = import.meta.env.VITE_SHOP_UTC_OFFSET_MINUTES?.trim()
+const configuredOffset = rawOffset ? Number(rawOffset) : NaN
 const SHOP_UTC_OFFSET_MINUTES = Number.isFinite(configuredOffset) ? configuredOffset : 420 // UTC+7
 
 /**
