@@ -281,6 +281,7 @@ import { useReportStore } from '@/store/useReportStore'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { cashierName } from '@/utils/cashier'
+import { shopDateString } from '@/utils/shopDate'
 import type { OrderRow } from '@/types/order.types'
 
 const { t } = useI18n()
@@ -297,8 +298,9 @@ const isOwnOrder = (order: OrderRow) => {
   return currentUserId != null && order.user?.id === currentUserId
 }
 
-const today = new Date()
-const todayIsoDate = new Intl.DateTimeFormat('en-CA').format(today)
+// The shop's local "today" (not the browser's), so the default window and the
+// date-picker's max match the day the server reports on.
+const todayIsoDate = shopDateString(0)
 
 const formatUsd = (amount: number | string) => `$${Number(amount).toFixed(2)}`
 

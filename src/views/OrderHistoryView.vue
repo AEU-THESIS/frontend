@@ -8,6 +8,7 @@ import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { roundRielUp } from '@/utils/money'
 import { formatDateTime } from '@/utils/datetime'
+import { shopDateString } from '@/utils/shopDate'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
@@ -130,38 +131,29 @@ const hasActiveFilters = computed(
     customEndDate.value !== ''
 )
 
-// ── 2. Preset Date calculations helper (Timezone-proof Local Calendar Formatting) ──
+// ── 2. Preset Date calculations helper ──
+// Presets are expressed in the SHOP's local calendar day (the server evaluates
+// them the same way), so a device set to another timezone still filters by the
+// same day — and the summary cards tie to the rows below them.
 const dateFilters = computed(() => {
-  const today = new Date()
-  const formatDate = (d: Date) => {
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
   switch (datePreset.value) {
     case 'today':
       return {
-        startDate: formatDate(today),
-        endDate: formatDate(today),
+        startDate: shopDateString(0),
+        endDate: shopDateString(0),
       }
-    case 'yesterday': {
-      const yesterday = new Date()
-      yesterday.setDate(today.getDate() - 1)
+    case 'yesterday':
       return {
-        startDate: formatDate(yesterday),
-        endDate: formatDate(yesterday),
+        startDate: shopDateString(-1),
+        endDate: shopDateString(-1),
       }
-    }
-    case 'last7Days': {
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(today.getDate() - 7)
+    case 'last7Days':
+      // Inclusive 7-day window (today + the six days before it), matching the
+      // backend's "last 7 days" instead of the old 8-day span.
       return {
-        startDate: formatDate(sevenDaysAgo),
-        endDate: formatDate(today),
+        startDate: shopDateString(-6),
+        endDate: shopDateString(0),
       }
-    }
     case 'customRange':
       return {
         startDate: customStartDate.value || undefined,
