@@ -2,11 +2,8 @@
   <div class="flex h-full flex-col bg-[#F9FAFB] dark:bg-stone-900 font-body overflow-hidden">
     <div class="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
       <div class="w-full space-y-6 lg:space-y-8">
-        <!-- Description (the title lives in the top navbar) + export action -->
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-[#737373] dark:text-stone-400">
-            {{ t('reports.subtitle') }}
-          </p>
+        <!-- Export action. The page is titled by the top navbar. -->
+        <div class="flex justify-end">
           <Button
             type="button"
             variant="primary"

@@ -62,6 +62,10 @@ const pageTitle = computed(() => {
       return t('inventory.expenseReport.title')
     case APP_ROUTES.SALE_REPORTS.name:
       return t('reports.title')
+    case APP_ROUTES.SALES_REPORT.name:
+      return t('reports.sales.title')
+    case APP_ROUTES.PRODUCT_PERFORMANCE.name:
+      return t('reports.products.title')
     case APP_ROUTES.PRODUCT.name:
       return t('menuManagement.title')
     case APP_ROUTES.PROMOTIONS.name:

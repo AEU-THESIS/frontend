@@ -69,17 +69,10 @@ onMounted(() => reportStore.fetchProductPerformance())
     class="h-full overflow-y-auto bg-[#F9FAFB] p-8 text-[#1A1C1C] dark:bg-stone-900 dark:text-stone-100"
   >
     <div class="w-full space-y-6">
-      <!-- Header -->
-      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 class="text-xl font-bold">{{ t('reports.products.title') }}</h1>
-          <p class="mt-1 text-sm text-[#A3A3A3] dark:text-stone-500">
-            {{ t('reports.products.subtitle') }}
-          </p>
-        </div>
-
+      <!-- Period filter. The page is titled by the top navbar. -->
+      <div class="flex justify-end">
         <div
-          class="flex shrink-0 items-center gap-1 self-start rounded-xl border border-slate-100 bg-white p-1 lg:self-auto dark:border-stone-800 dark:bg-stone-900/50"
+          class="flex shrink-0 items-center gap-1 rounded-xl border border-slate-100 bg-white p-1 dark:border-stone-800 dark:bg-stone-900/50"
         >
           <Button
             v-for="period in PERIODS"

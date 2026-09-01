@@ -886,7 +886,6 @@
   },
   "reports": {
     "title": "Sales Summary Report",
-    "subtitle": "Daily revenue breakdown, cash drawer, and payment methods.",
     "loading": "Loading reports...",
     "total_revenue_today": "Total Revenue Today",
     "cash_drawer_expected": "Cash Drawer Expected",
@@ -944,7 +943,6 @@
     },
     "sales": {
       "title": "Sales Report",
-      "subtitle": "Period totals, the net-sales trend, and how one day sold hour by hour.",
       "period": {
         "daily": "Daily",
         "weekly": "Weekly",
@@ -966,7 +964,6 @@
     },
     "products": {
       "title": "Product Performance",
-      "subtitle": "Which items and categories carried the period, and which lagged.",
       "topSellers": "Top 5 Best-Selling Items",
       "bottomSellers": "Bottom 5 Lowest-Selling Items",
       "empty": "No sales data for this period.",
