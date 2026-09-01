@@ -110,71 +110,58 @@
             />
           </FilterPanel>
 
-          <div v-if="reportStore.isLoading" class="p-10 text-center text-sm text-[#A3A3A3]">
-            {{ t('reports.loading') }}
-          </div>
-
-          <div v-else-if="reportStore.error" class="p-10 text-center text-sm text-red-500">
+          <div v-if="reportStore.error" class="p-10 text-center text-sm text-red-500">
             {{ t(reportStore.error) }}
           </div>
 
-          <template v-else>
-            <Table class="min-w-[940px] text-left">
-              <TableHeader>
-                <TableRow
-                  class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
-                >
-                  <TableHead class="px-6 py-4">{{ t('reports.table.time') }}</TableHead>
-                  <TableHead class="px-6 py-4">{{ t('reports.table.orderId') }}</TableHead>
-                  <TableHead class="px-6 py-4">{{ t('reports.table.cashier') }}</TableHead>
-                  <TableHead class="px-6 py-4">{{ t('reports.table.type') }}</TableHead>
-                  <TableHead class="px-6 py-4 text-center">
-                    {{ t('reports.table.payment') }}
-                  </TableHead>
-                  <TableHead class="px-6 py-4 text-center">
-                    {{ t('reports.table.method') }}
-                  </TableHead>
-                  <TableHead class="px-6 py-4 text-center">
-                    {{ t('reports.table.total') }}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
+          <DataTable
+            v-else
+            :headers="reportHeaders"
+            :data="reportOrders"
+            :total-count="reportTotal"
+            :loading="reportStore.isLoading"
+            :pagination="{
+              page: reportStore.ordersPage,
+              pageSize: reportStore.ordersPageSize,
+              showPageSizeSelector: false,
+            }"
+            :summary-formatter="reportSummary"
+            :empty-title="t('reports.table.empty')"
+            :empty-description="''"
+            :caption="t('reports.title')"
+            row-key="id"
+            min-width="940px"
+            max-height="none"
+            client-sort
+            class="rounded-none border-0 shadow-none"
+            @page-change="handlePageChange"
+          >
+            <!-- The list can span several days, so each row carries its date -->
+            <template #[`cell:createdAt`]="{ row }">
+              <div class="font-medium text-[#1A1C1C] dark:text-stone-100">
+                {{ formatDate(row.createdAt) }}
+              </div>
+              <div class="text-xs text-[#6B6B6B] dark:text-stone-400">
+                {{ formatTime(row.createdAt) }}
+              </div>
+            </template>
 
-              <TableBody>
-                <TableEmpty
-                  v-if="filteredOrders.length === 0"
-                  :colspan="7"
-                  class="text-[#A3A3A3] dark:text-stone-500"
-                >
-                  {{ t('reports.table.empty') }}
-                </TableEmpty>
+            <template #[`cell:orderNumber`]="{ row }">
+              <span class="font-semibold">#{{ row.orderNumber }}</span>
+            </template>
 
-                <TableRow
-                  v-for="order in paginatedOrders"
-                  v-else
-                  :key="order.id"
-                  class="border-[#F2F2F2] text-sm dark:border-stone-800"
+            <!-- Cashier who took the order ("System" when none was recorded) -->
+            <template #[`cell:cashier`]="{ row }">
+              <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                {{ cashierName(row.user, t('common.systemCashier')) }}
+                <span
+                  v-if="isOwnOrder(row)"
+                  class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
                 >
-                  <TableCell class="px-6 py-4 text-[#6B6B6B] dark:text-stone-400">
-                    <div class="font-medium text-[#1A1C1C] dark:text-stone-100">
-                      {{ formatDate(order.createdAt) }}
-                    </div>
-                    <div class="text-xs">{{ formatTime(order.createdAt) }}</div>
-                  </TableCell>
-                  <TableCell class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</TableCell>
-
-                  <!-- Cashier who took the order ("System" when none was recorded) -->
-                  <TableCell class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center gap-1.5">
-                      {{ cashierName(order.user, t('common.systemCashier')) }}
-                      <span
-                        v-if="isOwnOrder(order)"
-                        class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
-                      >
-                        {{ t('reports.table.you') }}
-                      </span>
-                    </span>
-                  </TableCell>
+                  {{ t('reports.table.you') }}
+                </span>
+              </span>
+            </template>
 
                   <TableCell class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</TableCell>
                   <TableCell class="px-6 py-4 text-center">
@@ -264,15 +251,8 @@ import {
 } from 'lucide-vue-next'
 import StaffStatCard from '@/components/staff/StaffStatCard.vue'
 import { Card } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableEmpty,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable } from '@/components/ui/table'
+import type { DataTableHeader } from '@/types/table.types'
 import { Label } from '@/components/ui/label'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
@@ -373,13 +353,7 @@ const endIndex = computed(() =>
   Math.min(currentPage.value * ITEMS_PER_PAGE, filteredOrders.value.length)
 )
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++
-}
-
-const prevPage = () => {
-  if (currentPage.value > 1) currentPage.value--
-}
+const handlePageChange = (page: number) => reportStore.fetchOrdersPage(page)
 
 const applyFilters = async () => {
   // The end input's `min` can't fix a value already picked before the start moved
@@ -388,7 +362,7 @@ const applyFilters = async () => {
     reportStore.selectedEndDate = reportStore.selectedDate
   }
 
-  currentPage.value = 1
+  // `fetchDailyOverview` restarts at page one for the new window.
   await reportStore.fetchDailyOverview()
 }
 
@@ -396,7 +370,6 @@ const clearFilters = async () => {
   reportStore.selectedDate = todayIsoDate
   reportStore.selectedEndDate = todayIsoDate
   reportStore.selectedPaymentMethod = 'all'
-  currentPage.value = 1
 
   await reportStore.fetchDailyOverview()
 }
@@ -430,6 +403,46 @@ const formatTime = (isoString: string) =>
 
 const orderTypeLabel = (orderType: string) =>
   orderType === 'dine_in' ? t('reports.table.dineIn') : t('reports.table.takeaway')
+
+/* -- Columns. The whole filtered list is here, so sorting spans every row. -- */
+const reportHeaders = computed<DataTableHeader<OrderRow>[]>(() => [
+  { key: 'createdAt', header: t('reports.table.time'), sortable: true, minWidth: '150px' },
+  { key: 'orderNumber', header: t('reports.table.orderId'), sortable: true, width: '140px' },
+  { key: 'cashier', header: t('reports.table.cashier'), minWidth: '170px' },
+  {
+    key: 'orderType',
+    header: t('reports.table.type'),
+    formatter: ({ row }) => orderTypeLabel(row.orderType),
+    sortable: true,
+    width: '140px',
+  },
+  {
+    key: 'paymentStatus',
+    header: t('reports.table.payment'),
+    align: 'center',
+    sortable: true,
+    width: '140px',
+  },
+  {
+    key: 'paymentMethod',
+    header: t('reports.table.method'),
+    align: 'center',
+    sortable: true,
+    width: '130px',
+    cellClass: 'uppercase text-[#6B6B6B] dark:text-stone-400',
+  },
+  {
+    key: 'totalAmount',
+    header: t('reports.table.total'),
+    formatter: ({ row }) => formatUsd(row.totalAmount),
+    align: 'center',
+    sortable: true,
+    // Amounts arrive as strings from the API — compare them as numbers.
+    sortAccessor: row => Number(row.totalAmount),
+    width: '130px',
+    cellClass: 'font-bold',
+  },
+])
 
 onMounted(() => {
   reportStore.fetchDailyOverview()

@@ -92,6 +92,12 @@ npx shadcn-vue@latest add dialog
 
 Components are installed to `src/components/ui/`.
 
+### Component References
+
+Some in-house components ship their own reference docs:
+
+- [**Table / DataTable**](./src/components/ui/table/README.md) - Config-driven table: columns, sorting, paging, selection, formatting, and client vs. server mode.
+
 ---
 
 ## 🌐 Internationalization (I18n)

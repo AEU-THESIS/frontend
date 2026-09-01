@@ -7,15 +7,7 @@ import AppTooltip from '@/components/common/AppTooltip.vue'
 import AddCategoryForm from '@/components/category/AddCategoryForm.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableEmpty,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable } from '@/components/ui/table'
 import { Pencil, Trash2 } from 'lucide-vue-next'
 import {
   DropdownMenuRoot,
@@ -23,17 +15,11 @@ import {
   DropdownMenuPortal,
   DropdownMenuContent,
   DropdownMenuItem,
-  PaginationRoot,
-  PaginationList,
-  PaginationListItem,
-  PaginationFirst,
-  PaginationPrev,
-  PaginationNext,
-  PaginationLast,
-  PaginationEllipsis,
 } from 'reka-ui'
 import { useProductStore } from '@/store/useProductStore'
 import { toast } from 'vue-sonner'
+import type { Category } from '@/types/product.types'
+import type { DataTableHeader } from '@/types/table.types'
 import { getErrorMessage } from '@/utils/error'
 import type { Category, CategoryType } from '@/types/product.types'
 
@@ -58,6 +44,7 @@ const isAddDialogOpen = ref(false)
 const isDeleteDialogOpen = ref(false)
 const selectedCategory = ref<Category | null>(null)
 const isDeleting = ref(false)
+const isLoading = ref(false)
 
 const filteredCategories = computed(() => {
   const search = filters.name.trim().toLowerCase()
@@ -65,21 +52,40 @@ const filteredCategories = computed(() => {
   return productStore.categories.filter(cat => cat.name.toLowerCase().includes(search))
 })
 
-const paginatedCategories = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
-  return filteredCategories.value.slice(start, start + PAGE_SIZE)
-})
+/* -- Columns. `DataTable` handles the sorting, paging and empty state. ----- */
+const headers = computed<DataTableHeader<Category>[]>(() => [
+  {
+    key: 'name',
+    header: t('category.categoryName'),
+    sortable: true,
+    width: '300px',
+  },
+  {
+    key: 'itemsCount',
+    header: t('category.itemsCount'),
+    sortable: true,
+    // Virtual column: the count lives on the API's `_count` aggregate.
+    accessor: category => category._count?.products ?? 0,
+    formatter: ({ value }) => `${value} ${t('category.items')}`,
+    width: '150px',
+    cellClass: 'text-xs font-bold',
+  },
+  {
+    key: 'status',
+    header: t('category.status'),
+    accessor: category => category.isActive,
+    formatter: ({ value }) => (value ? t('category.active') : t('category.inactive')),
+    width: '160px',
+  },
+  {
+    key: 'actions',
+    header: t('category.actions'),
+    align: 'center',
+    width: '10px',
+  },
+])
 
-const showingFrom = computed(() =>
-  filteredCategories.value.length === 0 ? 0 : (currentPage.value - 1) * PAGE_SIZE + 1
-)
-
-const showingTo = computed(() =>
-  Math.min(currentPage.value * PAGE_SIZE, filteredCategories.value.length)
-)
-
-const fillerRows = computed(() => Math.max(0, PAGE_SIZE - paginatedCategories.value.length))
-
+// A narrower search invalidates the current offset — restart from page one.
 watch(
   () => filters.name,
   () => {
@@ -87,18 +93,14 @@ watch(
   }
 )
 
-watch(filteredCategories, items => {
-  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
-  if (currentPage.value > totalPages) {
-    currentPage.value = totalPages
-  }
-})
-
 const loadCategories = async () => {
+  isLoading.value = true
   try {
     await productStore.fetchCategories(activeType.value)
   } catch {
     console.error('Failed to fetch categories or products')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -212,219 +214,98 @@ const openAddDialog = () => {
           </div>
         </div>
       </FilterPanel>
-
-      <Table class="min-w-[640px] text-left">
-        <TableHeader>
-          <TableRow
-            class="bg-stone-50 border-stone-100 hover:bg-stone-50 dark:bg-stone-800 dark:border-stone-800 dark:hover:bg-stone-800"
-          >
-            <TableHead
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
-            >
-              {{ $t('category.categoryName') }}
-            </TableHead>
-            <TableHead
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
-            >
-              {{ $t('category.itemsCount') }}
-            </TableHead>
-            <TableHead
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400"
-            >
-              {{ $t('category.status') }}
-            </TableHead>
-            <TableHead
-              class="px-3 md:px-6 py-3 md:py-4 text-[11px] font-bold text-stone-500 dark:text-stone-400 text-center min-w-max"
-            >
-              {{ $t('category.actions') }}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <!-- Existing Rows -->
-          <template v-if="paginatedCategories.length > 0">
-            <TableRow
-              v-for="item in paginatedCategories"
-              :key="item.id"
-              class="border-stone-50 hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-800/50"
-            >
-              <!-- Item Details -->
-              <TableCell class="px-3 md:px-6 py-3 md:py-4">
-                <div class="flex items-center gap-2 md:gap-4">
-                  <div class="min-w-0">
-                    <p
-                      class="text-sm md:text-[16px] font-bold text-stone-900 dark:text-stone-100 truncate"
-                    >
-                      {{ item.name }}
-                    </p>
-                  </div>
-                </div>
-              </TableCell>
-
-              <!-- Item Count -->
-              <TableCell class="px-3 md:px-6 py-3 md:py-4">
-                <span class="px-2.5 py-1 text-xs font-bold rounded-md">
-                  {{ item._count?.products ?? 0 }} {{ $t('category.items') }}
-                </span>
-              </TableCell>
-
-              <!-- Status -->
-              <TableCell class="px-3 md:px-6 py-3 md:py-4">
-                <p class="text-sm text-stone-900 dark:text-stone-100">
-                  {{ item.isActive ? $t('category.active') : $t('category.inactive') }}
-                </p>
-              </TableCell>
-
-              <!-- Actions -->
-              <TableCell class="px-3 md:px-6 py-3 md:py-4 text-right">
-                <div class="flex justify-center items-center">
-                  <div class="relative">
-                    <!-- Dropdown Menu -->
-                    <DropdownMenuRoot>
-                      <DropdownMenuTrigger
-                        class="material-symbols-outlined transition-opacity cursor-pointer hover:text-[#974400] focus:outline-none"
-                        @click.stop
-                      >
-                        more_vert
-                      </DropdownMenuTrigger>
-
-                      <DropdownMenuPortal>
-                        <DropdownMenuContent
-                          class="z-50 min-w-[140px] bg-white dark:bg-stone-900 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
-                          :side-offset="4"
-                          align="end"
-                        >
-                          <!-- Edit -->
-                          <DropdownMenuItem
-                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
-                            @click.stop="openEditDialog(item)"
-                          >
-                            <Pencil class="size-4 shrink-0" />
-                            <span>{{ $t('category.edit') }}</span>
-                          </DropdownMenuItem>
-
-                          <!-- Delete — disabled while the category still holds products -->
-                          <AppTooltip :content="deleteBlockedReason(item)" side="left">
-                            <span class="block">
-                              <DropdownMenuItem
-                                :disabled="!!item.cannotDelete"
-                                :aria-label="deleteBlockedReason(item) || undefined"
-                                class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 focus:outline-none focus:bg-red-50 dark:focus:bg-red-950/30 transition-colors select-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40 data-[disabled]:hover:bg-transparent dark:data-[disabled]:hover:bg-transparent"
-                                @click.stop="openDeleteConfirmation(item)"
-                              >
-                                <Trash2 class="size-4 shrink-0" />
-                                <span>{{ $t('category.delete') }}</span>
-                              </DropdownMenuItem>
-                            </span>
-                          </AppTooltip>
-                        </DropdownMenuContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuRoot>
-                  </div>
-                </div>
-              </TableCell>
-            </TableRow>
-
-            <!-- Filler rows — keeps tbody height fixed when categories < PAGE_SIZE -->
-            <TableRow
-              v-for="n in fillerRows"
-              :key="`filler-${n}`"
-              class="h-[62px] border-stone-50 hover:bg-transparent dark:border-stone-800"
-            >
-              <TableCell colspan="4" />
-            </TableRow>
-          </template>
-
-          <!-- Empty State -->
-          <TableEmpty v-else :colspan="4" class="px-6 text-center">
-            <div class="flex flex-col items-center gap-3">
-              <div
-                class="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
-              >
-                <span
-                  class="material-symbols-outlined text-[32px] text-stone-400 dark:text-stone-500"
-                  >inventory_2</span
-                >
-              </div>
-              <div>
-                <p class="text-sm font-bold text-stone-700 dark:text-stone-300">
-                  {{ $t('category.noCategoriesFound') }}
-                </p>
-                <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">
-                  {{ $t('category.noCategoriesSubtitle') }}
-                </p>
-              </div>
-            </div>
-          </TableEmpty>
-        </TableBody>
-      </Table>
-
-      <!-- Pagination -->
-      <div
-        class="px-3 md:px-6 py-3 md:py-4 bg-stone-50/30 dark:bg-stone-800/50 flex flex-col md:flex-row gap-2 md:gap-0 justify-between items-center"
+      <DataTable
+        :headers="headers"
+        :data="filteredCategories"
+        :loading="isLoading"
+        :caption="$t('category.categoryManagement')"
+        :pagination="{
+          page: currentPage,
+          pageSize: PAGE_SIZE,
+          showPageSizeSelector: false,
+        }"
+        :summary-formatter="range => $t('category.showing', range)"
+        row-key="id"
+        min-width="640px"
+        max-height="none"
+        class="rounded-none border-0 shadow-none"
+        @page-change="currentPage = $event"
       >
-        <span class="text-xs text-stone-500 dark:text-stone-400 text-[14px]">
-          {{
-            $t('category.showing', {
-              from: showingFrom,
-              to: showingTo,
-              total: filteredCategories.length,
-            })
-          }}
-        </span>
+        <!-- Category name -->
+        <template #[`cell:name`]="{ row }">
+          <p class="truncate text-sm font-bold text-stone-900 md:text-[16px] dark:text-stone-100">
+            {{ row.name }}
+          </p>
+        </template>
 
-        <PaginationRoot
-          v-model:page="currentPage"
-          :total="filteredCategories.length"
-          :items-per-page="PAGE_SIZE"
-          :sibling-count="1"
-          show-edges
-        >
-          <PaginationList v-slot="{ items }" class="flex items-center gap-1">
-            <PaginationFirst
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              <span class="material-symbols-outlined text-[18px]">first_page</span>
-            </PaginationFirst>
-
-            <PaginationPrev
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-            </PaginationPrev>
-
-            <template v-for="(pageItem, index) in items" :key="index">
-              <PaginationEllipsis
-                v-if="pageItem.type === 'ellipsis'"
-                :index="index"
-                class="w-8 h-8 flex items-center justify-center text-stone-400 dark:text-stone-500 text-xs select-none"
+        <!-- Actions -->
+        <template #[`cell:actions`]="{ row }">
+          <div class="flex items-center justify-center">
+            <!-- Dropdown Menu -->
+            <DropdownMenuRoot>
+              <DropdownMenuTrigger
+                class="material-symbols-outlined transition-opacity cursor-pointer hover:text-[#974400] focus:outline-none"
+                @click.stop
               >
-                &#8230;
-              </PaginationEllipsis>
+                more_vert
+              </DropdownMenuTrigger>
 
-              <PaginationListItem
-                v-else
-                :value="pageItem.value"
-                class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors data-[selected]:bg-[#D2691E] data-[selected]:text-white data-[selected]:border-transparent bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:border-stone-300 dark:hover:border-stone-600"
+              <DropdownMenuPortal>
+                <DropdownMenuContent
+                  class="z-50 min-w-[140px] bg-white dark:bg-stone-900 rounded-lg shadow-lg border border-[#edddd5] dark:border-stone-800 p-1 animate-in fade-in-0 zoom-in-95"
+                  :side-offset="4"
+                  align="end"
+                >
+                  <!-- Edit -->
+                  <DropdownMenuItem
+                    class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-gray-700 dark:text-stone-300 hover:bg-[#fdf4ef] hover:text-[#974400] focus:outline-none focus:bg-[#fdf4ef] focus:text-[#974400] transition-colors select-none"
+                    @click.stop="openEditDialog(row)"
+                  >
+                    <Pencil class="size-4 shrink-0" />
+                    <span>{{ $t('category.edit') }}</span>
+                  </DropdownMenuItem>
+
+                  <!-- Delete — disabled while the category still holds products -->
+                  <AppTooltip :content="deleteBlockedReason(row)" side="left">
+                    <span class="block">
+                      <DropdownMenuItem
+                        :disabled="!!row.cannotDelete"
+                        :aria-label="deleteBlockedReason(row) || undefined"
+                        class="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 focus:outline-none focus:bg-red-50 dark:focus:bg-red-950/30 transition-colors select-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40 data-[disabled]:hover:bg-transparent dark:data-[disabled]:hover:bg-transparent"
+                        @click.stop="openDeleteConfirmation(row)"
+                      >
+                        <Trash2 class="size-4 shrink-0" />
+                        <span>{{ $t('category.delete') }}</span>
+                      </DropdownMenuItem>
+                    </span>
+                  </AppTooltip>
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
+            </DropdownMenuRoot>
+          </div>
+        </template>
+
+        <!-- Empty State -->
+        <template #empty>
+          <div class="flex flex-col items-center gap-3">
+            <div
+              class="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined text-[32px] text-stone-400 dark:text-stone-500"
+                >inventory_2</span
               >
-                {{ pageItem.value }}
-              </PaginationListItem>
-            </template>
-
-            <PaginationNext
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-            </PaginationNext>
-
-            <PaginationLast
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              <span class="material-symbols-outlined text-[18px]">last_page</span>
-            </PaginationLast>
-          </PaginationList>
-        </PaginationRoot>
-      </div>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-stone-700 dark:text-stone-300">
+                {{ $t('category.noCategoriesFound') }}
+              </p>
+              <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">
+                {{ $t('category.noCategoriesSubtitle') }}
+              </p>
+            </div>
+          </div>
+        </template>
+      </DataTable>
     </div>
   </main>
 

@@ -254,4 +254,8 @@ export interface TodayOrdersFilters {
   /** Inclusive end of the window. Defaults to `date`, i.e. a single day. */
   endDate?: string // YYYY-MM-DD
   paymentMethod?: 'cash' | 'khqr'
+  /** 1-based server page. Defaults to 1. */
+  page?: number
+  /** Rows per server page. Defaults to `REPORT_PAGE_SIZE`. */
+  limit?: number
 }
