@@ -37,3 +37,13 @@ export const salesSummaryExportFormSchema = (maxDate: string) =>
   )
 
 export type SalesSummaryExportRange = z.infer<typeof salesSummaryExportRangeSchema>
+
+/**
+ * Preset window accepted by the sales-overview, item-performance,
+ * category-performance and sales-orders-export endpoints. Mirrors the server's
+ * `ReportPeriodSchema`, so a bad value fails here instead of round-tripping
+ * into a 400.
+ */
+export const reportPeriodSchema = z.enum(['daily', 'weekly', 'monthly'])
+
+export type ReportPeriodValue = z.infer<typeof reportPeriodSchema>

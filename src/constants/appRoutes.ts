@@ -7,7 +7,11 @@ export const APP_ROUTES = {
   INVENTORY_HISTORY: { path: '/inventory/:id/history', name: 'InventoryHistory' },
   INVENTORY_EXPENSE_REPORT: { path: '/inventory/expense-report', name: 'InventoryExpenseReport' },
   CATEGORIES: { path: '/categories', name: 'Categories' },
+  // Sale menu: the daily summary keeps its original path so existing bookmarks
+  // still resolve; the analytics pages live under /reports.
   SALE_REPORTS: { path: '/sale-reports', name: 'SaleReports' },
+  SALES_REPORT: { path: '/reports/sales', name: 'SalesReport' },
+  PRODUCT_PERFORMANCE: { path: '/reports/products', name: 'ProductPerformance' },
   PROMOTIONS: { path: '/promotions', name: 'Promotions' },
   STAFF: { path: '/staff', name: 'Staff' },
   SETTINGS: { path: '/settings', name: 'Settings' },

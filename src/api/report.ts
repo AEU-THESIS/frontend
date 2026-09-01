@@ -9,10 +9,15 @@ import type {
   ItemReportPeriod,
   SellingItemsResponse,
   InventoryInsights,
+  ReportPeriod,
+  SalesOverview,
+  ItemPerformance,
+  CategoryPerformanceRow,
 } from '@/types/report.types'
 import { z } from 'zod'
 import {
   salesSummaryExportRangeSchema,
+  reportPeriodSchema,
   type SalesSummaryExportRange,
 } from '@/validations/reportValidation'
 
@@ -122,3 +127,41 @@ export const exportSalesSummary = async (range: SalesSummaryExportRange): Promis
 /** Mirrors the filename the endpoint sets in Content-Disposition. */
 export const salesSummaryFileName = (range: SalesSummaryExportRange) =>
   `SalesSummary_${range.startDate}_to_${range.endDate}.xlsx`
+
+/**
+ * GET /api/reports/sales-overview?period=
+ * Period totals (orders, revenue, average ticket) with the USD/KHR split, for
+ * one of the fixed windows the endpoint understands.
+ */
+export const getSalesOverview = async (period: ReportPeriod): Promise<SalesOverview> => {
+  const res = await http.get<SalesOverview>('/api/reports/sales-overview', {
+    params: { period: reportPeriodSchema.parse(period) },
+  })
+  return res.data
+}
+
+/**
+ * GET /api/reports/item-performance?period=
+ * Top and bottom five products by units sold, returned together — unlike
+ * `getSellingItems`, which fetches one list at a time.
+ */
+export const getItemPerformance = async (period: ReportPeriod): Promise<ItemPerformance> => {
+  const res = await http.get<ItemPerformance>('/api/reports/item-performance', {
+    params: { period: reportPeriodSchema.parse(period) },
+  })
+  return res.data
+}
+
+/**
+ * GET /api/reports/category-performance?period=
+ * Units and revenue rolled up per category. Products with no category land in
+ * an "Uncategorized" row built by the server.
+ */
+export const getCategoryPerformance = async (
+  period: ReportPeriod
+): Promise<CategoryPerformanceRow[]> => {
+  const res = await http.get<CategoryPerformanceRow[]>('/api/reports/category-performance', {
+    params: { period: reportPeriodSchema.parse(period) },
+  })
+  return res.data
+}
