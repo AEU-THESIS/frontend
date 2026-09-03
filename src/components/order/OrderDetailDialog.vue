@@ -204,9 +204,10 @@
                   <div class="flex justify-between">
                     <span>{{ t('orderDashboard.subtotal') }}</span>
                     <span class="text-stone-800 dark:text-stone-200">{{
-                      shopSettingsStore.formatAmount(
-                        Number(selectedOrder?.totalAmount) +
-                          Number(selectedOrder?.discountAmount || 0)
+                      formatOrderAmount(
+                        Number(selectedOrder?.totalAmount || 0) +
+                          Number(selectedOrder?.discountAmount || 0),
+                        selectedOrder
                       )
                     }}</span>
                   </div>
@@ -350,6 +351,26 @@ const formatOrderTotal = (order: OrderDetail) => {
     return `${riel.toLocaleString()}៛`
   }
   return `$${Number(order.totalAmount).toFixed(2)}`
+}
+
+const formatOrderAmount = (amount: number, order: OrderDetail | null | undefined) => {
+  if (!order) return '$0.00'
+
+  const currency = order.paymentCurrency || shopSettingsStore.currency_code
+  const rate = Number(order.exchangeRateSnapshot) || 1
+
+  // Handle KHR orders using the historical snapshot exchange rate
+  if (currency === 'KHR') {
+    const khrAmount = amount * rate
+
+    // Apply order-level KHR rounding (e.g., rounding to nearest 100 Riels)
+    const roundedKhr = Math.round(khrAmount / 100) * 100
+
+    return `៛${roundedKhr.toLocaleString('en-US')}`
+  }
+
+  // Fallback for USD or standard currency formatting
+  return `$${amount.toFixed(2)}`
 }
 
 const isOpen = computed(() => Boolean(selectedOrder.value || detailLoading.value))
