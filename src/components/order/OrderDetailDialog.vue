@@ -9,7 +9,7 @@
   <Teleport to="body">
     <transition name="dialog-fade">
       <div
-        v-if="selectedOrder"
+        v-if="selectedOrder || orderStore.detailLoading"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 dark:bg-stone-950/60 backdrop-blur-sm"
         @click.self="closeOrderDetails"
       >
