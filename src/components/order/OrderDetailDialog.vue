@@ -88,7 +88,7 @@
                   <p
                     class="font-extrabold text-sm text-[#b05a18] dark:text-amber-500 mt-1 font-headline"
                   >
-                    {{ formatOrderTotal(selectedOrder) }}
+                    {{ selectedOrder ? formatOrderTotal(selectedOrder) : '' }}
                   </p>
                 </div>
               </div>
@@ -265,7 +265,9 @@
                     class="flex justify-between font-extrabold text-lg text-[#b05a18] dark:text-amber-500 pt-3 border-t border-stone-100 dark:border-stone-800"
                   >
                     <span>{{ t('orderDashboard.total') }}</span>
-                    <span class="font-headline">{{ formatOrderTotal(selectedOrder) }}</span>
+                    <span class="font-headline">{{
+                      selectedOrder ? formatOrderTotal(selectedOrder) : ''
+                    }}</span>
                   </div>
 
                   <!-- Payment method / amount received / change — already returned
@@ -279,13 +281,17 @@
                   <div class="flex justify-between">
                     <span>{{ t('orderDashboard.amountReceived') }}</span>
                     <span class="text-stone-800 dark:text-stone-200">{{
-                      formatPaymentCurrencyAmount(selectedOrder, selectedOrder?.receivedAmount)
+                      selectedOrder
+                        ? formatPaymentCurrencyAmount(selectedOrder, selectedOrder?.receivedAmount)
+                        : ''
                     }}</span>
                   </div>
                   <div class="flex justify-between">
                     <span>{{ t('orderDashboard.change') }}</span>
                     <span class="text-stone-800 dark:text-stone-200">{{
-                      formatPaymentCurrencyAmount(selectedOrder, selectedOrder?.changeAmount)
+                      selectedOrder
+                        ? formatPaymentCurrencyAmount(selectedOrder, selectedOrder?.changeAmount)
+                        : ''
                     }}</span>
                   </div>
 
