@@ -791,7 +791,7 @@
   },
   "orderDashboard": {
     "title": "Order Management",
-    "paymentMethod": "CASH",
+    "payment-method": "CASH",
     "amountReceived": "Amount Received",
     "change": "Change Due",
     "station": "Warehouse A",

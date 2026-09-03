@@ -269,7 +269,7 @@
                   <!-- Payment method / amount received / change — already returned
                        by the API, previously never surfaced anywhere. -->
                   <div class="flex justify-between">
-                    <span>{{ t('orderDashboard.paymentMethod') }}</span>
+                    <span>{{ t('orderDashboard.payment-method') }}</span>
                     <span class="text-stone-800 dark:text-stone-200 uppercase">{{
                       selectedOrder.paymentMethod
                     }}</span>

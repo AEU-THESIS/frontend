@@ -770,7 +770,7 @@
   },
   "orderDashboard": {
     "title": "ការគ្រប់គ្រងការបញ្ជាទិញ",
-    "paymentMethod": "សាច់ប្រាក់",
+    "payment-method": "សាច់ប្រាក់",
     "amountReceived": "ប្រាក់ទទួលបាន",
     "change": "ការផ្លាស់ប្តូរ",
     "station": "ឃ្លាំង A",
