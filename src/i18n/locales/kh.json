@@ -173,6 +173,7 @@
       "sales": "ការលក់",
       "menu": "ម៉ឺនុយ",
       "inventory": "សារពើភ័ណ្ឌ",
+      "reports": "របាយការណ៍",
       "administration": "រដ្ឋបាល"
     },
     "items": {
@@ -189,7 +190,6 @@
       "config": "ការកំណត់ហាង",
       "blockedCustomers": "បញ្ជីរារាំង",
       "analytics": "វិភាគ",
-      "sale": "ការលក់",
       "dailySummary": "សង្ខេបប្រចាំថ្ងៃ",
       "salesReport": "របាយការណ៍ការលក់",
       "productPerformance": "លទ្ធផលផលិតផល",

@@ -13,12 +13,12 @@ export type SidebarAction = 'exportExcel'
  * A single clickable row. It either navigates (`route`) or runs a sidebar-owned
  * action (`action`) — never both.
  */
-export interface SidebarNavLeaf {
+export interface SidebarNavItem {
   nameKey: string
   icon: string
   route?: SidebarRoute
   action?: SidebarAction
-  /** Restricts the row; omitted means "whoever can see the parent/section". */
+  /** Restricts the row; omitted means "whoever can see the section". */
   roles?: RoleType[]
   /**
    * Extra route names that keep this row highlighted, for detail pages that
@@ -27,14 +27,9 @@ export interface SidebarNavLeaf {
   childRoutes?: string[]
 }
 
-/** A row that may instead open a submenu of its own. */
-export interface SidebarNavItem extends SidebarNavLeaf {
-  children?: SidebarNavLeaf[]
-}
-
-/** A titled group of rows. Groups holding a single submenu omit the title. */
+/** A titled group of rows. */
 export interface SidebarSection {
-  titleKey?: string
+  titleKey: string
   roles?: RoleType[]
   items: SidebarNavItem[]
 }

@@ -173,6 +173,7 @@
       "sales": "Sales",
       "menu": "Menu",
       "inventory": "Inventory",
+      "reports": "Reports",
       "administration": "Administration"
     },
     "items": {
@@ -189,7 +190,6 @@
       "config": "Shop Setting",
       "blockedCustomers": "Blocklist",
       "analytics": "Analytics",
-      "sale": "Sale",
       "dailySummary": "Daily Summary",
       "salesReport": "Sales Report",
       "productPerformance": "Product Performance",
