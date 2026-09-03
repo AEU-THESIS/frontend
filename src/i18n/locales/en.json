@@ -186,11 +186,14 @@
       "products": "Product",
       "promotions": "Promotion",
       "inventory": "Supplies",
-      "saleReports": "Sale Summary",
       "staff": "Staff",
       "config": "Shop Setting",
       "blockedCustomers": "Blocklist",
-      "analytics": "Analytics"
+      "analytics": "Analytics",
+      "dailySummary": "Daily Summary",
+      "salesReport": "Sales Report",
+      "productPerformance": "Product Performance",
+      "exportExcel": "Export Excel"
     }
   },
   "navbar": {
@@ -883,7 +886,6 @@
   },
   "reports": {
     "title": "Sales Summary Report",
-    "subtitle": "Daily revenue breakdown, cash drawer, and payment methods.",
     "loading": "Loading reports...",
     "total_revenue_today": "Total Revenue Today",
     "cash_drawer_expected": "Cash Drawer Expected",
@@ -902,7 +904,9 @@
       "clear": "Clear Filters"
     },
     "errors": {
-      "fetchDailyOverviewFailed": "Failed to load daily sales summary."
+      "fetchDailyOverviewFailed": "Failed to load daily sales summary.",
+      "fetchSalesReportFailed": "Failed to load the sales report.",
+      "fetchProductPerformanceFailed": "Failed to load product performance."
     },
     "table": {
       "time": "Date & Time",
@@ -935,6 +939,41 @@
         "invalidRange": "The end date must be on or after the start date.",
         "future": "You can't export a date in the future.",
         "failed": "Failed to export the sales summary."
+      }
+    },
+    "sales": {
+      "title": "Sales Report",
+      "period": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "totalSales": "Total Sales",
+      "totalOrders": "Total Orders",
+      "averageOrderValue": "Average Order Value",
+      "currencySplit": "By Settlement Currency",
+      "salesUsd": "Sales in USD",
+      "salesKhr": "Sales in KHR",
+      "averageUsd": "Avg. Order (USD)",
+      "averageKhr": "Avg. Order (KHR)",
+      "trendTitle": "Net Sales Trend",
+      "hourlyTitle": "Hourly Breakdown",
+      "hourlySubtitle": "Net sales for a single day, bucketed by hour.",
+      "hourlyDate": "Day",
+      "hourlyEmpty": "No sales were recorded on this day."
+    },
+    "products": {
+      "title": "Product Performance",
+      "topSellers": "Top 5 Best-Selling Items",
+      "bottomSellers": "Bottom 5 Lowest-Selling Items",
+      "empty": "No sales data for this period.",
+      "categoryChart": "Revenue by Category",
+      "categoryTable": "Category Breakdown",
+      "table": {
+        "item": "Item",
+        "category": "Category",
+        "unitsSold": "Units Sold",
+        "revenue": "Revenue"
       }
     }
   },

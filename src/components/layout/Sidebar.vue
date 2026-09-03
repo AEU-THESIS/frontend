@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useStorage } from '@vueuse/core'
 import { toast } from 'vue-sonner'
 import { useAuthStore } from '@/store/useAuthStore'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { ROLES, type RoleType } from '@/constants/roles'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { Button } from '@/components/ui/button'
+import ExportSalesSummaryDialog from '@/components/reports/ExportSalesSummaryDialog.vue'
+import type { SidebarNavItem, SidebarSection } from '@/types/sidebar.types'
 import logoImg from '@/assets/shop-logo-bg.png'
 
 const route = useRoute()
@@ -18,13 +21,10 @@ const shopSettingsStore = useShopSettingsStore()
 
 // A nav item stays highlighted on its own route and on any sub-page that belongs
 // to it (e.g. an item's Stock History lives under the Inventory section).
-const INVENTORY_CHILD_ROUTES: string[] = [APP_ROUTES.INVENTORY_HISTORY.name]
-const isNavItemActive = (routeName: string) => {
-  if (route.name === routeName) return true
-  if (routeName === APP_ROUTES.INVENTORY.name) {
-    return INVENTORY_CHILD_ROUTES.includes(route.name as string)
-  }
-  return false
+const isNavItemActive = (item: SidebarNavItem) => {
+  if (!item.route) return false
+  if (route.name === item.route.name) return true
+  return (item.childRoutes ?? []).includes(route.name as string)
 }
 
 const handleLogout = async () => {
@@ -33,38 +33,44 @@ const handleLogout = async () => {
   router.push({ name: APP_ROUTES.LOGIN.name })
 }
 
-// Default to expanded on desktop, collapsed on mobile
-const isCollapsed = ref(false)
-
-const checkWindowSize = () => {
-  if (window.innerWidth < 768) {
-    isCollapsed.value = true
-  } else {
-    isCollapsed.value = false
-  }
-}
-
-onMounted(() => {
-  checkWindowSize()
-  window.addEventListener('resize', checkWindowSize)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', checkWindowSize)
-})
+// Collapsing to the icon rail is a deliberate choice, so it survives reloads.
+// It is deliberately NOT tied to the viewport: the whole sidebar is hidden below
+// `md`, so reacting to resize only ever undid what the user picked.
+const isCollapsed = useStorage('sidebar-collapsed', false)
 
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
 }
 
-const navSections = computed(() => {
+// --- Sidebar-owned actions (rows that do something instead of navigating) ---
+const isExcelDialogOpen = ref(false)
+
+// The export dialog takes a range and opens on the shop's today, so a
+// single-day export stays one click.
+const todayIsoDate = new Intl.DateTimeFormat('en-CA').format(new Date())
+
+const runAction = (item: SidebarNavItem) => {
+  if (item.action === 'exportExcel') isExcelDialogOpen.value = true
+}
+
+// Rows look identical whether they navigate or run an action, so both branches
+// of the template share these classes.
+const rowClass = (active: boolean) => [
+  'flex w-full items-center border-l-4 relative group overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out',
+  isCollapsed.value ? 'justify-center gap-0 py-2.5 px-1' : 'gap-3 py-3 px-6 rounded-r-xl',
+  active
+    ? 'bg-[#fcf3eb] dark:bg-amber-900/20 text-[#b05a18] dark:text-amber-500 border-[#b05a18] dark:border-amber-500'
+    : 'border-transparent text-stone-500 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50',
+]
+
+const navSections = computed<SidebarSection[]>(() => {
   const KNOWN_ROLES: RoleType[] = [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER]
   const rawRole = authStore.user?.role
   const userRole: RoleType = KNOWN_ROLES.includes(rawRole as RoleType)
     ? (rawRole as RoleType)
     : ROLES.CASHIER
 
-  const sections = [
+  const sections: SidebarSection[] = [
     {
       titleKey: 'sidebar.sections.overview',
       roles: [ROLES.ADMIN, ROLES.MANAGER],
@@ -96,7 +102,12 @@ const navSections = computed(() => {
       titleKey: 'sidebar.sections.inventory',
       roles: [ROLES.ADMIN, ROLES.MANAGER],
       items: [
-        { nameKey: 'sidebar.items.inventory', route: APP_ROUTES.INVENTORY, icon: 'inventory_2' },
+        {
+          nameKey: 'sidebar.items.inventory',
+          route: APP_ROUTES.INVENTORY,
+          icon: 'inventory_2',
+          childRoutes: [APP_ROUTES.INVENTORY_HISTORY.name],
+        },
         {
           nameKey: 'sidebar.items.inventoryExpenseReport',
           route: APP_ROUTES.INVENTORY_EXPENSE_REPORT,
@@ -105,14 +116,23 @@ const navSections = computed(() => {
       ],
     },
     {
+      // The reporting pages, grouped like every other section. The last row runs
+      // the export dialog instead of navigating.
       titleKey: 'sidebar.sections.reports',
       roles: [ROLES.ADMIN, ROLES.MANAGER],
       items: [
+        { nameKey: 'sidebar.items.dailySummary', route: APP_ROUTES.SALE_REPORTS, icon: 'today' },
         {
-          nameKey: 'sidebar.items.saleReports',
-          route: APP_ROUTES.SALE_REPORTS,
-          icon: 'summarize',
+          nameKey: 'sidebar.items.salesReport',
+          route: APP_ROUTES.SALES_REPORT,
+          icon: 'trending_up',
         },
+        {
+          nameKey: 'sidebar.items.productPerformance',
+          route: APP_ROUTES.PRODUCT_PERFORMANCE,
+          icon: 'local_cafe',
+        },
+        { nameKey: 'sidebar.items.exportExcel', action: 'exportExcel', icon: 'download' },
       ],
     },
     {
@@ -143,10 +163,10 @@ const navSections = computed(() => {
   // Filter at the section level, then within each surviving section filter items
   // by their own optional roles, and drop any section left with no visible items.
   return sections
-    .filter(section => canAccess(section.roles as RoleType[] | undefined))
+    .filter(section => canAccess(section.roles))
     .map(section => ({
       ...section,
-      items: section.items.filter(item => canAccess((item as { roles?: RoleType[] }).roles)),
+      items: section.items.filter(item => canAccess(item.roles)),
     }))
     .filter(section => section.items.length > 0)
 })
@@ -223,33 +243,53 @@ const shopDisplayName = computed(() => {
           class="flex flex-col gap-1 w-full transition-all duration-300 ease-in-out"
           :class="isCollapsed ? 'px-2' : 'pr-4'"
         >
-          <router-link
-            v-for="item in section.items"
-            :key="item.nameKey"
-            :to="item.route"
-            :title="isCollapsed ? t(item.nameKey) : undefined"
-            class="flex items-center border-l-4 relative group overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out"
-            :class="[
-              isCollapsed ? 'justify-center gap-0 py-2.5 px-1' : 'gap-3 py-3 px-6 rounded-r-xl',
-              isNavItemActive(item.route.name)
-                ? 'bg-[#fcf3eb] dark:bg-amber-900/20 text-[#b05a18] dark:text-amber-500 border-[#b05a18] dark:border-amber-500'
-                : 'border-transparent text-stone-500 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50',
-            ]"
-          >
-            <span
-              class="material-symbols-outlined shrink-0 transition-all duration-300 ease-in-out group-hover:scale-110"
-              :class="isCollapsed ? 'text-2xl' : 'text-xl'"
-              :data-icon="item.icon"
+          <template v-for="item in section.items" :key="item.nameKey">
+            <router-link
+              v-if="item.route"
+              :to="item.route"
+              :title="isCollapsed ? t(item.nameKey) : undefined"
+              :class="rowClass(isNavItemActive(item))"
             >
-              {{ item.icon }}
-            </span>
-            <span
-              class="font-semibold text-[15px] text-left overflow-hidden transition-all duration-300 ease-in-out"
-              :class="isCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[160px]'"
+              <span
+                class="material-symbols-outlined shrink-0 transition-all duration-300 ease-in-out group-hover:scale-110"
+                :class="isCollapsed ? 'text-2xl' : 'text-xl'"
+                :data-icon="item.icon"
+              >
+                {{ item.icon }}
+              </span>
+              <span
+                class="font-semibold text-[15px] text-left overflow-hidden transition-all duration-300 ease-in-out"
+                :class="isCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[160px]'"
+              >
+                {{ t(item.nameKey) }}
+              </span>
+            </router-link>
+
+            <!-- Action row. Written out rather than resolved through
+                 `<component :is>`: `Button` is registered globally, so a dynamic
+                 'button' would resolve to it and pick up its primary styling. -->
+            <button
+              v-else
+              type="button"
+              :title="isCollapsed ? t(item.nameKey) : undefined"
+              :class="rowClass(false)"
+              @click="runAction(item)"
             >
-              {{ t(item.nameKey) }}
-            </span>
-          </router-link>
+              <span
+                class="material-symbols-outlined shrink-0 transition-all duration-300 ease-in-out group-hover:scale-110"
+                :class="isCollapsed ? 'text-2xl' : 'text-xl'"
+                :data-icon="item.icon"
+              >
+                {{ item.icon }}
+              </span>
+              <span
+                class="font-semibold text-[15px] text-left overflow-hidden transition-all duration-300 ease-in-out"
+                :class="isCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[160px]'"
+              >
+                {{ t(item.nameKey) }}
+              </span>
+            </button>
+          </template>
         </div>
       </div>
     </nav>
@@ -284,5 +324,11 @@ const shopDisplayName = computed(() => {
         >
       </Button>
     </div>
+
+    <ExportSalesSummaryDialog
+      v-model:open="isExcelDialogOpen"
+      :default-date="todayIsoDate"
+      :max-date="todayIsoDate"
+    />
   </aside>
 </template>

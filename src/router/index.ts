@@ -75,6 +75,18 @@ const routes: RouteRecordRaw[] = [
         meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {
+        path: APP_ROUTES.SALES_REPORT.path,
+        name: APP_ROUTES.SALES_REPORT.name,
+        component: () => import('@/views/SalesReportView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      },
+      {
+        path: APP_ROUTES.PRODUCT_PERFORMANCE.path,
+        name: APP_ROUTES.PRODUCT_PERFORMANCE.name,
+        component: () => import('@/views/ProductPerformanceView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      },
+      {
         path: APP_ROUTES.PROMOTIONS.path,
         name: APP_ROUTES.PROMOTIONS.name,
         component: () => import('@/views/PromotionsManagementView.vue'),
