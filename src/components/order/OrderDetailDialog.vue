@@ -17,7 +17,6 @@
           class="w-full max-w-lg max-h-[85vh] overflow-hidden rounded-3xl bg-white dark:bg-stone-900 shadow-2xl flex flex-col"
           role="dialog"
           aria-modal="true"
-          :aria-label="t('orderDashboard.orderDetails')"
         >
           <!-- Header -->
           <header

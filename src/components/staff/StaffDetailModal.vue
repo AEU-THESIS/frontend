@@ -87,7 +87,7 @@ defineEmits<{
             <!-- General Information Section -->
             <div class="mb-8 flex items-center gap-3">
               <div
-                class="flex size-6 items-center justify-center rounded-full border-2 border-[#974400]/40 dark:border-[#974400]"
+                class="flex size-6 items-center justify-center rounded-full border-2 border-[#974400]/40 dark:border-[#B35900]"
               >
                 <span class="text-xs font-black text-[#974400] dark:text-[#974400]">i</span>
               </div>
