@@ -143,13 +143,14 @@
                   <TableHead class="px-6 py-4 text-center">
                     {{ t('reports.table.total') }}
                   </TableHead>
+                  <TableHead class="px-6 py-4 text-center"> </TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 <TableEmpty
                   v-if="filteredOrders.length === 0"
-                  :colspan="7"
+                  :colspan="8"
                   class="text-[#A3A3A3] dark:text-stone-500"
                 >
                   {{ t('reports.table.empty') }}
@@ -160,7 +161,6 @@
                   v-else
                   :key="order.id"
                   class="border-[#F2F2F2] text-sm dark:border-stone-800"
-                  @click="openOrderDetails(order)"
                 >
                   <TableCell class="px-6 py-4 text-[#6B6B6B] dark:text-stone-400">
                     <div class="font-medium text-[#1A1C1C] dark:text-stone-100">
@@ -170,7 +170,6 @@
                   </TableCell>
                   <TableCell class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</TableCell>
 
-                  <!-- Cashier who took the order ("System" when none was recorded) -->
                   <TableCell class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center gap-1.5">
                       {{ cashierName(order.user, t('common.systemCashier')) }}
@@ -206,6 +205,19 @@
                   </TableCell>
                   <TableCell class="px-6 py-4 text-center font-bold">
                     {{ formatUsd(order.totalAmount) }}
+                  </TableCell>
+
+                  <TableCell class="px-6 py-4 text-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      :aria-label="
+                        t('reports.table.viewDetails', { orderNumber: order.orderNumber })
+                      "
+                      @click="openOrderDetails(order)"
+                    >
+                      <Eye class="h-4 w-4" aria-hidden="true" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -263,6 +275,8 @@
 </template>
 
 <script setup lang="ts">
+import { Button } from '@/components/ui/button'
+import { Eye } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { ref, computed, onMounted, watch } from 'vue'
 import {
