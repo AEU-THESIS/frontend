@@ -207,11 +207,33 @@ const promotionSummary = (range: { from: number; to: number; total: number }) =>
 
 /* -- Columns. Every cell is a slot, so `key` is only a column identity. ----- */
 const promotionHeaders = computed<DataTableHeader<Promotion>[]>(() => [
-  { key: 'name', header: t('promotions.table.name'), minWidth: '220px' },
-  { key: 'discountType', header: t('promotions.table.type'), width: '150px' },
+  { key: 'name', header: t('promotions.table.name'), sortable: true, minWidth: '220px' },
+  {
+    key: 'discountType',
+    header: t('promotions.table.type'),
+    sortable: true,
+    // The cell shows the translated label, so group by that rather than the raw
+    // enum — otherwise the order wouldn't match what's on screen.
+    sortAccessor: row => typeLabel(row.discountType),
+    width: '150px',
+  },
   { key: 'discountValue', header: t('promotions.table.value'), width: '150px' },
-  { key: 'startDate', header: t('promotions.table.startDate'), width: '150px' },
-  { key: 'endDate', header: t('promotions.table.endDate'), width: '150px' },
+  {
+    key: 'startDate',
+    header: t('promotions.table.startDate'),
+    sortable: true,
+    // Real dates, not the ISO strings — and a promotion without a window sorts
+    // last either way, since the table sends blanks to the bottom.
+    sortAccessor: row => (row.startDate ? new Date(row.startDate) : null),
+    width: '150px',
+  },
+  {
+    key: 'endDate',
+    header: t('promotions.table.endDate'),
+    sortable: true,
+    sortAccessor: row => (row.endDate ? new Date(row.endDate) : null),
+    width: '150px',
+  },
   { key: 'status', header: t('promotions.table.status'), align: 'center', width: '150px' },
   { key: 'actions', header: t('promotions.table.actions'), align: 'right', width: '140px' },
 ])
@@ -290,6 +312,7 @@ const promotionHeaders = computed<DataTableHeader<Promotion>[]>(() => [
             row-key="id"
             min-width="1000px"
             max-height="none"
+            client-sort
             class="rounded-none border-0 shadow-none"
             @page-change="store.setPage"
           >

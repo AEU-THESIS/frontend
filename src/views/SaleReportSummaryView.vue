@@ -163,69 +163,28 @@
               </span>
             </template>
 
-                  <TableCell class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</TableCell>
-                  <TableCell class="px-6 py-4 text-center">
-                    <span
-                      class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
-                      :class="
-                        order.paymentStatus === 'paid'
-                          ? 'bg-[#F0FDF4] text-[#22C55E]'
-                          : 'bg-[#FDF2F0] text-[#E26D5C]'
-                      "
-                    >
-                      {{ order.paymentStatus }}
-                    </span>
-                  </TableCell>
-                  <TableCell
-                    class="px-6 py-4 text-center uppercase text-[#6B6B6B] dark:text-stone-400"
-                  >
-                    {{ order.paymentMethod
-                    }}<template v-if="order.paymentMethod === 'khqr' && order.bankName">
-                      — {{ order.bankName }}</template
-                    >
-                  </TableCell>
-                  <TableCell class="px-6 py-4 text-center font-bold">
-                    {{ formatUsd(order.totalAmount) }}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            <!-- Paid / unpaid pill -->
+            <template #[`cell:paymentStatus`]="{ row }">
+              <span
+                class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
+                :class="
+                  row.paymentStatus === 'paid'
+                    ? 'bg-[#F0FDF4] text-[#22C55E]'
+                    : 'bg-[#FDF2F0] text-[#E26D5C]'
+                "
+              >
+                {{ row.paymentStatus }}
+              </span>
+            </template>
 
-            <div
-              v-if="filteredOrders.length > 0"
-              class="flex items-center justify-between border-t border-[#F2F2F2] px-6 py-4 text-xs font-semibold text-[#A3A3A3]"
-            >
-              <div>
-                {{
-                  t('reports.table.pagination', {
-                    startIndex,
-                    endIndex,
-                    chronologicalOrders: filteredOrders.length,
-                  })
-                }}
-              </div>
-
-              <div class="flex items-center gap-4 text-stone-900 dark:text-stone-100">
-                <button
-                  :disabled="currentPage === 1"
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
-                  @click="prevPage"
-                >
-                  <ChevronLeft class="h-4 w-4 text-stone-400" />
-                </button>
-
-                <span class="text-xs font-bold"> Page {{ currentPage }} of {{ totalPages }} </span>
-
-                <button
-                  :disabled="currentPage === totalPages"
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
-                  @click="nextPage"
-                >
-                  <ChevronRight class="h-4 w-4 text-stone-400" />
-                </button>
-              </div>
-            </div>
-          </template>
+            <!-- KHQR rows name the bank that settled them -->
+            <template #[`cell:paymentMethod`]="{ row }">
+              {{ row.paymentMethod
+              }}<template v-if="row.paymentMethod === 'khqr' && row.bankName">
+                — {{ row.bankName }}</template
+              >
+            </template>
+          </DataTable>
         </Card>
       </div>
     </div>
@@ -240,20 +199,15 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { ref, computed, onMounted, watch } from 'vue'
-import {
-  DollarSign,
-  Wallet,
-  QrCode,
-  ChevronLeft,
-  ChevronRight,
-  FileSpreadsheet,
-} from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { DollarSign, Wallet, QrCode, FileSpreadsheet } from 'lucide-vue-next'
 import StaffStatCard from '@/components/staff/StaffStatCard.vue'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/table'
 import type { DataTableHeader } from '@/types/table.types'
 import { Label } from '@/components/ui/label'
+import { AppInput } from '@/components/ui/input'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import ExportSalesSummaryDialog from '@/components/reports/ExportSalesSummaryDialog.vue'
@@ -306,52 +260,33 @@ const hasActiveFilters = computed(
 )
 
 /**
- * Filtered orders computed property.
- * Filters reportStore.chronologicalOrders dynamically based on selected payment method.
+ * The rows for the page the DataTable is showing. The server already applied the
+ * date window and the cash/khqr filter; only a bank-specific selection
+ * ("khqr:ABA") still has to be narrowed here, since the API has no bank filter.
  */
-const filteredOrders = computed(() => {
-  const orders = reportStore.chronologicalOrders || []
+const reportOrders = computed<OrderRow[]>(() => {
+  const orders = reportStore.orders || []
   const method = reportStore.selectedPaymentMethod
 
-  if (!method || method === 'all') {
-    return orders
-  }
+  if (!method.startsWith(BANK_FILTER_PREFIX)) return orders
 
-  // Bank-specific filter: khqr orders paid via that exact bank.
-  if (method.startsWith(BANK_FILTER_PREFIX)) {
-    const bank = method.slice(BANK_FILTER_PREFIX.length)
-    return orders.filter(
-      order => order.paymentMethod?.toLowerCase() === 'khqr' && order.bankName === bank
-    )
-  }
-
-  return orders.filter(order => order.paymentMethod?.toLowerCase() === method.toLowerCase())
+  const bank = method.slice(BANK_FILTER_PREFIX.length)
+  return orders.filter(
+    order => order.paymentMethod?.toLowerCase() === 'khqr' && order.bankName === bank
+  )
 })
 
-const ITEMS_PER_PAGE = 10
-const currentPage = ref(1)
+// Row count across every page, straight from the server so the pager knows how
+// many pages there are. A bank-specific selection is narrowed per page on the
+// client, so for those the total counts all KHQR orders in the window.
+const reportTotal = computed(() => reportStore.pagination?.total ?? reportOrders.value.length)
 
-// Selecting a different method/bank (client-side narrowing) can shrink the result
-// set below the current page, so snap back to the first page.
-watch(
-  () => reportStore.selectedPaymentMethod,
-  () => {
-    currentPage.value = 1
-  }
-)
-
-const totalPages = computed(() => Math.ceil(filteredOrders.value.length / ITEMS_PER_PAGE) || 1)
-
-const paginatedOrders = computed(() => {
-  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
-  const end = start + ITEMS_PER_PAGE
-  return filteredOrders.value.slice(start, end)
-})
-
-const startIndex = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
-const endIndex = computed(() =>
-  Math.min(currentPage.value * ITEMS_PER_PAGE, filteredOrders.value.length)
-)
+const reportSummary = (range: { from: number; to: number; total: number }) =>
+  t('reports.table.pagination', {
+    startIndex: range.from,
+    endIndex: range.to,
+    total: range.total,
+  })
 
 const handlePageChange = (page: number) => reportStore.fetchOrdersPage(page)
 

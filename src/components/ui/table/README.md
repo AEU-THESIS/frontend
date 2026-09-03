@@ -9,7 +9,7 @@ import { DataTable } from '@/components/ui/table'
 import type { DataTableHeader, DataTableSort } from '@/types/table.types'
 ```
 
-Primitives (`Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell`,
+Primitives (`TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell`,
 `TableFooter`, `TableCaption`, `TableEmpty`) are exported from the same barrel for the
 rare layout `DataTable` cannot express.
 

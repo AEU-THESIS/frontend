@@ -4,21 +4,16 @@ import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { storeToRefs } from 'pinia'
 import { Wallet, Receipt, Download, LoaderCircle } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable } from '@/components/ui/table'
+import type { DataTableHeader } from '@/types/table.types'
 import AnalyticsStatCard from '@/components/analytics/AnalyticsStatCard.vue'
 import SalesBarChart from '@/components/analytics/SalesBarChart.vue'
 import GlobalDateFilter from '@/components/analytics/GlobalDateFilter.vue'
 import { resolveGlobalRange } from '@/components/analytics/globalRange'
 import type { GlobalRangeKey, GlobalRangeValue, BarDatum } from '@/types/analytics.types'
-import type { ExportLocale } from '@/types/inventory.types'
+import type { ExportLocale, InventoryExpenseByIngredient } from '@/types/inventory.types'
 import { useInventoryStore } from '@/store/useInventoryStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 
@@ -75,6 +70,41 @@ const load = () => {
 
 watch(range, load)
 onMounted(load)
+
+/* -- Columns. The whole breakdown is on the client, so sorting spans every row. -- */
+const expenseHeaders = computed<DataTableHeader<InventoryExpenseByIngredient>[]>(() => [
+  {
+    key: 'name',
+    header: t('inventory.expenseReport.table.item'),
+    sortable: true,
+    minWidth: '200px',
+    cellClass: 'font-semibold',
+  },
+  {
+    key: 'unitOfMeasure',
+    header: t('inventory.expenseReport.table.unit'),
+    sortable: true,
+    width: '120px',
+    cellClass: 'text-[#737373] dark:text-stone-400',
+  },
+  {
+    key: 'quantity',
+    header: t('inventory.expenseReport.table.quantity'),
+    sortable: true,
+    align: 'right',
+    width: '180px',
+  },
+  {
+    key: 'totalSpend',
+    header: t('inventory.expenseReport.table.totalSpend'),
+    // The shop's own formatter, so the column reads like the KPI card above it.
+    formatter: ({ row }) => formatMoney(row.totalSpend),
+    sortable: true,
+    align: 'right',
+    width: '160px',
+    cellClass: 'font-bold',
+  },
+])
 
 // The workbook is built server-side and streamed back as .xlsx bytes, so the
 // button only asks for the current range and saves what arrives. `locale` picks
@@ -188,42 +218,19 @@ const exportExcel = async () => {
           >
             {{ t('inventory.expenseReport.breakdownTitle') }}
           </h2>
-          <Table class="min-w-[560px] text-left">
-            <TableHeader>
-              <TableRow
-                class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
-              >
-                <TableHead class="px-6 py-4">{{
-                  t('inventory.expenseReport.table.item')
-                }}</TableHead>
-                <TableHead class="px-6 py-4">{{
-                  t('inventory.expenseReport.table.unit')
-                }}</TableHead>
-                <TableHead class="px-6 py-4 text-right">
-                  {{ t('inventory.expenseReport.table.quantity') }}
-                </TableHead>
-                <TableHead class="px-6 py-4 text-right">
-                  {{ t('inventory.expenseReport.table.totalSpend') }}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow
-                v-for="row in expenseByIngredient"
-                :key="row.ingredientId"
-                class="border-slate-100 text-sm dark:border-stone-800"
-              >
-                <TableCell class="px-6 py-4 font-semibold">{{ row.name }}</TableCell>
-                <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                  {{ row.unitOfMeasure }}
-                </TableCell>
-                <TableCell class="px-6 py-4 text-right">{{ row.quantity }}</TableCell>
-                <TableCell class="px-6 py-4 text-right font-bold">
-                  {{ formatMoney(row.totalSpend) }}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+          <DataTable
+            :headers="expenseHeaders"
+            :data="expenseByIngredient"
+            :loading="isExpenseReportLoading"
+            :pagination="false"
+            :empty-title="t('inventory.expenseReport.empty')"
+            :empty-description="t('inventory.expenseReport.emptyHint')"
+            :caption="t('inventory.expenseReport.breakdownTitle')"
+            row-key="ingredientId"
+            min-width="560px"
+            max-height="none"
+            class="mt-4 rounded-none border-0 shadow-none"
+          />
         </Card>
       </template>
     </div>

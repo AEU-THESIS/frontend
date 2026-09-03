@@ -18,7 +18,6 @@ import {
 } from 'reka-ui'
 import { useProductStore } from '@/store/useProductStore'
 import { toast } from 'vue-sonner'
-import type { Category } from '@/types/product.types'
 import type { DataTableHeader } from '@/types/table.types'
 import { getErrorMessage } from '@/utils/error'
 import type { Category, CategoryType } from '@/types/product.types'

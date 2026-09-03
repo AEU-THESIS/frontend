@@ -4,29 +4,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
-import {
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Download,
-  LoaderCircle,
-} from 'lucide-vue-next'
+import { ArrowLeft, Download, LoaderCircle } from 'lucide-vue-next'
 import { Card } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable } from '@/components/ui/table'
+import type { DataTableHeader } from '@/types/table.types'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import GlobalDateFilter from '@/components/analytics/GlobalDateFilter.vue'
 import { resolveGlobalRange } from '@/components/analytics/globalRange'
 import type { GlobalRangeKey, GlobalRangeValue } from '@/types/analytics.types'
-import type { AdjustmentType, ExportLocale } from '@/types/inventory.types'
+import type { AdjustmentType, ExportLocale, InventoryHistoryEntry } from '@/types/inventory.types'
 import { useInventoryStore } from '@/store/useInventoryStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { APP_ROUTES } from '@/constants/appRoutes'
@@ -159,23 +145,43 @@ const PAGE_SIZE = 10
 const currentPage = ref(1)
 const totalPages = computed(() => historyPagination.value.totalPages)
 const totalItems = computed(() => historyPagination.value.total)
-const paginationStart = computed(() =>
-  totalItems.value ? (historyPagination.value.page - 1) * historyPagination.value.limit + 1 : 0
-)
-const paginationEnd = computed(
-  () =>
-    (historyPagination.value.page - 1) * historyPagination.value.limit + historyItems.value.length
-)
-// Sliding window of at most 3 page numbers, centered on the current page once
-// there are more pages than fit — so page 7 of 20 shows 6/7/8, not 1/2/3.
-const visiblePaginationPages = computed(() => {
-  const pages = totalPages.value
-  const maxVisible = 3
-  if (pages <= maxVisible) return Array.from({ length: pages }, (_, index) => index + 1)
 
-  const start = Math.min(Math.max(currentPage.value - 1, 1), pages - maxVisible + 1)
-  return Array.from({ length: maxVisible }, (_, index) => start + index)
-})
+const historySummary = (range: { from: number; to: number; total: number }) =>
+  t('inventory.table.showingRange', { start: range.from, end: range.to, total: range.total })
+
+/* -- Columns. `change` and `value` render as slots, so their `key` is only a
+      column identity; the rest read straight off the row. -------------------- */
+const historyHeaders = computed<DataTableHeader<InventoryHistoryEntry>[]>(() => [
+  {
+    key: 'createdAt',
+    header: t('inventory.history.date'),
+    formatter: ({ row }) => formatDate(row.createdAt),
+    minWidth: '180px',
+    cellClass: 'text-[#737373] dark:text-stone-400',
+  },
+  { key: 'change', header: t('inventory.history.change'), minWidth: '140px' },
+  { key: 'value', header: t('inventory.history.value'), align: 'right', width: '140px' },
+  {
+    key: 'unitCost',
+    header: t('inventory.history.unitCost'),
+    // Money runs through the shop's currency formatter, so no `format: 'currency'`.
+    formatter: ({ row }) => (row.unitCost === null ? '—' : formatMoney(row.unitCost)),
+    align: 'right',
+    width: '140px',
+  },
+  {
+    key: 'notes',
+    header: t('inventory.history.notes'),
+    minWidth: '180px',
+    cellClass: 'text-[#737373] dark:text-stone-400',
+  },
+  {
+    key: 'user',
+    header: t('inventory.history.by'),
+    width: '150px',
+    cellClass: 'font-semibold text-[#1A1C1C] dark:text-stone-100',
+  },
+])
 
 // Fetch the current page for the selected range. The server does the date
 // filtering + pagination and returns the period's in/out totals.
@@ -325,153 +331,57 @@ const exportExcel = async () => {
       <Card
         class="gap-0 overflow-hidden rounded-xl border-none bg-white p-0 shadow-sm dark:border dark:border-stone-800 dark:bg-stone-900"
       >
-        <Table class="min-w-[640px] text-left">
-          <TableHeader>
-            <TableRow
-              class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
-            >
-              <TableHead class="px-6 py-4">{{ t('inventory.history.date') }}</TableHead>
-              <TableHead class="px-6 py-4">{{ t('inventory.history.change') }}</TableHead>
-              <TableHead class="px-6 py-4 text-right">
-                {{ t('inventory.history.value') }}
-              </TableHead>
-              <TableHead class="px-6 py-4 text-right">
-                {{ t('inventory.history.unitCost') }}
-              </TableHead>
-              <TableHead class="px-6 py-4">{{ t('inventory.history.notes') }}</TableHead>
-              <TableHead class="px-6 py-4">{{ t('inventory.history.by') }}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-if="isHistoryLoading" class="hover:bg-transparent">
-              <TableCell
-                colspan="6"
-                class="px-6 py-14 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-              >
-                {{ t('inventory.messages.loading') }}
-              </TableCell>
-            </TableRow>
-            <TableRow v-else-if="historyItems.length === 0" class="hover:bg-transparent">
-              <TableCell
-                colspan="6"
-                class="px-6 py-14 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-              >
-                {{ t('inventory.history.empty') }}
-              </TableCell>
-            </TableRow>
-            <TableRow
-              v-for="entry in historyItems"
-              v-else
-              :key="entry.id"
-              class="border-slate-100 text-sm dark:border-stone-800"
-            >
-              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                {{ formatDate(entry.createdAt) }}
-              </TableCell>
-              <TableCell class="px-6 py-4 font-bold">
-                <span
-                  :class="
-                    entry.type === 'add'
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-rose-600 dark:text-rose-400'
-                  "
-                >
-                  {{ entry.type === 'add' ? '+' : '−' }}{{ formatNumber(entry.quantityChanged) }}
-                  {{ item?.unitOfMeasure }}
-                </span>
-              </TableCell>
-              <TableCell class="px-6 py-4 text-right font-bold">
-                <span
-                  v-if="entry.value !== null"
-                  :class="
-                    entry.type === 'add'
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-rose-600 dark:text-rose-400'
-                  "
-                >
-                  {{ entry.type === 'add' ? '+' : '−' }}{{ formatMoney(entry.value) }}
-                </span>
-                <span v-else class="font-normal text-[#A3A3A3] dark:text-stone-500">—</span>
-              </TableCell>
-              <TableCell class="px-6 py-4 text-right text-[#1A1C1C] dark:text-stone-100">
-                {{ entry.unitCost === null ? '—' : formatMoney(entry.unitCost) }}
-              </TableCell>
-              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                {{ entry.notes || '—' }}
-              </TableCell>
-              <TableCell class="px-6 py-4 font-semibold text-[#1A1C1C] dark:text-stone-100">
-                {{ entry.user || '—' }}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-
-        <footer
-          class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 dark:border-stone-800 sm:flex-row sm:items-center sm:justify-between"
+        <DataTable
+          :headers="historyHeaders"
+          :data="historyItems"
+          :total-count="totalItems"
+          :loading="isHistoryLoading"
+          :pagination="{
+            page: currentPage,
+            pageSize: PAGE_SIZE,
+            showPageSizeSelector: false,
+          }"
+          :summary-formatter="historySummary"
+          :empty-title="t('inventory.history.empty')"
+          :empty-description="''"
+          :caption="t('inventory.history.title')"
+          row-key="id"
+          min-width="640px"
+          max-height="none"
+          class="rounded-none border-0 shadow-none"
+          @page-change="goToPage"
         >
-          <p class="text-xs font-semibold text-[#737373] dark:text-stone-400">
-            {{
-              t('inventory.table.showingRange', {
-                start: paginationStart,
-                end: paginationEnd,
-                total: totalItems,
-              })
-            }}
-          </p>
-          <div class="flex items-center gap-2">
-            <Button
-              variant="tertiary"
-              size="icon"
-              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3] dark:border-stone-700 dark:text-stone-500"
-              :disabled="currentPage === 1"
-              @click="goToPage(1)"
-            >
-              <ChevronsLeft class="size-4" />
-            </Button>
-            <Button
-              variant="tertiary"
-              size="icon"
-              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3] dark:border-stone-700 dark:text-stone-500"
-              :disabled="currentPage === 1"
-              @click="goToPage(currentPage - 1)"
-            >
-              <ChevronLeft class="size-4" />
-            </Button>
-            <Button
-              v-for="page in visiblePaginationPages"
-              :key="page"
-              variant="tertiary"
-              size="icon"
-              class="size-8 rounded-lg border text-xs font-black"
+          <!-- Quantity moved, signed and coloured by direction -->
+          <template #[`cell:change`]="{ row }">
+            <span
+              class="font-bold"
               :class="
-                page === currentPage
-                  ? 'border-[#D2691E] bg-[#D2691E] text-white'
-                  : 'border-slate-200 text-[#737373] dark:border-stone-700 dark:text-stone-400'
+                row.type === 'add'
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-rose-600 dark:text-rose-400'
               "
-              @click="goToPage(page)"
             >
-              {{ page }}
-            </Button>
-            <Button
-              variant="tertiary"
-              size="icon"
-              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3] dark:border-stone-700 dark:text-stone-500"
-              :disabled="currentPage === totalPages"
-              @click="goToPage(currentPage + 1)"
+              {{ row.type === 'add' ? '+' : '−' }}{{ formatNumber(row.quantityChanged) }}
+              {{ item?.unitOfMeasure }}
+            </span>
+          </template>
+
+          <!-- Value moved. Null means the movement carried no cost. -->
+          <template #[`cell:value`]="{ row }">
+            <span
+              v-if="row.value !== null"
+              class="font-bold"
+              :class="
+                row.type === 'add'
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-rose-600 dark:text-rose-400'
+              "
             >
-              <ChevronRight class="size-4" />
-            </Button>
-            <Button
-              variant="tertiary"
-              size="icon"
-              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3] dark:border-stone-700 dark:text-stone-500"
-              :disabled="currentPage === totalPages"
-              @click="goToPage(totalPages)"
-            >
-              <ChevronsRight class="size-4" />
-            </Button>
-          </div>
-        </footer>
+              {{ row.type === 'add' ? '+' : '−' }}{{ formatMoney(row.value) }}
+            </span>
+            <span v-else class="text-[#A3A3A3] dark:text-stone-500">—</span>
+          </template>
+        </DataTable>
       </Card>
     </div>
   </div>

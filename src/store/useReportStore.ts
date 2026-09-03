@@ -48,10 +48,20 @@ export const useReportStore = defineStore('report', () => {
       : selectedDate.value
   )
 
+  // The server filter only knows cash/khqr, so a bank-specific selection asks for
+  // all khqr orders and the bank is narrowed client-side (see the view).
+  const backendMethod = computed<'cash' | 'khqr' | undefined>(() =>
+    selectedPaymentMethod.value === 'all'
+      ? undefined
+      : selectedPaymentMethod.value === 'cash'
+        ? 'cash'
+        : 'khqr'
+  )
+
   const ordersQuery = () => ({
     date: selectedDate.value,
     endDate: effectiveEndDate.value,
-    paymentMethod: selectedPaymentMethod.value === 'all' ? undefined : selectedPaymentMethod.value,
+    paymentMethod: backendMethod.value,
     page: ordersPage.value,
     limit: ordersPageSize.value,
   })
@@ -84,32 +94,10 @@ export const useReportStore = defineStore('report', () => {
     // A new window or filter always starts at the first page.
     ordersPage.value = 1
 
-    // The server filter only knows cash/khqr, so a bank-specific selection asks for
-    // all khqr orders and the bank is narrowed client-side (see the view).
-    const backendMethod: 'cash' | 'khqr' | undefined =
-      selectedPaymentMethod.value === 'all'
-        ? undefined
-        : selectedPaymentMethod.value === 'cash'
-          ? 'cash'
-          : 'khqr'
-
-    // The server filter only knows cash/khqr, so a bank-specific selection asks for
-    // all khqr orders and the bank is narrowed client-side (see the view).
-    const backendMethod: 'cash' | 'khqr' | undefined =
-      selectedPaymentMethod.value === 'all'
-        ? undefined
-        : selectedPaymentMethod.value === 'cash'
-          ? 'cash'
-          : 'khqr'
-
     // Independent settlement: a summary failure shouldn't wipe out orders that DID load, and vice versa
     const results = await Promise.allSettled([
       getReportToday(selectedDate.value, effectiveEndDate.value),
-      getTodayOrders({
-        date: selectedDate.value,
-        endDate: effectiveEndDate.value,
-        paymentMethod: backendMethod,
-      }),
+      getTodayOrders(ordersQuery()),
     ])
 
     const [summaryResult, ordersResult] = results

@@ -58,9 +58,23 @@ const getInitials = (name: string) => {
 
 /* -- Columns. Every cell is a slot, so `key` is only a column identity. ----- */
 const staffHeaders = computed<DataTableHeader<StaffMember>[]>(() => [
-  { key: 'name', header: t('staff.table.staffMember'), minWidth: '240px' },
-  { key: 'role', header: t('staff.table.role'), align: 'center', width: '150px' },
-  { key: 'contact', header: t('staff.table.contact'), minWidth: '220px' },
+  { key: 'name', header: t('staff.table.staffMember'), minWidth: '240px', sortable: true },
+  {
+    key: 'role',
+    header: t('staff.table.role'),
+    align: 'center',
+    width: '150px',
+    sortable: true,
+    sortAccessor: row => row.role ?? '',
+  },
+  {
+    key: 'contact',
+    header: t('staff.table.contact'),
+    minWidth: '220px',
+    sortable: true,
+    /* The cell shows email over phone, so email is what the sort compares. */
+    sortAccessor: row => row.email,
+  },
   { key: 'isActive', header: t('staff.table.status'), width: '150px' },
   { key: 'actions', header: t('staff.table.actions'), align: 'right', width: '150px' },
 ])
@@ -170,6 +184,7 @@ const getRoleBadgeClass = (role: string | null) => {
             :empty-description="''"
             :caption="t('staff.table.staffMember')"
             row-key="id"
+            client-sort
             min-width="900px"
             max-height="none"
             class="rounded-none border-0 shadow-none"
