@@ -1,15 +1,8 @@
 <template>
-  <!-- ── ORDER DETAIL DIALOG ──────────────────────────────────────────────
-       Read-only "show more detail" popup for the Sale Report page. Reads the
-       same orderStore.selectedOrder as OrderHistoryView's side-panel drawer
-       (OrderDetailPanel.vue), so any page can trigger it by calling
-       orderStore.fetchSingleOrderDetail(id) — this component just renders
-       whatever is loaded. Teleported to <body> so it always sits above the
-       host page regardless of any overflow/positioning it uses. -->
   <Teleport to="body">
     <transition name="dialog-fade">
       <div
-        v-if="selectedOrder || orderStore.detailLoading"
+        v-if="isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 dark:bg-stone-950/60 backdrop-blur-sm"
         @click.self="closeOrderDetails"
       >
@@ -45,7 +38,7 @@
           </header>
 
           <!-- Loading state -->
-          <div v-if="orderStore.detailLoading" class="flex-1 flex items-center justify-center p-10">
+          <div v-if="detailLoading" class="flex-1 flex items-center justify-center p-10">
             <p class="text-sm font-semibold text-stone-400">{{ t('reports.loading') }}</p>
           </div>
 
@@ -345,7 +338,7 @@ import type { OrderDetail, OrderItemDetail } from '@/types/order.types'
 const { t } = useI18n()
 const orderStore = useOrderStore()
 const shopSettingsStore = useShopSettingsStore()
-const { selectedOrder } = storeToRefs(orderStore)
+const { selectedOrder, detailLoading } = storeToRefs(orderStore)
 
 // Order total shown in the currency the customer actually paid in. A riel order
 // shows the exact note-rounded riel figure (using the order's OWN snapshot rate),
@@ -359,6 +352,7 @@ const formatOrderTotal = (order: OrderDetail) => {
   return `$${Number(order.totalAmount).toFixed(2)}`
 }
 
+const isOpen = computed(() => Boolean(selectedOrder.value || detailLoading.value))
 // receivedAmount / changeAmount are already expressed in the order's own payment
 // currency (unlike totalAmount, which is stored in USD and converted for
 // display), so these are formatted directly with no exchange-rate conversion.
@@ -405,6 +399,7 @@ const getSelectedOrderTotalQty = computed(() => {
 })
 
 const closeOrderDetails = () => {
+  detailLoading.value = false
   selectedOrder.value = null
 }
 
