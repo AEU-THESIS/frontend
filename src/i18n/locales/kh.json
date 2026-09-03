@@ -1311,6 +1311,9 @@
       "takeaway": "យកចេញក្រៅ",
       "dineIn": "ក្នុងស្ថាប័ន",
       "empty": "មិនមានលម្អិតដែលរកឃើញ",
+      "item": "ទំនិញ",
+      "cash": "សាច់ប្រាក់",
+      "qr": "QR",
       "you": "អ្នក"
     },
     "export": {
@@ -1367,6 +1370,30 @@
       "minutesAgo": "{count} នាទីមុន",
       "hoursAgo": "{count} ម៉ោងមុន",
       "daysAgo": "{count} ថ្ងៃមុន"
+    }
+  },
+  "dataTable": {
+    "regionLabel": "តារាងទិន្នន័យ",
+    "empty": {
+      "title": "មិនមានទិន្នន័យសម្រាប់បង្ហាញ",
+      "description": "មិនទាន់មានទិន្នន័យត្រូវនឹងទិដ្ឋភាពនេះទេ។"
+    },
+    "sort": {
+      "action": "តម្រៀបតាម {column}"
+    },
+    "select": {
+      "allOnPage": "ជ្រើសរើសជួរទាំងអស់ក្នុងទំព័រនេះ",
+      "row": "ជ្រើសរើសជួរ"
+    },
+    "pagination": {
+      "label": "ការបែងចែកទំព័រតារាង",
+      "showing": "បង្ហាញ {from}–{to} នៃ {total}",
+      "rowsPerPage": "ជួរក្នុងមួយទំព័រ",
+      "firstPage": "ទំព័រដំបូង",
+      "previousPage": "ទំព័រមុន",
+      "nextPage": "ទំព័របន្ទាប់",
+      "lastPage": "ទំព័រចុងក្រោយ",
+      "goToPage": "ទៅកាន់ទំព័រ {page}"
     }
   }
 }

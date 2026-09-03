@@ -36,6 +36,10 @@ export const useReportStore = defineStore('report', () => {
   // bank on the client while the request still asks the server for 'khqr' orders.
   const selectedPaymentMethod = ref<string>('all')
 
+  /** 1-based page of the orders list. The server owns the slicing. */
+  const ordersPage = ref(1)
+  const ordersPageSize = ref(5)
+
   // A reversed window would return nothing at all, so clamp the end up to the
   // start rather than letting the request 400.
   const effectiveEndDate = computed(() =>
@@ -44,38 +48,56 @@ export const useReportStore = defineStore('report', () => {
       : selectedDate.value
   )
 
-  const chronologicalOrders = computed(() =>
-    [...orders.value].sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    )
+  // The server filter only knows cash/khqr, so a bank-specific selection asks for
+  // all khqr orders and the bank is narrowed client-side (see the view).
+  const backendMethod = computed<'cash' | 'khqr' | undefined>(() =>
+    selectedPaymentMethod.value === 'all'
+      ? undefined
+      : selectedPaymentMethod.value === 'cash'
+        ? 'cash'
+        : 'khqr'
   )
 
-  // True when the API's 200-row cap silently dropped records for this day
-  const isTruncated = computed(() =>
-    pagination.value ? pagination.value.total > pagination.value.limit : false
-  )
+  const ordersQuery = () => ({
+    date: selectedDate.value,
+    endDate: effectiveEndDate.value,
+    paymentMethod: backendMethod.value,
+    page: ordersPage.value,
+    limit: ordersPageSize.value,
+  })
+
+  /**
+   * Loads one page of the orders list. The summary cards cover the whole window
+   * regardless of page, so paging does not refetch them.
+   */
+  const fetchOrdersPage = async (page: number) => {
+    ordersPage.value = page
+    isLoading.value = true
+    // A page that loads clears a previous page's failure, so the view stops
+    // showing an error over rows that arrived fine.
+    error.value = null
+    try {
+      const result = await getTodayOrders(ordersQuery())
+      orders.value = result.orders
+      pagination.value = result.pagination
+    } catch (err) {
+      console.error('[useReportStore] getTodayOrders failed:', err)
+      error.value = 'reports.errors.fetchDailyOverviewFailed'
+    } finally {
+      isLoading.value = false
+    }
+  }
 
   const fetchDailyOverview = async () => {
     isLoading.value = true
     error.value = null
-
-    // The server filter only knows cash/khqr, so a bank-specific selection asks for
-    // all khqr orders and the bank is narrowed client-side (see the view).
-    const backendMethod: 'cash' | 'khqr' | undefined =
-      selectedPaymentMethod.value === 'all'
-        ? undefined
-        : selectedPaymentMethod.value === 'cash'
-          ? 'cash'
-          : 'khqr'
+    // A new window or filter always starts at the first page.
+    ordersPage.value = 1
 
     // Independent settlement: a summary failure shouldn't wipe out orders that DID load, and vice versa
     const results = await Promise.allSettled([
       getReportToday(selectedDate.value, effectiveEndDate.value),
-      getTodayOrders({
-        date: selectedDate.value,
-        endDate: effectiveEndDate.value,
-        paymentMethod: backendMethod,
-      }),
+      getTodayOrders(ordersQuery()),
     ])
 
     const [summaryResult, ordersResult] = results
@@ -137,8 +159,8 @@ export const useReportStore = defineStore('report', () => {
     summary,
     orders,
     pagination,
-    isTruncated,
-    chronologicalOrders,
+    ordersPage,
+    ordersPageSize,
     isLoading,
     isExporting,
     error,
@@ -147,6 +169,7 @@ export const useReportStore = defineStore('report', () => {
     effectiveEndDate,
     selectedPaymentMethod,
     fetchDailyOverview,
+    fetchOrdersPage,
     exportSalesSummary,
   }
 })

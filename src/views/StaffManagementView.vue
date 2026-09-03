@@ -1,19 +1,14 @@
 <script setup lang="ts">
-import {
-  Users,
-  LoaderCircle,
-  Eye,
-  Pencil,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  UserRoundX,
-} from 'lucide-vue-next'
+import { computed } from 'vue'
+import { Users, Eye, Pencil, Trash2, UserRoundX } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { ROLES } from '@/constants/roles'
 import { useStaffManagement } from '@/composables/useStaffManagement'
 import { AppSelect } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
+import { DataTable } from '@/components/ui/table'
+import type { DataTableHeader } from '@/types/table.types'
+import type { StaffMember } from '@/types/user.types'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
 import StaffDetailModal from '@/components/staff/StaffDetailModal.vue'
@@ -60,6 +55,32 @@ const getInitials = (name: string) => {
     .toUpperCase()
     .slice(0, 2)
 }
+
+/* -- Columns. Every cell is a slot, so `key` is only a column identity. ----- */
+const staffHeaders = computed<DataTableHeader<StaffMember>[]>(() => [
+  { key: 'name', header: t('staff.table.staffMember'), minWidth: '240px', sortable: true },
+  {
+    key: 'role',
+    header: t('staff.table.role'),
+    align: 'center',
+    width: '150px',
+    sortable: true,
+    sortAccessor: row => row.role ?? '',
+  },
+  {
+    key: 'contact',
+    header: t('staff.table.contact'),
+    minWidth: '220px',
+    sortable: true,
+    /* The cell shows email over phone, so email is what the sort compares. */
+    sortAccessor: row => row.email,
+  },
+  { key: 'isActive', header: t('staff.table.status'), width: '150px' },
+  { key: 'actions', header: t('staff.table.actions'), align: 'right', width: '150px' },
+])
+
+const staffSummary = (range: { from: number; to: number; total: number }) =>
+  t('staff.pagination', { start: range.from, end: range.to, total: range.total })
 
 const getRoleBadgeClass = (role: string | null) => {
   switch (role) {
@@ -148,188 +169,127 @@ const getRoleBadgeClass = (role: string | null) => {
           </FilterPanel>
 
           <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="w-full text-left">
-              <thead>
-                <tr
-                  class="text-[11px] font-bold uppercase tracking-wider text-[#A3A3A3] border-b border-slate-50 dark:border-stone-800"
-                >
-                  <th class="px-8 py-4 font-bold">{{ t('staff.table.staffMember') }}</th>
-                  <th class="px-8 py-4 font-bold text-center">{{ t('staff.table.role') }}</th>
-                  <th class="px-8 py-4 font-bold">{{ t('staff.table.contact') }}</th>
-                  <th class="px-8 py-4 font-bold">{{ t('staff.table.status') }}</th>
-                  <th class="px-8 py-4 font-bold text-right">{{ t('staff.table.actions') }}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-50 dark:divide-stone-800">
-                <tr v-if="isLoading">
-                  <td colspan="5" class="px-8 py-20 text-center text-slate-400">
-                    <LoaderCircle class="size-8 animate-spin mx-auto mb-2 text-primary/40" />
-                    <p class="text-xs font-bold uppercase tracking-widest">
-                      {{ t('staff.loadingEmployees') }}
-                    </p>
-                  </td>
-                </tr>
-
-                <tr v-else-if="staffMembers.length === 0">
-                  <td colspan="5" class="px-8 py-20 text-center text-slate-300">
-                    <p class="text-sm font-bold">{{ t('staff.noStaffFound') }}</p>
-                  </td>
-                </tr>
-
-                <tr
-                  v-for="member in staffMembers"
-                  :key="member.id"
-                  class="group hover:bg-slate-50/50 dark:hover:bg-stone-800/30 transition-colors"
-                >
-                  <td class="px-8 py-5">
-                    <div class="flex items-center gap-4">
-                      <div
-                        class="size-10 overflow-hidden rounded-full shadow-sm shrink-0 border border-slate-50 dark:border-stone-800"
-                      >
-                        <img
-                          v-if="member.imageUrl"
-                          :src="getImageUrl(member.imageUrl)"
-                          class="size-full object-cover"
-                        />
-                        <div
-                          v-else
-                          class="flex size-full items-center justify-center bg-[#F3F4F6] dark:bg-stone-800 text-[#A3A3A3] text-xs font-bold"
-                        >
-                          {{ getInitials(member.name) }}
-                        </div>
-                      </div>
-                      <div>
-                        <p class="text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
-                          {{ member.name }}
-                        </p>
-                        <p class="text-[11px] font-bold text-[#737373] dark:text-stone-400 mt-0.5">
-                          {{ t('staff.employeeId') }}: {{ member.employeeId }}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-8 py-5 text-center">
-                    <span
-                      class="inline-flex rounded-full px-4 py-1 text-[11px] font-bold"
-                      :class="getRoleBadgeClass(member.role)"
-                    >
-                      {{ member.role }}
-                    </span>
-                  </td>
-                  <td class="px-8 py-5">
-                    <div class="text-[13px]">
-                      <p class="font-bold text-[#1A1C1C] dark:text-stone-100">{{ member.email }}</p>
-                      <p class="font-bold text-[#737373] dark:text-stone-400">
-                        {{ member.phone || t('common.na') }}
-                      </p>
-                    </div>
-                  </td>
-                  <td class="px-8 py-5">
-                    <div class="flex items-center gap-2.5">
-                      <div
-                        class="size-2 rounded-full"
-                        :class="member.isActive ? 'bg-[#22C55E]' : 'bg-slate-300 dark:bg-stone-600'"
-                      ></div>
-                      <span
-                        class="text-[13px] font-bold"
-                        :class="
-                          member.isActive
-                            ? 'text-[#1A1C1C] dark:text-stone-100'
-                            : 'text-[#A3A3A3] dark:text-stone-500'
-                        "
-                      >
-                        {{ member.isActive ? t('staff.table.active') : t('staff.table.notActive') }}
-                      </span>
-                    </div>
-                  </td>
-                  <td class="px-8 py-5 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        class="size-8 text-[#22C55E] hover:bg-[#22C55E]/10 dark:hover:bg-[#22C55E]/20"
-                        @click="openDetailDialog(member)"
-                      >
-                        <Eye class="size-5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        class="size-8 text-slate-400 hover:bg-slate-100 dark:hover:bg-stone-800"
-                        @click="openEditDialog(member)"
-                      >
-                        <Pencil class="size-5" />
-                      </Button>
-                      <Button
-                        v-if="member.id !== authStore.user?.user_id"
-                        variant="ghost"
-                        size="icon"
-                        class="size-8 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50"
-                        @click="handleDelete(member.id)"
-                      >
-                        <Trash2 class="size-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          <div
-            class="p-8 flex flex-col md:flex-row items-center justify-between border-t border-slate-50 dark:border-stone-800 gap-4"
+          <DataTable
+            :headers="staffHeaders"
+            :data="staffMembers"
+            :total-count="pagination.total"
+            :loading="isLoading"
+            :pagination="{
+              page: pagination.page,
+              pageSize: pagination.limit,
+              showPageSizeSelector: false,
+            }"
+            :summary-formatter="staffSummary"
+            :empty-title="t('staff.noStaffFound')"
+            :empty-description="''"
+            :caption="t('staff.table.staffMember')"
+            row-key="id"
+            client-sort
+            min-width="900px"
+            max-height="none"
+            class="rounded-none border-0 shadow-none"
+            @page-change="changePage"
           >
-            <p class="text-sm font-bold text-slate-400">
-              {{
-                t('staff.pagination', {
-                  start: pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1,
-                  end: Math.min(pagination.page * pagination.limit, pagination.total),
-                  total: pagination.total,
-                })
-              }}
-            </p>
-
-            <div class="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                class="size-10 border-slate-100 dark:border-stone-700 text-slate-400 dark:text-stone-400 bg-white dark:bg-stone-800 hover:bg-slate-50 dark:hover:bg-stone-700"
-                :disabled="pagination.page === 1"
-                @click="changePage(pagination.page - 1)"
-              >
-                <ChevronLeft class="size-5" />
-              </Button>
-
-              <div class="flex items-center gap-2">
-                <Button
-                  v-for="p in pagination.totalPages"
-                  :key="p"
-                  :variant="pagination.page === p ? 'default' : 'outline'"
-                  class="size-10 rounded-lg font-bold transition-all"
-                  :class="
-                    pagination.page === p
-                      ? 'bg-[#D2691E] text-white hover:bg-[#B35919]'
-                      : 'bg-white dark:bg-stone-800 text-[#737373] dark:text-stone-300 border-[#EEEEEE] dark:border-stone-700 hover:bg-slate-50 dark:hover:bg-stone-700'
-                  "
-                  @click="changePage(p)"
+            <!-- Staff member -->
+            <template #[`cell:name`]="{ row }">
+              <div class="flex items-center gap-4">
+                <div
+                  class="size-10 shrink-0 overflow-hidden rounded-full border border-slate-50 shadow-sm dark:border-stone-800"
                 >
-                  {{ p }}
+                  <img
+                    v-if="row.imageUrl"
+                    :src="getImageUrl(row.imageUrl)"
+                    class="size-full object-cover"
+                  />
+                  <div
+                    v-else
+                    class="flex size-full items-center justify-center bg-[#F3F4F6] text-xs font-bold text-[#A3A3A3] dark:bg-stone-800"
+                  >
+                    {{ getInitials(row.name) }}
+                  </div>
+                </div>
+                <div>
+                  <p class="text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
+                    {{ row.name }}
+                  </p>
+                  <p class="mt-0.5 text-[11px] font-bold text-[#737373] dark:text-stone-400">
+                    {{ t('staff.employeeId') }}: {{ row.employeeId }}
+                  </p>
+                </div>
+              </div>
+            </template>
+
+            <!-- Role -->
+            <template #[`cell:role`]="{ row }">
+              <span
+                class="inline-flex rounded-full px-4 py-1 text-[11px] font-bold"
+                :class="getRoleBadgeClass(row.role)"
+              >
+                {{ row.role }}
+              </span>
+            </template>
+
+            <!-- Contact -->
+            <template #[`cell:contact`]="{ row }">
+              <div class="text-[13px]">
+                <p class="font-bold text-[#1A1C1C] dark:text-stone-100">{{ row.email }}</p>
+                <p class="font-bold text-[#737373] dark:text-stone-400">
+                  {{ row.phone || t('common.na') }}
+                </p>
+              </div>
+            </template>
+
+            <!-- Status -->
+            <template #[`cell:isActive`]="{ row }">
+              <div class="flex items-center gap-2.5">
+                <div
+                  class="size-2 rounded-full"
+                  :class="row.isActive ? 'bg-[#22C55E]' : 'bg-slate-300 dark:bg-stone-600'"
+                ></div>
+                <span
+                  class="text-[13px] font-bold"
+                  :class="
+                    row.isActive
+                      ? 'text-[#1A1C1C] dark:text-stone-100'
+                      : 'text-[#A3A3A3] dark:text-stone-500'
+                  "
+                >
+                  {{ row.isActive ? t('staff.table.active') : t('staff.table.notActive') }}
+                </span>
+              </div>
+            </template>
+
+            <!-- Actions -->
+            <template #[`cell:actions`]="{ row }">
+              <div class="flex items-center justify-end gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="size-8 text-[#22C55E] hover:bg-[#22C55E]/10 dark:hover:bg-[#22C55E]/20"
+                  @click="openDetailDialog(row)"
+                >
+                  <Eye class="size-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="size-8 text-slate-400 hover:bg-slate-100 dark:hover:bg-stone-800"
+                  @click="openEditDialog(row)"
+                >
+                  <Pencil class="size-5" />
+                </Button>
+                <Button
+                  v-if="row.id !== authStore.user?.user_id"
+                  variant="ghost"
+                  size="icon"
+                  class="size-8 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                  @click="handleDelete(row.id)"
+                >
+                  <Trash2 class="size-4" />
                 </Button>
               </div>
-
-              <Button
-                variant="outline"
-                size="icon"
-                class="size-10 border-slate-100 dark:border-stone-700 text-slate-400 dark:text-stone-400 bg-white dark:bg-stone-800 hover:bg-slate-50 dark:hover:bg-stone-700"
-                :disabled="pagination.page === pagination.totalPages"
-                @click="changePage(pagination.page + 1)"
-              >
-                <ChevronRight class="size-5" />
-              </Button>
-            </div>
-          </div>
+            </template>
+          </DataTable>
         </Card>
       </div>
     </div>

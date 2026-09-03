@@ -11,6 +11,8 @@ import { formatDateTime } from '@/utils/datetime'
 import { shopDateString } from '@/utils/shopDate'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
+import { DataTable } from '@/components/ui/table'
+import type { DataTableHeader } from '@/types/table.types'
 import { AppInput } from '@/components/ui/input'
 import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
 import BlockCustomerDialog from '@/components/order/BlockCustomerDialog.vue'
@@ -90,6 +92,57 @@ const voidedByLabel = computed(() => {
     time: formatDateTime(order.voidedAt),
   })
 })
+
+/* -- Columns. Every cell is a slot, so `key` is only a column identity.
+   The API pages but cannot sort, so `client-sort` orders the page on screen. -- */
+const historyHeaders = computed<DataTableHeader<OrderDetail>[]>(() => [
+  {
+    key: 'createdAt',
+    header: t('orderHistory.table.dateTime'),
+    sortable: true,
+    sortAccessor: row => new Date(row.createdAt),
+    minWidth: '170px',
+  },
+  {
+    key: 'orderNumber',
+    header: t('orderHistory.table.orderId'),
+    sortable: true,
+    minWidth: '130px',
+  },
+  { key: 'customerName', header: t('orderHistory.table.customer'), minWidth: '150px' },
+  {
+    key: 'cashier',
+    header: t('orderHistory.table.cashier'),
+    sortable: true,
+    // Virtual column: the name is assembled from the order's user.
+    sortAccessor: row => cashierName(row.user, t('common.systemCashier')),
+    minWidth: '160px',
+  },
+  {
+    key: 'paymentStatus',
+    header: t('orderHistory.table.payment'),
+    align: 'center',
+    width: '140px',
+  },
+  {
+    key: 'fulfillmentStatus',
+    header: t('orderHistory.table.fulfillment'),
+    align: 'center',
+    width: '150px',
+  },
+  {
+    key: 'totalAmount',
+    header: t('orderHistory.table.total'),
+    align: 'right',
+    sortable: true,
+    // Cells show riel for KHR orders; the base amount compares across currencies.
+    sortAccessor: row => Number(row.totalAmount),
+    width: '130px',
+  },
+])
+
+const historySummary = (range: { from: number; to: number; total: number }) =>
+  t('orders.paginationShowing', { start: range.from, end: range.to, total: range.total })
 
 // ── 1. Search and Filtering States ────────────────────────────────
 const search = ref('')
@@ -453,170 +506,124 @@ const confirmRejectPreOrder = async () => {
     </FilterPanel>
 
     <!-- ── TABLE SHEET LIST ── -->
-    <div
-      class="flex-1 overflow-hidden flex flex-col bg-white dark:bg-stone-900 border border-stone-200/60 dark:border-stone-800/60 shadow-sm rounded-3xl"
+    <DataTable
+      :headers="historyHeaders"
+      :data="historyOrders"
+      :total-count="historyPagination.total"
+      :loading="loading"
+      :pagination="{ page, pageSize: limit, showPageSizeSelector: false }"
+      :summary-formatter="historySummary"
+      :caption="t('orderHistory.table.orderId')"
+      row-key="id"
+      min-width="900px"
+      max-height="none"
+      fill-height
+      client-sort
+      clickable-rows
+      class="min-h-0 flex-1 rounded-3xl border-stone-200/60 text-[13px] font-semibold dark:border-stone-800/60"
+      @page-change="page = $event"
+      @row-click="openOrderDetails"
     >
-      <div class="flex-1 overflow-y-auto scrollbar-thin">
-        <table class="w-full text-left border-collapse font-semibold text-[13px]">
-          <!-- Table Header -->
-          <thead
-            class="sticky top-0 bg-stone-50 dark:bg-stone-950/60 text-[10px] font-extrabold text-stone-400 uppercase tracking-wider border-b border-stone-200/60 dark:border-stone-800/60 z-10 shrink-0 select-none"
+      <template #[`cell:createdAt`]="{ row }">
+        <span class="whitespace-nowrap">{{ formatDateTime(row.createdAt) }}</span>
+      </template>
+
+      <!-- Order number, flagged when the order carries a free (loyalty) line -->
+      <template #[`cell:orderNumber`]="{ row }">
+        <span
+          class="font-headline inline-flex items-center gap-1.5 font-bold text-stone-900 dark:text-stone-50"
+        >
+          #{{ row.orderNumber }}
+          <span
+            v-if="orderHasComp(row)"
+            class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
           >
-            <tr>
-              <th class="py-4 px-6">{{ t('orderHistory.table.dateTime') }}</th>
-              <th class="py-4 px-6">{{ t('orderHistory.table.orderId') }}</th>
-              <th class="py-4 px-6">{{ t('orderHistory.table.customer') }}</th>
-              <th class="py-4 px-6">{{ t('orderHistory.table.cashier') }}</th>
-              <th class="py-4 px-6 text-center">{{ t('orderHistory.table.payment') }}</th>
-              <th class="py-4 px-6 text-center">{{ t('orderHistory.table.fulfillment') }}</th>
-              <th class="py-4 px-6 text-right">{{ t('orderHistory.table.total') }}</th>
-            </tr>
-          </thead>
-
-          <!-- Table Body -->
-          <tbody
-            class="divide-y divide-stone-100 dark:divide-stone-800/50 text-stone-700 dark:text-stone-300"
-          >
-            <tr
-              v-for="order in historyOrders"
-              :key="order.id"
-              class="hover:bg-stone-50/50 dark:hover:bg-stone-800/20 cursor-pointer transition-colors"
-              @click="openOrderDetails(order)"
-            >
-              <td class="py-3.5 px-6 whitespace-nowrap">{{ formatDateTime(order.createdAt) }}</td>
-              <td class="py-3.5 px-6 font-bold text-stone-900 dark:text-stone-50 font-headline">
-                <span class="inline-flex items-center gap-1.5">
-                  #{{ order.orderNumber }}
-                  <span
-                    v-if="orderHasComp(order)"
-                    class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
-                  >
-                    {{ t('orderHistory.freeBadge') }}
-                  </span>
-                </span>
-              </td>
-              <td class="py-3.5 px-6 capitalize">
-                {{ order.customerName || t(`cart.${order.orderType}`) }}
-              </td>
-
-              <!-- Cashier who took the order ("System" when none was recorded) -->
-              <td class="py-3.5 px-6 whitespace-nowrap">
-                <span class="inline-flex items-center gap-1.5">
-                  {{ cashierName(order.user, t('common.systemCashier')) }}
-                  <span
-                    v-if="isOwnOrder(order)"
-                    class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
-                  >
-                    {{ t('orderHistory.table.you') }}
-                  </span>
-                </span>
-              </td>
-
-              <!-- Payment Status Badge -->
-              <td class="py-3.5 px-6 text-center whitespace-nowrap">
-                <span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase shrink-0 border"
-                  :class="{
-                    'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200/30':
-                      order.paymentStatus === 'paid',
-                    'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200/30':
-                      order.paymentStatus === 'refunded',
-                    'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border-indigo-200/30':
-                      order.paymentStatus === 'comp',
-                    'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200/30':
-                      order.paymentStatus !== 'paid' &&
-                      order.paymentStatus !== 'refunded' &&
-                      order.paymentStatus !== 'comp',
-                  }"
-                >
-                  {{ t(`orderDashboard.${order.paymentStatus}`) }}
-                </span>
-              </td>
-
-              <!-- Fulfillment Status Badge -->
-              <td class="py-3.5 px-6 text-center whitespace-nowrap">
-                <span
-                  class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase shrink-0"
-                  :class="[
-                    order.fulfillmentStatus === 'preparing'
-                      ? 'bg-[#fcf3eb] text-[#b05a18] border border-orange-200/30'
-                      : '',
-                    order.fulfillmentStatus === 'ready'
-                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/30'
-                      : '',
-                    order.fulfillmentStatus === 'completed'
-                      ? 'bg-teal-50 text-teal-800 border border-teal-200/30'
-                      : '',
-                    order.fulfillmentStatus === 'canceled'
-                      ? 'bg-rose-50 text-rose-800 border border-rose-200/30'
-                      : '',
-                    order.fulfillmentStatus === 'rejected'
-                      ? 'bg-stone-100 text-stone-600 border border-stone-200/60 dark:bg-stone-800 dark:text-stone-300'
-                      : '',
-                  ]"
-                >
-                  {{ t(`orderDashboard.${order.fulfillmentStatus}`) }}
-                </span>
-              </td>
-
-              <!-- Total price -->
-              <td
-                class="py-3.5 px-6 text-right font-extrabold text-stone-900 dark:text-stone-50 font-headline"
-              >
-                {{ formatOrderTotal(order) }}
-              </td>
-            </tr>
-
-            <!-- Table empty state -->
-            <tr v-if="historyOrders.length === 0 && !loading">
-              <td colspan="7" class="py-24">
-                <div
-                  class="flex flex-col items-center justify-center text-center text-stone-400 font-semibold gap-3"
-                >
-                  <span class="material-symbols-outlined text-4xl" data-icon="inbox">inbox</span>
-                  <span>{{ t('orderHistory.noHistory') }}</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- ── TABLE PAGINATION FOOTER ── -->
-      <footer
-        class="p-4 border-t border-stone-100 dark:border-stone-800 shrink-0 flex items-center justify-between text-xs font-bold text-stone-400 select-none bg-stone-50/40"
-      >
-        <div>
-          {{
-            t('orders.paginationShowing', {
-              start: (page - 1) * limit + (historyOrders.length > 0 ? 1 : 0),
-              end: (page - 1) * limit + historyOrders.length,
-              total: historyPagination.total,
-            })
-          }}
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button
-            class="p-2 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors disabled:opacity-40 disabled:pointer-events-none active:scale-95 shrink-0 flex"
-            :disabled="page <= 1 || loading"
-            @click="page--"
-          >
-            <span class="material-symbols-outlined text-base">chevron_left</span>
-          </button>
-          <span class="px-2 text-stone-800 dark:text-stone-200">
-            {{ t('orders.pageOf', { page, totalPages: historyPagination.totalPages }) }}
+            {{ t('orderHistory.freeBadge') }}
           </span>
-          <button
-            class="p-2 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors disabled:opacity-40 disabled:pointer-events-none active:scale-95 shrink-0 flex"
-            :disabled="page >= historyPagination.totalPages || loading"
-            @click="page++"
+        </span>
+      </template>
+
+      <template #[`cell:customerName`]="{ row }">
+        <span class="capitalize">{{ row.customerName || t(`cart.${row.orderType}`) }}</span>
+      </template>
+
+      <!-- Cashier who took the order ("System" when none was recorded) -->
+      <template #[`cell:cashier`]="{ row }">
+        <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+          {{ cashierName(row.user, t('common.systemCashier')) }}
+          <span
+            v-if="isOwnOrder(row)"
+            class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
           >
-            <span class="material-symbols-outlined text-base">chevron_right</span>
-          </button>
+            {{ t('orderHistory.table.you') }}
+          </span>
+        </span>
+      </template>
+
+      <!-- Payment Status Badge -->
+      <template #[`cell:paymentStatus`]="{ row }">
+        <span
+          class="shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-extrabold uppercase"
+          :class="{
+            'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200/30':
+              row.paymentStatus === 'paid',
+            'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200/30':
+              row.paymentStatus === 'refunded',
+            'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border-indigo-200/30':
+              row.paymentStatus === 'comp',
+            'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200/30':
+              row.paymentStatus !== 'paid' &&
+              row.paymentStatus !== 'refunded' &&
+              row.paymentStatus !== 'comp',
+          }"
+        >
+          {{ t(`orderDashboard.${row.paymentStatus}`) }}
+        </span>
+      </template>
+
+      <!-- Fulfillment Status Badge -->
+      <template #[`cell:fulfillmentStatus`]="{ row }">
+        <span
+          class="shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase"
+          :class="[
+            row.fulfillmentStatus === 'preparing'
+              ? 'bg-[#fcf3eb] text-[#b05a18] border border-orange-200/30'
+              : '',
+            row.fulfillmentStatus === 'ready'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/30'
+              : '',
+            row.fulfillmentStatus === 'completed'
+              ? 'bg-teal-50 text-teal-800 border border-teal-200/30'
+              : '',
+            row.fulfillmentStatus === 'canceled'
+              ? 'bg-rose-50 text-rose-800 border border-rose-200/30'
+              : '',
+            row.fulfillmentStatus === 'rejected'
+              ? 'bg-stone-100 text-stone-600 border border-stone-200/60 dark:bg-stone-800 dark:text-stone-300'
+              : '',
+          ]"
+        >
+          {{ t(`orderDashboard.${row.fulfillmentStatus}`) }}
+        </span>
+      </template>
+
+      <!-- Total price -->
+      <template #[`cell:totalAmount`]="{ row }">
+        <span class="font-headline font-extrabold text-stone-900 dark:text-stone-50">
+          {{ formatOrderTotal(row) }}
+        </span>
+      </template>
+
+      <!-- Table empty state -->
+      <template #empty>
+        <div
+          class="flex flex-col items-center justify-center gap-3 py-16 text-center font-semibold text-stone-400"
+        >
+          <span class="material-symbols-outlined text-4xl" data-icon="inbox">inbox</span>
+          <span>{{ t('orderHistory.noHistory') }}</span>
         </div>
-      </footer>
-    </div>
+      </template>
+    </DataTable>
 
     <!-- ── DRAG SHEET DETAIL REVIEW (Selected Order Drawer) ── -->
     <transition name="slide">

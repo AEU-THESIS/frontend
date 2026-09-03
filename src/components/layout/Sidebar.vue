@@ -97,11 +97,6 @@ const navSections = computed(() => {
       roles: [ROLES.ADMIN, ROLES.MANAGER],
       items: [
         { nameKey: 'sidebar.items.inventory', route: APP_ROUTES.INVENTORY, icon: 'inventory_2' },
-        {
-          nameKey: 'sidebar.items.inventoryExpenseReport',
-          route: APP_ROUTES.INVENTORY_EXPENSE_REPORT,
-          icon: 'receipt_long',
-        },
       ],
     },
     {
@@ -112,6 +107,11 @@ const navSections = computed(() => {
           nameKey: 'sidebar.items.saleReports',
           route: APP_ROUTES.SALE_REPORTS,
           icon: 'summarize',
+        },
+        {
+          nameKey: 'sidebar.items.inventoryExpenseReport',
+          route: APP_ROUTES.INVENTORY_EXPENSE_REPORT,
+          icon: 'receipt_long',
         },
       ],
     },

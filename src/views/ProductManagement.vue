@@ -24,7 +24,7 @@ import { getImageUrl } from '@/utils/image'
 import { getErrorMessage } from '@/utils/error'
 const dialogRef = ref<InstanceType<typeof AppDialog>>()
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 5
 
 const { t } = useI18n()
 const productStore = useProductStore()
@@ -276,6 +276,7 @@ onUnmounted(() => {
         :total="productStore.totalProducts"
         :page-size="PAGE_SIZE"
         :page="queryParams.paginationParams?.page ?? 1"
+        :loading="productStore.isProductsLoading"
         @page-change="fetchProducts"
         @toggle-available="handleToggleAvailable"
         @edit-product="handleEditProduct"

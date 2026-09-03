@@ -916,6 +916,9 @@
       "dineIn": "Dine-in",
       "empty": "No Orders Found",
       "pagination": "Showing { startIndex } to { endIndex } of { chronologicalOrders } Reports",
+      "item": "Item",
+      "cash": "Cash",
+      "qr": "QR",
       "you": "You"
     },
     "export": {
@@ -1380,6 +1383,30 @@
       "minutesAgo": "{count}m ago",
       "hoursAgo": "{count}h ago",
       "daysAgo": "{count}d ago"
+    }
+  },
+  "dataTable": {
+    "regionLabel": "Data table",
+    "empty": {
+      "title": "No data to show",
+      "description": "Nothing matches this view yet."
+    },
+    "sort": {
+      "action": "Sort by {column}"
+    },
+    "select": {
+      "allOnPage": "Select all rows on this page",
+      "row": "Select row"
+    },
+    "pagination": {
+      "label": "Table pagination",
+      "showing": "Showing {from}–{to} of {total}",
+      "rowsPerPage": "Rows per page",
+      "firstPage": "First page",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "lastPage": "Last page",
+      "goToPage": "Go to page {page}"
     }
   }
 }

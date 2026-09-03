@@ -1,21 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
-import { Megaphone, Ticket, CalendarClock, Pencil, Trash2, LoaderCircle } from 'lucide-vue-next'
-import {
-  PaginationRoot,
-  PaginationList,
-  PaginationListItem,
-  PaginationFirst,
-  PaginationPrev,
-  PaginationNext,
-  PaginationLast,
-  PaginationEllipsis,
-} from 'reka-ui'
+import { Megaphone, Ticket, CalendarClock, Pencil, Trash2 } from 'lucide-vue-next'
 import { Card } from '@/components/ui/card'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
+import { DataTable } from '@/components/ui/table'
+import type { DataTableHeader } from '@/types/table.types'
 import { usePromotionStore } from '@/store/usePromotionStore'
 import { getCategories, getProducts } from '@/api/product'
 import { getPromotions } from '@/api/promotion'
@@ -210,34 +202,41 @@ const stateBadgeClass = (state: PromotionState) => {
   }
 }
 
-const currentPage = ref(store.page)
+const promotionSummary = (range: { from: number; to: number; total: number }) =>
+  t('promotions.pagination', { start: range.from, end: range.to, total: range.total })
 
-watch(
-  () => store.page,
-  newPage => {
-    currentPage.value = newPage
-  }
-)
-
-watch(currentPage, newPage => {
-  if (newPage !== store.page) {
-    store.setPage(newPage)
-  }
-})
-
-const showingFrom = computed(() =>
-  store.pagination.total === 0 ? 0 : (currentPage.value - 1) * store.pagination.limit + 1
-)
-const showingTo = computed(() =>
-  Math.min(currentPage.value * store.pagination.limit, store.pagination.total)
-)
-const paginationText = computed(() =>
-  t('promotions.pagination', {
-    start: showingFrom.value,
-    end: showingTo.value,
-    total: store.pagination.total,
-  })
-)
+/* -- Columns. Every cell is a slot, so `key` is only a column identity. ----- */
+const promotionHeaders = computed<DataTableHeader<Promotion>[]>(() => [
+  { key: 'name', header: t('promotions.table.name'), sortable: true, minWidth: '220px' },
+  {
+    key: 'discountType',
+    header: t('promotions.table.type'),
+    sortable: true,
+    // The cell shows the translated label, so group by that rather than the raw
+    // enum — otherwise the order wouldn't match what's on screen.
+    sortAccessor: row => typeLabel(row.discountType),
+    width: '150px',
+  },
+  { key: 'discountValue', header: t('promotions.table.value'), width: '150px' },
+  {
+    key: 'startDate',
+    header: t('promotions.table.startDate'),
+    sortable: true,
+    // Real dates, not the ISO strings — and a promotion without a window sorts
+    // last either way, since the table sends blanks to the bottom.
+    sortAccessor: row => (row.startDate ? new Date(row.startDate) : null),
+    width: '150px',
+  },
+  {
+    key: 'endDate',
+    header: t('promotions.table.endDate'),
+    sortable: true,
+    sortAccessor: row => (row.endDate ? new Date(row.endDate) : null),
+    width: '150px',
+  },
+  { key: 'status', header: t('promotions.table.status'), align: 'center', width: '150px' },
+  { key: 'actions', header: t('promotions.table.actions'), align: 'right', width: '140px' },
+])
 </script>
 
 <template>
@@ -296,198 +295,122 @@ const paginationText = computed(() =>
           </FilterPanel>
 
           <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="w-full text-left">
-              <thead>
-                <tr
-                  class="border-b border-slate-50 text-[11px] font-bold uppercase tracking-wider text-[#A3A3A3] dark:border-stone-800"
-                >
-                  <th class="px-8 py-4">{{ t('promotions.table.name') }}</th>
-                  <th class="px-8 py-4">{{ t('promotions.table.type') }}</th>
-                  <th class="px-8 py-4">{{ t('promotions.table.value') }}</th>
-                  <th class="px-8 py-4">{{ t('promotions.table.startDate') }}</th>
-                  <th class="px-8 py-4">{{ t('promotions.table.endDate') }}</th>
-                  <th class="px-8 py-4 text-center">{{ t('promotions.table.status') }}</th>
-                  <th class="px-8 py-4 text-right">{{ t('promotions.table.actions') }}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-50 dark:divide-stone-800">
-                <tr v-if="store.isLoading">
-                  <td colspan="7" class="px-8 py-20 text-center text-slate-400">
-                    <LoaderCircle class="mx-auto mb-2 size-8 animate-spin text-primary/40" />
-                    <p class="text-xs font-bold uppercase tracking-widest">
-                      {{ t('promotions.loading') }}
-                    </p>
-                  </td>
-                </tr>
-
-                <tr v-else-if="store.promotions.length === 0">
-                  <td colspan="7" class="px-8 py-20 text-center text-slate-300">
-                    <p class="text-sm font-bold">{{ t('promotions.empty') }}</p>
-                  </td>
-                </tr>
-
-                <tr
-                  v-for="promotion in store.promotions"
-                  :key="promotion.id"
-                  class="group transition-colors hover:bg-slate-50/50 dark:hover:bg-stone-800/30"
-                >
-                  <td class="px-8 py-5">
-                    <p class="text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
-                      {{ promotion.name }}
-                    </p>
-                    <p
-                      v-if="promotion.code"
-                      class="mt-0.5 text-[11px] font-bold uppercase text-[#A3A3A3]"
-                    >
-                      {{ t('promotions.table.code') }}: {{ promotion.code }}
-                    </p>
-                  </td>
-                  <td class="px-8 py-5">
-                    <span
-                      class="inline-flex rounded-md px-3 py-1 text-[10px] font-bold uppercase tracking-wide"
-                      :class="typeBadgeClass(promotion.discountType)"
-                    >
-                      {{ typeLabel(promotion.discountType) }}
-                    </span>
-                  </td>
-                  <td class="px-8 py-5">
-                    <span class="text-[14px] font-bold text-[#D2691E]">
-                      {{ valueLabel(promotion) }}
-                    </span>
-                  </td>
-                  <td class="px-8 py-5 text-[13px] font-medium text-[#737373] dark:text-stone-400">
-                    {{ formatDate(promotion.startDate) }}
-                  </td>
-                  <td
-                    class="px-8 py-5 text-[13px] font-medium"
-                    :class="
-                      promotionState(promotion) === 'expired'
-                        ? 'font-bold text-[#B91C1C]'
-                        : 'text-[#737373] dark:text-stone-400'
-                    "
-                  >
-                    {{ formatDate(promotion.endDate) }}
-                  </td>
-                  <td class="px-8 py-5">
-                    <div class="flex flex-col items-center gap-1.5">
-                      <span
-                        class="inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
-                        :class="stateBadgeClass(promotionState(promotion))"
-                      >
-                        {{ t(`promotions.state.${promotionState(promotion)}`) }}
-                      </span>
-                      <button
-                        type="button"
-                        class="relative h-7 w-12 shrink-0 rounded-full transition-colors"
-                        :class="
-                          promotion.isActive ? 'bg-[#D2691E]' : 'bg-stone-300 dark:bg-stone-600'
-                        "
-                        role="switch"
-                        :aria-checked="promotion.isActive"
-                        :aria-label="t('promotions.table.status')"
-                        @click="handleToggle(promotion)"
-                      >
-                        <span
-                          class="absolute top-1 size-5 rounded-full bg-white transition-all"
-                          :class="promotion.isActive ? 'left-6' : 'left-1'"
-                        />
-                      </button>
-                    </div>
-                  </td>
-                  <td class="px-8 py-5 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        class="size-8 text-slate-400 hover:bg-slate-100 dark:hover:bg-stone-800"
-                        :aria-label="t('common.edit')"
-                        @click="openEdit(promotion)"
-                      >
-                        <Pencil class="size-5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        class="size-8 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50"
-                        :aria-label="t('common.delete')"
-                        @click="handleDelete(promotion)"
-                      >
-                        <Trash2 class="size-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- ── Pagination footer ───────────────────────────────────────────────── -->
-          <div
-            class="px-3 md:px-6 py-3 md:py-4 bg-stone-50/30 dark:bg-stone-800/30 border-t border-slate-50 dark:border-stone-800 flex flex-col md:flex-row gap-2 md:gap-0 justify-between items-center"
+          <DataTable
+            :headers="promotionHeaders"
+            :data="store.promotions"
+            :total-count="store.pagination.total"
+            :loading="store.isLoading"
+            :pagination="{
+              page: store.page,
+              pageSize: store.pagination.limit,
+              showPageSizeSelector: false,
+            }"
+            :summary-formatter="promotionSummary"
+            :empty-title="t('promotions.empty')"
+            :empty-description="''"
+            :caption="t('promotions.table.name')"
+            row-key="id"
+            min-width="1000px"
+            max-height="none"
+            client-sort
+            class="rounded-none border-0 shadow-none"
+            @page-change="store.setPage"
           >
-            <!-- Showing X to Y of Z promotions -->
-            <span class="text-xs text-stone-500 dark:text-stone-400 text-[14px]">
-              {{ paginationText }}
-            </span>
+            <!-- Name, with its coupon code underneath -->
+            <template #[`cell:name`]="{ row }">
+              <p class="text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
+                {{ row.name }}
+              </p>
+              <p v-if="row.code" class="mt-0.5 text-[11px] font-bold uppercase text-[#A3A3A3]">
+                {{ t('promotions.table.code') }}: {{ row.code }}
+              </p>
+            </template>
 
-            <!-- Reka-UI Pagination -->
-            <PaginationRoot
-              v-model:page="currentPage"
-              :total="store.pagination.total"
-              :items-per-page="store.pagination.limit"
-              :sibling-count="1"
-              show-edges
-            >
-              <PaginationList v-slot="{ items }" class="flex items-center gap-1">
-                <PaginationFirst
-                  :title="t('menuManagement.productTable.pagination.firstPage')"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            <!-- Discount type -->
+            <template #[`cell:discountType`]="{ row }">
+              <span
+                class="inline-flex rounded-md px-3 py-1 text-[10px] font-bold uppercase tracking-wide"
+                :class="typeBadgeClass(row.discountType)"
+              >
+                {{ typeLabel(row.discountType) }}
+              </span>
+            </template>
+
+            <!-- Discount value -->
+            <template #[`cell:discountValue`]="{ row }">
+              <span class="text-[14px] font-bold text-[#D2691E]">{{ valueLabel(row) }}</span>
+            </template>
+
+            <template #[`cell:startDate`]="{ row }">
+              <span class="text-[13px] font-medium text-[#737373] dark:text-stone-400">
+                {{ formatDate(row.startDate) }}
+              </span>
+            </template>
+
+            <!-- End date turns red once the window has closed -->
+            <template #[`cell:endDate`]="{ row }">
+              <span
+                class="text-[13px] font-medium"
+                :class="
+                  promotionState(row) === 'expired'
+                    ? 'font-bold text-[#B91C1C]'
+                    : 'text-[#737373] dark:text-stone-400'
+                "
+              >
+                {{ formatDate(row.endDate) }}
+              </span>
+            </template>
+
+            <!-- Lifecycle badge over the on/off switch -->
+            <template #[`cell:status`]="{ row }">
+              <div class="flex flex-col items-center gap-1.5">
+                <span
+                  class="inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
+                  :class="stateBadgeClass(promotionState(row))"
                 >
-                  <span class="material-symbols-outlined text-[18px]">first_page</span>
-                </PaginationFirst>
-
-                <PaginationPrev
-                  :title="t('menuManagement.productTable.pagination.previousPage')"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  {{ t(`promotions.state.${promotionState(row)}`) }}
+                </span>
+                <button
+                  type="button"
+                  class="relative h-7 w-12 shrink-0 rounded-full transition-colors"
+                  :class="row.isActive ? 'bg-[#D2691E]' : 'bg-stone-300 dark:bg-stone-600'"
+                  role="switch"
+                  :aria-checked="row.isActive"
+                  :aria-label="t('promotions.table.status')"
+                  @click="handleToggle(row)"
                 >
-                  <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                </PaginationPrev>
+                  <span
+                    class="absolute top-1 size-5 rounded-full bg-white transition-all"
+                    :class="row.isActive ? 'left-6' : 'left-1'"
+                  />
+                </button>
+              </div>
+            </template>
 
-                <template v-for="(pageItem, index) in items" :key="index">
-                  <PaginationEllipsis
-                    v-if="pageItem.type === 'ellipsis'"
-                    :index="index"
-                    class="w-8 h-8 flex items-center justify-center text-stone-400 dark:text-stone-500 text-xs select-none"
-                  >
-                    &#8230;
-                  </PaginationEllipsis>
-
-                  <PaginationListItem
-                    v-else
-                    :value="pageItem.value"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors data-[selected]:bg-[#D2691E] data-[selected]:text-white data-[selected]:border-transparent bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700 hover:border-stone-300 dark:hover:border-stone-600"
-                  >
-                    {{ pageItem.value }}
-                  </PaginationListItem>
-                </template>
-
-                <PaginationNext
-                  :title="t('menuManagement.productTable.pagination.nextPage')"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            <!-- Actions -->
+            <template #[`cell:actions`]="{ row }">
+              <div class="flex items-center justify-end gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="size-8 text-slate-400 hover:bg-slate-100 dark:hover:bg-stone-800"
+                  :aria-label="t('common.edit')"
+                  @click="openEdit(row)"
                 >
-                  <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                </PaginationNext>
-
-                <PaginationLast
-                  :title="t('menuManagement.productTable.pagination.lastPage')"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  <Pencil class="size-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="size-8 text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                  :aria-label="t('common.delete')"
+                  @click="handleDelete(row)"
                 >
-                  <span class="material-symbols-outlined text-[18px]">last_page</span>
-                </PaginationLast>
-              </PaginationList>
-            </PaginationRoot>
-          </div>
+                  <Trash2 class="size-4" />
+                </Button>
+              </div>
+            </template>
+          </DataTable>
         </Card>
       </div>
     </div>

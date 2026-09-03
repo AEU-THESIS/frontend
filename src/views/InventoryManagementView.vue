@@ -9,8 +9,6 @@ import {
   AlertTriangle,
   Archive,
   Box,
-  ChevronLeft,
-  ChevronRight,
   CircleAlert,
   CircleCheck,
   CircleMinus,
@@ -35,14 +33,7 @@ import {
 } from 'reka-ui'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable } from '@/components/ui/table'
 import {
   Select,
   SelectContent,
@@ -55,6 +46,7 @@ import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import ImageUpload from '@/components/common/ImageUpload.vue'
+import type { DataTableHeader } from '@/types/table.types'
 import { useInventoryStore } from '@/store/useInventoryStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { useNotificationStore } from '@/store/useNotificationStore'
@@ -173,26 +165,6 @@ const hasActiveFilters = computed(
     selectedUnit.value !== 'all'
 )
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / pageSize)))
-const paginationStart = computed(() => {
-  if (filteredItems.value.length === 0) return 0
-  return (currentPage.value - 1) * pageSize + 1
-})
-const paginationEnd = computed(() =>
-  Math.min(currentPage.value * pageSize, filteredItems.value.length)
-)
-const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredItems.value.slice(start, start + pageSize)
-})
-const visiblePaginationPages = computed(() => {
-  const pages = totalPages.value
-  const maxVisible = 3
-  if (pages <= maxVisible) return Array.from({ length: pages }, (_, index) => index + 1)
-
-  const start = Math.min(Math.max(currentPage.value - 1, 1), pages - maxVisible + 1)
-  return Array.from({ length: maxVisible }, (_, index) => start + index)
-})
 const displayedLowStockItems = computed(() =>
   showAllLowStockWarnings.value ? lowStockItems.value : lowStockItems.value.slice(0, 2)
 )
@@ -273,6 +245,74 @@ const statusMeta = {
     dotClass: 'bg-rose-500',
   },
 }
+
+/* -- Table columns. `DataTable` owns the sorting, paging and empty state. -- */
+// Ascending status brings the shelves that need attention to the top.
+const STATUS_SEVERITY: Record<InventoryStatus, number> = {
+  out_of_stock: 0,
+  low_stock: 1,
+  in_stock: 2,
+}
+
+/** Rows read bold across the board, as they did before. */
+const inventoryRowClass = () => 'font-bold'
+
+const inventoryHeaders = computed<DataTableHeader<InventoryItem>[]>(() => [
+  {
+    key: 'name',
+    header: t('inventory.table.name'),
+    sortable: true,
+    minWidth: '240px',
+  },
+  {
+    key: 'quantity',
+    header: t('inventory.table.stockLevel'),
+    align: 'center',
+    sortable: true,
+    width: '150px',
+  },
+  {
+    key: 'unitOfMeasure',
+    header: t('inventory.table.unit'),
+    sortable: true,
+    width: '120px',
+    cellClass: 'text-[#737373] dark:text-stone-400',
+  },
+  {
+    // Money runs through the shop's currency formatter, so no `format: 'currency'`.
+    key: 'unitCost',
+    header: t('inventory.table.unitCost'),
+    formatter: ({ row }) => formatMoney(row.unitCost),
+    align: 'center',
+    sortable: true,
+    width: '150px',
+  },
+  {
+    key: 'totalValue',
+    header: t('inventory.table.totalValue'),
+    formatter: ({ row }) => formatMoney(row.totalValue),
+    align: 'center',
+    sortable: true,
+    width: '160px',
+    cellClass: 'font-black',
+  },
+  {
+    key: 'status',
+    header: t('inventory.table.status'),
+    align: 'center',
+    sortAccessor: row => STATUS_SEVERITY[row.status],
+    width: '150px',
+  },
+  {
+    key: 'actions',
+    header: t('inventory.table.actions'),
+    align: 'center',
+    width: '110px',
+  },
+])
+
+const inventorySummary = (range: { from: number; to: number; total: number }) =>
+  t('inventory.table.showingRange', { start: range.from, end: range.to, total: range.total })
 
 const summaryCards = computed(() => [
   {
@@ -481,10 +521,6 @@ const clearFilters = async () => {
   await fetchFilteredItems()
 }
 
-watch(totalPages, pages => {
-  if (currentPage.value > pages) currentPage.value = pages
-})
-
 onMounted(() => {
   inventoryStore.fetchItems(inventoryQueryFilters.value).catch(() => {
     toast.error(t('inventory.messages.loadError'))
@@ -582,215 +618,137 @@ onMounted(() => {
         </FilterPanel>
 
         <!-- Table  -->
-        <Table class="min-w-[820px] text-left">
-          <TableHeader>
-            <TableRow
-              class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
-            >
-              <TableHead class="px-6 py-4">{{ t('inventory.table.name') }}</TableHead>
-              <TableHead class="px-6 py-4">{{ t('inventory.table.stockLevel') }}</TableHead>
-              <TableHead class="px-6 py-4">{{ t('inventory.table.unit') }}</TableHead>
-              <TableHead class="px-6 py-4 text-right">
-                {{ t('inventory.table.unitCost') }}
-              </TableHead>
-              <TableHead class="px-6 py-4 text-right">
-                {{ t('inventory.table.totalValue') }}
-              </TableHead>
-              <TableHead class="px-6 py-4 text-center">
-                {{ t('inventory.table.status') }}
-              </TableHead>
-              <TableHead class="px-6 py-4 text-center">
-                {{ t('inventory.table.actions') }}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-if="isLoading" class="hover:bg-transparent">
-              <TableCell
-                colspan="7"
-                class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-              >
-                {{ t('inventory.messages.loading') }}
-              </TableCell>
-            </TableRow>
-            <TableRow v-else-if="filteredItems.length === 0" class="hover:bg-transparent">
-              <TableCell
-                colspan="7"
-                class="px-6 py-12 text-center text-sm font-bold text-[#A3A3A3] dark:text-stone-500"
-              >
-                {{ t('inventory.messages.empty') }}
-              </TableCell>
-            </TableRow>
-            <TableRow
-              v-for="item in paginatedItems"
-              v-else
-              :key="item.id"
-              class="border-slate-100 text-sm font-bold text-[#1A1C1C] dark:border-stone-800 dark:text-stone-100"
-            >
-              <TableCell class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800"
-                  >
-                    <img
-                      v-if="item.imageUrl"
-                      :src="getImageUrl(item.imageUrl)"
-                      :alt="item.name"
-                      class="h-full w-full object-cover"
-                    />
-                    <ImagePlus v-else class="size-5 text-stone-400 dark:text-stone-500" />
-                  </div>
-                  <div>
-                    <p class="text-[#1A1C1C] dark:text-stone-100">{{ item.name }}</p>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell
-                class="px-6 py-4"
-                :class="
-                  item.status === 'out_of_stock'
-                    ? 'text-rose-600 dark:text-rose-500'
-                    : 'text-[#1A1C1C] dark:text-stone-100'
-                "
-              >
-                {{ formatNumber(item.quantity) }}
-              </TableCell>
-              <TableCell class="px-6 py-4 text-[#737373] dark:text-stone-400">
-                {{ item.unitOfMeasure }}
-              </TableCell>
-              <TableCell class="px-6 py-4 text-right text-[#1A1C1C] dark:text-stone-100">
-                {{ formatMoney(item.unitCost) }}
-              </TableCell>
-              <TableCell class="px-6 py-4 text-right font-black text-[#1A1C1C] dark:text-stone-100">
-                {{ formatMoney(item.totalValue) }}
-              </TableCell>
-              <TableCell class="px-6 py-4 text-center">
-                <span
-                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black"
-                  :class="statusMeta[item.status].class"
-                >
-                  <span class="size-1.5 rounded-full" :class="statusMeta[item.status].dotClass" />
-                  {{ t(statusMeta[item.status].labelKey) }}
-                </span>
-              </TableCell>
-              <TableCell class="px-6 py-4">
-                <div class="flex items-center justify-center">
-                  <DropdownMenuRoot>
-                    <DropdownMenuTrigger
-                      class="material-symbols-outlined cursor-pointer transition-opacity hover:text-[#974400] focus:outline-none"
-                      :title="t('inventory.table.actions')"
-                      @click.stop
-                    >
-                      more_vert
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuPortal>
-                      <DropdownMenuContent
-                        class="z-50 min-w-[160px] animate-in rounded-lg border border-[#edddd5] bg-white p-1 shadow-lg fade-in-0 zoom-in-95 dark:border-stone-800 dark:bg-stone-900"
-                        :side-offset="4"
-                        align="end"
-                      >
-                        <!-- Adjust -->
-                        <DropdownMenuItem
-                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
-                          @click.stop="openAdjustmentModal(item)"
-                        >
-                          <SlidersHorizontal class="size-4 shrink-0" />
-                          <span>{{ t('inventory.actions.adjust') }}</span>
-                        </DropdownMenuItem>
-
-                        <!-- Edit -->
-                        <DropdownMenuItem
-                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
-                          @click.stop="openSupplyModal('edit', item)"
-                        >
-                          <Pencil class="size-4 shrink-0" />
-                          <span>{{ t('inventory.actions.edit') }}</span>
-                        </DropdownMenuItem>
-
-                        <!-- View -->
-                        <DropdownMenuItem
-                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
-                          @click.stop="openSupplyModal('view', item)"
-                        >
-                          <Eye class="size-4 shrink-0" />
-                          <span>{{ t('inventory.actions.view') }}</span>
-                        </DropdownMenuItem>
-
-                        <!-- History -->
-                        <DropdownMenuItem
-                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
-                          @click.stop="goToHistory(item)"
-                        >
-                          <History class="size-4 shrink-0" />
-                          <span>{{ t('inventory.actions.viewHistory') }}</span>
-                        </DropdownMenuItem>
-
-                        <!-- Delete -->
-                        <DropdownMenuItem
-                          class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 focus:bg-red-50 focus:outline-none dark:hover:bg-red-950/40 dark:focus:bg-red-950/40"
-                          @click.stop="openDeleteConfirm(item)"
-                        >
-                          <Trash2 class="size-4 shrink-0" />
-                          <span>{{ t('inventory.actions.delete') }}</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuRoot>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-
-        <footer
-          class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 dark:border-stone-800 sm:flex-row sm:items-center sm:justify-between"
+        <DataTable
+          :headers="inventoryHeaders"
+          :data="filteredItems"
+          :loading="isLoading"
+          :pagination="{ page: currentPage, pageSize, showPageSizeSelector: false }"
+          :summary-formatter="inventorySummary"
+          :row-class="inventoryRowClass"
+          :caption="t('inventory.table.allSupplies')"
+          row-key="id"
+          min-width="820px"
+          max-height="none"
+          class="rounded-none border-0 shadow-none"
+          @page-change="currentPage = $event"
         >
-          <p class="text-xs font-semibold text-[#737373] dark:text-stone-400">
-            {{
-              t('inventory.table.showingRange', {
-                start: paginationStart,
-                end: paginationEnd,
-                total: filteredItems.length,
-              })
-            }}
-          </p>
-          <div class="flex items-center gap-2">
-            <Button
-              variant="tertiary"
-              size="icon"
-              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3] dark:border-stone-700 dark:text-stone-500"
-              :disabled="currentPage === 1"
-              @click="currentPage -= 1"
-            >
-              <ChevronLeft class="size-4" />
-            </Button>
-            <Button
-              v-for="page in visiblePaginationPages"
-              :key="page"
-              variant="tertiary"
-              size="icon"
-              class="size-8 rounded-lg border text-xs font-black"
+          <!-- Supply -->
+          <template #[`cell:name`]="{ row }">
+            <div class="flex items-center gap-3">
+              <div
+                class="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800"
+              >
+                <img
+                  v-if="row.imageUrl"
+                  :src="getImageUrl(row.imageUrl)"
+                  :alt="row.name"
+                  class="h-full w-full object-cover"
+                />
+                <ImagePlus v-else class="size-5 text-stone-400 dark:text-stone-500" />
+              </div>
+              <p class="text-[#1A1C1C] dark:text-stone-100">{{ row.name }}</p>
+            </div>
+          </template>
+
+          <!-- Stock level — turns red once the shelf is empty -->
+          <template #[`cell:quantity`]="{ row }">
+            <span
               :class="
-                page === currentPage
-                  ? 'border-[#974400] bg-[#974400] text-white'
-                  : 'border-slate-200 text-[#737373] dark:border-stone-700 dark:text-stone-400'
+                row.status === 'out_of_stock'
+                  ? 'text-rose-600 dark:text-rose-500'
+                  : 'text-[#1A1C1C] dark:text-stone-100'
               "
-              @click="currentPage = page"
             >
-              {{ page }}
-            </Button>
-            <Button
-              variant="tertiary"
-              size="icon"
-              class="size-8 rounded-lg border border-slate-200 text-[#A3A3A3] dark:border-stone-700 dark:text-stone-500"
-              :disabled="currentPage === totalPages"
-              @click="currentPage += 1"
+              {{ formatNumber(row.quantity) }}
+            </span>
+          </template>
+
+          <!-- Status -->
+          <template #[`cell:status`]="{ row }">
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black"
+              :class="statusMeta[row.status].class"
             >
-              <ChevronRight class="size-4" />
-            </Button>
-          </div>
-        </footer>
+              <span class="size-1.5 rounded-full" :class="statusMeta[row.status].dotClass" />
+              {{ t(statusMeta[row.status].labelKey) }}
+            </span>
+          </template>
+
+          <!-- Actions -->
+          <template #[`cell:actions`]="{ row }">
+            <div class="flex items-center justify-center">
+              <DropdownMenuRoot>
+                <DropdownMenuTrigger
+                  class="material-symbols-outlined cursor-pointer transition-opacity hover:text-[#974400] focus:outline-none"
+                  :title="t('inventory.table.actions')"
+                  @click.stop
+                >
+                  more_vert
+                </DropdownMenuTrigger>
+
+                <DropdownMenuPortal>
+                  <DropdownMenuContent
+                    class="z-50 min-w-[160px] animate-in rounded-lg border border-[#edddd5] bg-white p-1 shadow-lg fade-in-0 zoom-in-95 dark:border-stone-800 dark:bg-stone-900"
+                    :side-offset="4"
+                    align="end"
+                  >
+                    <!-- Adjust -->
+                    <DropdownMenuItem
+                      class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                      @click.stop="openAdjustmentModal(row)"
+                    >
+                      <SlidersHorizontal class="size-4 shrink-0" />
+                      <span>{{ t('inventory.actions.adjust') }}</span>
+                    </DropdownMenuItem>
+
+                    <!-- Edit -->
+                    <DropdownMenuItem
+                      class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                      @click.stop="openSupplyModal('edit', row)"
+                    >
+                      <Pencil class="size-4 shrink-0" />
+                      <span>{{ t('inventory.actions.edit') }}</span>
+                    </DropdownMenuItem>
+
+                    <!-- View -->
+                    <DropdownMenuItem
+                      class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                      @click.stop="openSupplyModal('view', row)"
+                    >
+                      <Eye class="size-4 shrink-0" />
+                      <span>{{ t('inventory.actions.view') }}</span>
+                    </DropdownMenuItem>
+
+                    <!-- History -->
+                    <DropdownMenuItem
+                      class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#fdf4ef] hover:text-[#974400] focus:bg-[#fdf4ef] focus:text-[#974400] focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
+                      @click.stop="goToHistory(row)"
+                    >
+                      <History class="size-4 shrink-0" />
+                      <span>{{ t('inventory.actions.viewHistory') }}</span>
+                    </DropdownMenuItem>
+
+                    <!-- Delete -->
+                    <DropdownMenuItem
+                      class="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 focus:bg-red-50 focus:outline-none dark:hover:bg-red-950/40 dark:focus:bg-red-950/40"
+                      @click.stop="openDeleteConfirm(row)"
+                    >
+                      <Trash2 class="size-4 shrink-0" />
+                      <span>{{ t('inventory.actions.delete') }}</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenuPortal>
+              </DropdownMenuRoot>
+            </div>
+          </template>
+
+          <!-- Empty State -->
+          <template #empty>
+            <p class="py-8 text-sm font-bold text-[#A3A3A3] dark:text-stone-500">
+              {{ t('inventory.messages.empty') }}
+            </p>
+          </template>
+        </DataTable>
       </Card>
 
       <div class="grid gap-5 lg:grid-cols-2">

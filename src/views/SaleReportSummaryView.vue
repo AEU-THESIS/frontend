@@ -110,135 +110,81 @@
             />
           </FilterPanel>
 
-          <div v-if="reportStore.isLoading" class="p-10 text-center text-sm text-[#A3A3A3]">
-            {{ t('reports.loading') }}
-          </div>
-
-          <div v-else-if="reportStore.error" class="p-10 text-center text-sm text-red-500">
+          <div v-if="reportStore.error" class="p-10 text-center text-sm text-red-500">
             {{ t(reportStore.error) }}
           </div>
 
-          <template v-else>
-            <Table class="min-w-[940px] text-left">
-              <TableHeader>
-                <TableRow
-                  class="bg-[#FCFCFC] text-[11px] font-black uppercase text-[#A3A3A3] hover:bg-[#FCFCFC] dark:bg-stone-800 dark:text-stone-500 dark:hover:bg-stone-800"
-                >
-                  <TableHead class="px-6 py-4">{{ t('reports.table.time') }}</TableHead>
-                  <TableHead class="px-6 py-4">{{ t('reports.table.orderId') }}</TableHead>
-                  <TableHead class="px-6 py-4">{{ t('reports.table.cashier') }}</TableHead>
-                  <TableHead class="px-6 py-4">{{ t('reports.table.type') }}</TableHead>
-                  <TableHead class="px-6 py-4 text-center">
-                    {{ t('reports.table.payment') }}
-                  </TableHead>
-                  <TableHead class="px-6 py-4 text-center">
-                    {{ t('reports.table.method') }}
-                  </TableHead>
-                  <TableHead class="px-6 py-4 text-center">
-                    {{ t('reports.table.total') }}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                <TableEmpty
-                  v-if="filteredOrders.length === 0"
-                  :colspan="7"
-                  class="text-[#A3A3A3] dark:text-stone-500"
-                >
-                  {{ t('reports.table.empty') }}
-                </TableEmpty>
-
-                <TableRow
-                  v-for="order in paginatedOrders"
-                  v-else
-                  :key="order.id"
-                  class="border-[#F2F2F2] text-sm dark:border-stone-800"
-                >
-                  <TableCell class="px-6 py-4 text-[#6B6B6B] dark:text-stone-400">
-                    <div class="font-medium text-[#1A1C1C] dark:text-stone-100">
-                      {{ formatDate(order.createdAt) }}
-                    </div>
-                    <div class="text-xs">{{ formatTime(order.createdAt) }}</div>
-                  </TableCell>
-                  <TableCell class="px-6 py-4 font-semibold">#{{ order.orderNumber }}</TableCell>
-
-                  <!-- Cashier who took the order ("System" when none was recorded) -->
-                  <TableCell class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center gap-1.5">
-                      {{ cashierName(order.user, t('common.systemCashier')) }}
-                      <span
-                        v-if="isOwnOrder(order)"
-                        class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
-                      >
-                        {{ t('reports.table.you') }}
-                      </span>
-                    </span>
-                  </TableCell>
-
-                  <TableCell class="px-6 py-4">{{ orderTypeLabel(order.orderType) }}</TableCell>
-                  <TableCell class="px-6 py-4 text-center">
-                    <span
-                      class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
-                      :class="
-                        order.paymentStatus === 'paid'
-                          ? 'bg-[#F0FDF4] text-[#22C55E]'
-                          : 'bg-[#FDF2F0] text-[#E26D5C]'
-                      "
-                    >
-                      {{ order.paymentStatus }}
-                    </span>
-                  </TableCell>
-                  <TableCell
-                    class="px-6 py-4 text-center uppercase text-[#6B6B6B] dark:text-stone-400"
-                  >
-                    {{ order.paymentMethod
-                    }}<template v-if="order.paymentMethod === 'khqr' && order.bankName">
-                      — {{ order.bankName }}</template
-                    >
-                  </TableCell>
-                  <TableCell class="px-6 py-4 text-center font-bold">
-                    {{ formatUsd(order.totalAmount) }}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-
-            <div
-              v-if="filteredOrders.length > 0"
-              class="flex items-center justify-between border-t border-[#F2F2F2] px-6 py-4 text-xs font-semibold text-[#A3A3A3]"
-            >
-              <div>
-                {{
-                  t('reports.table.pagination', {
-                    startIndex,
-                    endIndex,
-                    chronologicalOrders: filteredOrders.length,
-                  })
-                }}
+          <DataTable
+            v-else
+            :headers="reportHeaders"
+            :data="reportOrders"
+            :total-count="reportTotal"
+            :loading="reportStore.isLoading"
+            :pagination="{
+              page: reportStore.ordersPage,
+              pageSize: reportStore.ordersPageSize,
+              showPageSizeSelector: false,
+            }"
+            :summary-formatter="reportSummary"
+            :empty-title="t('reports.table.empty')"
+            :empty-description="''"
+            :caption="t('reports.title')"
+            row-key="id"
+            min-width="940px"
+            max-height="none"
+            client-sort
+            class="rounded-none border-0 shadow-none"
+            @page-change="handlePageChange"
+          >
+            <!-- The list can span several days, so each row carries its date -->
+            <template #[`cell:createdAt`]="{ row }">
+              <div class="font-medium text-[#1A1C1C] dark:text-stone-100">
+                {{ formatDate(row.createdAt) }}
               </div>
-
-              <div class="flex items-center gap-4 text-stone-900 dark:text-stone-100">
-                <button
-                  :disabled="currentPage === 1"
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
-                  @click="prevPage"
-                >
-                  <ChevronLeft class="h-4 w-4 text-stone-400" />
-                </button>
-
-                <span class="text-xs font-bold"> Page {{ currentPage }} of {{ totalPages }} </span>
-
-                <button
-                  :disabled="currentPage === totalPages"
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 dark:border-stone-800 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 disabled:opacity-30 disabled:hover:bg-transparent select-none"
-                  @click="nextPage"
-                >
-                  <ChevronRight class="h-4 w-4 text-stone-400" />
-                </button>
+              <div class="text-xs text-[#6B6B6B] dark:text-stone-400">
+                {{ formatTime(row.createdAt) }}
               </div>
-            </div>
-          </template>
+            </template>
+
+            <template #[`cell:orderNumber`]="{ row }">
+              <span class="font-semibold">#{{ row.orderNumber }}</span>
+            </template>
+
+            <!-- Cashier who took the order ("System" when none was recorded) -->
+            <template #[`cell:cashier`]="{ row }">
+              <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                {{ cashierName(row.user, t('common.systemCashier')) }}
+                <span
+                  v-if="isOwnOrder(row)"
+                  class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
+                >
+                  {{ t('reports.table.you') }}
+                </span>
+              </span>
+            </template>
+
+            <!-- Paid / unpaid pill -->
+            <template #[`cell:paymentStatus`]="{ row }">
+              <span
+                class="inline-flex rounded-full px-3 py-1 text-[11px] font-bold capitalize"
+                :class="
+                  row.paymentStatus === 'paid'
+                    ? 'bg-[#F0FDF4] text-[#22C55E]'
+                    : 'bg-[#FDF2F0] text-[#E26D5C]'
+                "
+              >
+                {{ row.paymentStatus }}
+              </span>
+            </template>
+
+            <!-- KHQR rows name the bank that settled them -->
+            <template #[`cell:paymentMethod`]="{ row }">
+              {{ row.paymentMethod
+              }}<template v-if="row.paymentMethod === 'khqr' && row.bankName">
+                — {{ row.bankName }}</template
+              >
+            </template>
+          </DataTable>
         </Card>
       </div>
     </div>
@@ -253,27 +199,15 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { ref, computed, onMounted, watch } from 'vue'
-import {
-  DollarSign,
-  Wallet,
-  QrCode,
-  ChevronLeft,
-  ChevronRight,
-  FileSpreadsheet,
-} from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { DollarSign, Wallet, QrCode, FileSpreadsheet } from 'lucide-vue-next'
 import StaffStatCard from '@/components/staff/StaffStatCard.vue'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableEmpty,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable } from '@/components/ui/table'
+import type { DataTableHeader } from '@/types/table.types'
 import { Label } from '@/components/ui/label'
+import { AppInput } from '@/components/ui/input'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import ExportSalesSummaryDialog from '@/components/reports/ExportSalesSummaryDialog.vue'
@@ -326,60 +260,35 @@ const hasActiveFilters = computed(
 )
 
 /**
- * Filtered orders computed property.
- * Filters reportStore.chronologicalOrders dynamically based on selected payment method.
+ * The rows for the page the DataTable is showing. The server already applied the
+ * date window and the cash/khqr filter; only a bank-specific selection
+ * ("khqr:ABA") still has to be narrowed here, since the API has no bank filter.
  */
-const filteredOrders = computed(() => {
-  const orders = reportStore.chronologicalOrders || []
+const reportOrders = computed<OrderRow[]>(() => {
+  const orders = reportStore.orders || []
   const method = reportStore.selectedPaymentMethod
 
-  if (!method || method === 'all') {
-    return orders
-  }
+  if (!method.startsWith(BANK_FILTER_PREFIX)) return orders
 
-  // Bank-specific filter: khqr orders paid via that exact bank.
-  if (method.startsWith(BANK_FILTER_PREFIX)) {
-    const bank = method.slice(BANK_FILTER_PREFIX.length)
-    return orders.filter(
-      order => order.paymentMethod?.toLowerCase() === 'khqr' && order.bankName === bank
-    )
-  }
-
-  return orders.filter(order => order.paymentMethod?.toLowerCase() === method.toLowerCase())
+  const bank = method.slice(BANK_FILTER_PREFIX.length)
+  return orders.filter(
+    order => order.paymentMethod?.toLowerCase() === 'khqr' && order.bankName === bank
+  )
 })
 
-const ITEMS_PER_PAGE = 10
-const currentPage = ref(1)
+// Row count across every page, straight from the server so the pager knows how
+// many pages there are. A bank-specific selection is narrowed per page on the
+// client, so for those the total counts all KHQR orders in the window.
+const reportTotal = computed(() => reportStore.pagination?.total ?? reportOrders.value.length)
 
-// Selecting a different method/bank (client-side narrowing) can shrink the result
-// set below the current page, so snap back to the first page.
-watch(
-  () => reportStore.selectedPaymentMethod,
-  () => {
-    currentPage.value = 1
-  }
-)
+const reportSummary = (range: { from: number; to: number; total: number }) =>
+  t('reports.table.pagination', {
+    startIndex: range.from,
+    endIndex: range.to,
+    total: range.total,
+  })
 
-const totalPages = computed(() => Math.ceil(filteredOrders.value.length / ITEMS_PER_PAGE) || 1)
-
-const paginatedOrders = computed(() => {
-  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
-  const end = start + ITEMS_PER_PAGE
-  return filteredOrders.value.slice(start, end)
-})
-
-const startIndex = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
-const endIndex = computed(() =>
-  Math.min(currentPage.value * ITEMS_PER_PAGE, filteredOrders.value.length)
-)
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++
-}
-
-const prevPage = () => {
-  if (currentPage.value > 1) currentPage.value--
-}
+const handlePageChange = (page: number) => reportStore.fetchOrdersPage(page)
 
 const applyFilters = async () => {
   // The end input's `min` can't fix a value already picked before the start moved
@@ -388,7 +297,7 @@ const applyFilters = async () => {
     reportStore.selectedEndDate = reportStore.selectedDate
   }
 
-  currentPage.value = 1
+  // `fetchDailyOverview` restarts at page one for the new window.
   await reportStore.fetchDailyOverview()
 }
 
@@ -396,7 +305,6 @@ const clearFilters = async () => {
   reportStore.selectedDate = todayIsoDate
   reportStore.selectedEndDate = todayIsoDate
   reportStore.selectedPaymentMethod = 'all'
-  currentPage.value = 1
 
   await reportStore.fetchDailyOverview()
 }
@@ -430,6 +338,46 @@ const formatTime = (isoString: string) =>
 
 const orderTypeLabel = (orderType: string) =>
   orderType === 'dine_in' ? t('reports.table.dineIn') : t('reports.table.takeaway')
+
+/* -- Columns. The whole filtered list is here, so sorting spans every row. -- */
+const reportHeaders = computed<DataTableHeader<OrderRow>[]>(() => [
+  { key: 'createdAt', header: t('reports.table.time'), sortable: true, minWidth: '150px' },
+  { key: 'orderNumber', header: t('reports.table.orderId'), sortable: true, width: '140px' },
+  { key: 'cashier', header: t('reports.table.cashier'), minWidth: '170px' },
+  {
+    key: 'orderType',
+    header: t('reports.table.type'),
+    formatter: ({ row }) => orderTypeLabel(row.orderType),
+    sortable: true,
+    width: '140px',
+  },
+  {
+    key: 'paymentStatus',
+    header: t('reports.table.payment'),
+    align: 'center',
+    sortable: true,
+    width: '140px',
+  },
+  {
+    key: 'paymentMethod',
+    header: t('reports.table.method'),
+    align: 'center',
+    sortable: true,
+    width: '130px',
+    cellClass: 'uppercase text-[#6B6B6B] dark:text-stone-400',
+  },
+  {
+    key: 'totalAmount',
+    header: t('reports.table.total'),
+    formatter: ({ row }) => formatUsd(row.totalAmount),
+    align: 'center',
+    sortable: true,
+    // Amounts arrive as strings from the API — compare them as numbers.
+    sortAccessor: row => Number(row.totalAmount),
+    width: '130px',
+    cellClass: 'font-bold',
+  },
+])
 
 onMounted(() => {
   reportStore.fetchDailyOverview()
