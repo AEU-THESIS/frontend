@@ -199,7 +199,7 @@ async function handleSubmit() {
     <div class="flex items-center justify-end gap-3 pt-2">
       <button
         type="button"
-        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+        class="h-11 w-36 rounded-xl bg-stone-100 text-sm font-semibold text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-100 transition-colors"
         @click="emit('close')"
       >
         {{ $t('category.cancel') }}
@@ -207,7 +207,7 @@ async function handleSubmit() {
       <button
         type="submit"
         :disabled="isLoading"
-        class="px-6 py-2.5 rounded-xl text-sm font-semibold bg-stone-900 text-white hover:bg-stone-850 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        class="h-11 w-36 rounded-xl bg-stone-900 text-sm font-semibold text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         <span
           v-if="isLoading"

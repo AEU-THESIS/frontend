@@ -584,7 +584,7 @@ const confirmRejectPreOrder = async () => {
 
       <!-- ── TABLE PAGINATION FOOTER ── -->
       <footer
-        class="p-4 border-t border-stone-100 dark:border-stone-800 shrink-0 flex items-center justify-between text-xs font-bold text-stone-400 select-none bg-stone-50/40"
+        class="p-4 border-t border-stone-100 dark:border-stone-800 shrink-0 flex items-center justify-between text-xs font-bold text-stone-400 select-none bg-stone-50/40 dark:bg-stone-900/40"
       >
         <div>
           {{

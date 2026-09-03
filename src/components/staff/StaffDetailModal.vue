@@ -30,12 +30,12 @@ defineEmits<{
         <Transition name="scale">
           <div
             v-if="isOpen && staff"
-            class="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden p-10 relative"
+            class="relative w-full max-w-4xl overflow-hidden rounded-xl bg-white p-10 shadow-2xl dark:border dark:border-stone-800 dark:bg-stone-900"
           >
             <Button
               variant="ghost"
               size="icon"
-              class="absolute right-8 top-8 text-[#5F5E5E] hover:text-[#1A1C1C] transition-colors"
+              class="absolute right-8 top-8 text-[#5F5E5E] transition-colors hover:text-[#1A1C1C] dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
               aria-label="Close staff details"
               @click="$emit('close')"
             >
@@ -43,10 +43,10 @@ defineEmits<{
             </Button>
 
             <!-- Profile Header -->
-            <div class="flex items-center gap-8 mb-12">
+            <div class="mb-12 flex items-center gap-8">
               <div class="relative shrink-0">
                 <div
-                  class="size-[92px] overflow-hidden rounded-full border-4 border-[#EEEEEE] shadow-sm bg-[#F3F3F4]"
+                  class="size-[92px] overflow-hidden rounded-full border-4 border-[#EEEEEE] bg-[#F3F3F4] shadow-sm dark:border-stone-800 dark:bg-stone-800"
                 >
                   <img
                     v-if="staff.imageUrl"
@@ -55,95 +55,119 @@ defineEmits<{
                   />
                   <div
                     v-else
-                    class="flex h-full w-full items-center justify-center text-[#5F5E5E] text-2xl font-bold"
+                    class="flex h-full w-full items-center justify-center text-2xl font-bold text-[#5F5E5E] dark:text-stone-300"
                   >
                     {{ getInitials(staff.name) }}
                   </div>
                 </div>
                 <div
-                  class="absolute bottom-1 right-1 size-4 rounded-full border-2 border-white"
+                  class="absolute bottom-1 right-1 size-4 rounded-full border-2 border-white dark:border-stone-900"
                   :class="staff.isActive ? 'bg-[#22C55E]' : 'bg-[#EF4444]'"
                 ></div>
               </div>
 
               <div class="space-y-1">
                 <div class="flex items-center gap-3">
-                  <h3 class="text-2xl font-bold text-[#1A1C1C]">
+                  <h3 class="text-2xl font-bold text-[#1A1C1C] dark:text-stone-100">
                     {{ staff.name }}
                   </h3>
                   <span
                     v-if="staff.isActive"
-                    class="px-3 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-bold uppercase tracking-wider"
+                    class="rounded-full bg-[#DCFCE7] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#15803D] dark:bg-emerald-950/60 dark:text-emerald-400"
                   >
                     {{ t('staff.table.active') }}
                   </span>
                 </div>
-                <p class="text-lg font-bold text-[#5F5E5E]">
+                <p class="text-lg font-bold text-[#5F5E5E] dark:text-stone-400">
                   {{ staff.role }}
                 </p>
               </div>
             </div>
 
             <!-- General Information Section -->
-            <div class="flex items-center gap-3 mb-8">
+            <div class="mb-8 flex items-center gap-3">
               <div
-                class="flex items-center justify-center size-6 rounded-full border-2 border-[#974400]/40"
+                class="flex size-6 items-center justify-center rounded-full border-2 border-[#974400]/40 dark:border-[#B35900]"
               >
-                <span class="text-[#974400] text-xs font-black">i</span>
+                <span class="text-xs font-black text-[#974400] dark:text-[#974400]">i</span>
               </div>
-              <h4 class="text-xl font-bold text-[#1A1C1C]">{{ t('staff.detail.generalInfo') }}</h4>
+              <h4 class="text-xl font-bold text-[#1A1C1C] dark:text-stone-100">
+                {{ t('staff.detail.generalInfo') }}
+              </h4>
             </div>
 
             <div class="grid grid-cols-2 gap-x-8 gap-y-6">
               <!-- Information Card -->
-              <div class="bg-[#F3F3F4] rounded-xl p-5 flex items-center gap-4">
-                <div class="shrink-0 text-[#5F5E5E] bg-white p-2.5 rounded-lg">
+              <div class="flex items-center gap-4 rounded-xl bg-[#F3F3F4] p-5 dark:bg-stone-800/60">
+                <div
+                  class="shrink-0 rounded-lg bg-white p-2.5 text-[#5F5E5E] dark:bg-stone-800 dark:text-stone-300"
+                >
                   <Info class="size-6" />
                 </div>
                 <div class="overflow-hidden">
-                  <p class="text-[10px] font-bold text-[#5F5E5E] uppercase tracking-widest mb-0.5">
+                  <p
+                    class="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-[#5F5E5E] dark:text-stone-400"
+                  >
                     {{ t('staff.detail.information') }}
                   </p>
-                  <p class="text-[14px] font-bold text-[#1A1C1C] truncate">{{ staff.name }}</p>
+                  <p class="truncate text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
+                    {{ staff.name }}
+                  </p>
                 </div>
               </div>
 
               <!-- Contact Card -->
-              <div class="bg-[#F3F3F4] rounded-xl p-5 flex items-center gap-4">
-                <div class="shrink-0 text-[#5F5E5E] bg-white p-2.5 rounded-lg">
+              <div class="flex items-center gap-4 rounded-xl bg-[#F3F3F4] p-5 dark:bg-stone-800/60">
+                <div
+                  class="shrink-0 rounded-lg bg-white p-2.5 text-[#5F5E5E] dark:bg-stone-800 dark:text-stone-300"
+                >
                   <Mail class="size-6" />
                 </div>
                 <div class="overflow-hidden">
-                  <p class="text-[10px] font-bold text-[#5F5E5E] uppercase tracking-widest mb-0.5">
+                  <p
+                    class="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-[#5F5E5E] dark:text-stone-400"
+                  >
                     {{ t('staff.detail.contact') }}
                   </p>
-                  <p class="text-[14px] font-bold text-[#1A1C1C] truncate">{{ staff.email }}</p>
+                  <p class="truncate text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
+                    {{ staff.email }}
+                  </p>
                 </div>
               </div>
 
               <!-- Security Card -->
-              <div class="bg-[#F3F3F4] rounded-xl p-5 flex items-center gap-4">
-                <div class="shrink-0 text-[#5F5E5E] bg-white p-2.5 rounded-lg">
+              <div class="flex items-center gap-4 rounded-xl bg-[#F3F3F4] p-5 dark:bg-stone-800/60">
+                <div
+                  class="shrink-0 rounded-lg bg-white p-2.5 text-[#5F5E5E] dark:bg-stone-800 dark:text-stone-300"
+                >
                   <ShieldCheck class="size-6" />
                 </div>
                 <div class="overflow-hidden">
-                  <p class="text-[10px] font-bold text-[#5F5E5E] uppercase tracking-widest mb-0.5">
+                  <p
+                    class="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-[#5F5E5E] dark:text-stone-400"
+                  >
                     {{ t('staff.detail.security') }}
                   </p>
-                  <p class="text-[14px] font-bold text-[#1A1C1C] truncate">{{ staff.role }}</p>
+                  <p class="truncate text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
+                    {{ staff.role }}
+                  </p>
                 </div>
               </div>
 
               <!-- System Card -->
-              <div class="bg-[#F3F3F4] rounded-xl p-5 flex items-center gap-4">
-                <div class="shrink-0 text-[#5F5E5E] bg-white p-2.5 rounded-lg">
+              <div class="flex items-center gap-4 rounded-xl bg-[#F3F3F4] p-5 dark:bg-stone-800/60">
+                <div
+                  class="shrink-0 rounded-lg bg-white p-2.5 text-[#5F5E5E] dark:bg-stone-800 dark:text-stone-300"
+                >
                   <Database class="size-6" />
                 </div>
                 <div class="overflow-hidden">
-                  <p class="text-[10px] font-bold text-[#5F5E5E] uppercase tracking-widest mb-0.5">
+                  <p
+                    class="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-[#5F5E5E] dark:text-stone-400"
+                  >
                     {{ t('staff.detail.system') }}
                   </p>
-                  <p class="text-[14px] font-bold text-[#1A1C1C] truncate">
+                  <p class="truncate text-[14px] font-bold text-[#1A1C1C] dark:text-stone-100">
                     {{ t('staff.employeeId') }}: {{ staff.employeeId }}
                   </p>
                 </div>

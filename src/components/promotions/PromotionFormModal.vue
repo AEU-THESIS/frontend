@@ -382,11 +382,15 @@ const submit = () => {
             <div
               class="flex items-center justify-end gap-3 border-t border-stone-100 px-8 py-5 dark:border-stone-800"
             >
-              <Button variant="outline" class="rounded-xl px-6" @click="emit('close')">
+              <Button
+                variant="outline"
+                class="h-11 w-44 rounded-xl bg-stone-100 font-bold text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-100"
+                @click="emit('close')"
+              >
                 {{ t('common.cancel') }}
               </Button>
               <Button
-                class="gap-2 rounded-xl bg-[#D2691E] px-8 font-bold text-white hover:bg-[#B35919]"
+                class="h-11 w-44 gap-2 rounded-xl bg-[#D2691E] font-bold text-white hover:bg-[#B35919] dark:bg-[#D2691E] dark:hover:bg-[#B35919]"
                 :disabled="isSubmitting"
                 @click="submit"
               >

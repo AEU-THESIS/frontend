@@ -305,6 +305,7 @@ const handlePayQr = async () => {
           <span class="material-symbols-outlined text-2xl">payments</span>
           <span class="text-sm font-extrabold">{{ t('cart.payWithCash') }}</span>
         </Button>
+
         <Button
           type="button"
           :disabled="cartStore.items.length === 0"

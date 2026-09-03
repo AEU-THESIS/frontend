@@ -54,20 +54,24 @@ const handleImageChange = (file: File | null) => {
         <Transition name="scale">
           <div
             v-if="isOpen"
-            class="w-full max-w-[760px] bg-white rounded-2xl shadow-2xl overflow-hidden relative flex flex-col mx-4"
+            class="relative mx-4 flex max-w-[760px] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-stone-900 dark:border dark:border-stone-800"
           >
             <!-- Header -->
-            <div class="px-10 pt-10 pb-6 relative text-start border-b border-[#EEEEEE]">
-              <h3 class="text-[24px] font-bold text-[#1A1C1C] title-case tracking-wider">
+            <div
+              class="relative border-b border-[#EEEEEE] px-10 pb-6 pt-10 text-start dark:border-stone-800"
+            >
+              <h3
+                class="text-[24px] font-bold tracking-wider text-[#1A1C1C] title-case dark:text-stone-100"
+              >
                 {{ editingId ? t('staff.editStaffTitle') : t('staff.addStaffTitle') }}
               </h3>
-              <p class="mt-1 text-[14px] text-[#737373] font-medium">
+              <p class="mt-1 text-[14px] font-medium text-[#737373] dark:text-stone-400">
                 {{ t('staff.form.subtitle') }}
               </p>
               <Button
                 variant="ghost"
                 size="icon"
-                class="absolute right-8 top-10 text-[#A3A3A3] hover:text-[#1A1C1C] transition-colors"
+                class="absolute right-8 top-10 text-[#A3A3A3] transition-colors hover:text-[#1A1C1C] dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
                 :aria-label="t('staff.closeView')"
                 @click="$emit('close')"
               >
@@ -76,41 +80,44 @@ const handleImageChange = (file: File | null) => {
             </div>
 
             <!-- Content -->
-            <div class="px-10 pt-8 pb-10 overflow-y-auto max-h-[80vh] custom-scrollbar">
+            <div class="custom-scrollbar max-h-[80vh] overflow-y-auto px-10 pb-10 pt-8">
               <form class="space-y-8" @submit.prevent="$emit('submit')">
                 <!-- Row 1: Full Name -->
                 <div class="space-y-2.5">
                   <Label
                     for="staff-name"
-                    class="text-[11px] font-black text-[#564338] uppercase tracking-widest ml-0.5"
+                    class="ml-0.5 text-[11px] font-black uppercase tracking-widest text-[#564338] dark:text-stone-300"
                   >
                     {{ t('staff.form.name') }}
                   </Label>
                   <AppInput
                     id="staff-name"
-                    class="h-14 rounded-xl border-[#DDC1B3] bg-white px-6 text-sm font-semibold text-[#1A1C1C] placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] transition-all shadow-sm"
+                    class="h-14 rounded-xl border-[#DDC1B3] bg-white px-6 text-sm font-semibold text-[#1A1C1C] shadow-sm transition-all placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500 dark:focus-visible:ring-stone-600"
                     :placeholder="t('staff.form.namePlaceholder')"
                     :model-value="form.name"
                     @update:model-value="emit('update:field', { field: 'name', value: $event })"
                   />
-                  <p v-if="errors.name" class="text-[11px] font-bold text-rose-500 ml-1">
+                  <p
+                    v-if="errors.name"
+                    class="ml-1 text-[11px] font-bold text-rose-500 dark:text-rose-400"
+                  >
                     {{ errors.name }}
                   </p>
                 </div>
 
                 <!-- Row 2: Role and Active -->
-                <div class="grid grid-cols-12 gap-8 items-end">
+                <div class="grid grid-cols-12 items-end gap-8">
                   <div class="col-span-7 space-y-2.5">
                     <Label
                       for="staff-role"
-                      class="text-[11px] font-black text-[#564338] uppercase tracking-widest ml-0.5"
+                      class="ml-0.5 text-[11px] font-black uppercase tracking-widest text-[#564338] dark:text-stone-300"
                     >
                       {{ t('staff.form.role') }}
                     </Label>
                     <div class="relative">
                       <select
                         id="staff-role"
-                        class="h-14 w-full appearance-none rounded-xl border border-[#DDC1B3] bg-white px-6 text-sm font-semibold text-[#1A1C1C] focus:outline-none focus:ring-1 focus:ring-[#DDC1B3] transition-all shadow-sm"
+                        class="h-14 w-full appearance-none rounded-xl border border-[#DDC1B3] bg-white px-6 text-sm font-semibold text-[#1A1C1C] shadow-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#DDC1B3] dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:focus:ring-stone-600"
                         :value="form.roleId"
                         @change="
                           emit('update:field', {
@@ -119,16 +126,26 @@ const handleImageChange = (file: File | null) => {
                           })
                         "
                       >
-                        <option :value="0" disabled>{{ t('staff.form.selectRole') }}</option>
-                        <option v-for="role in roles" :key="role.id" :value="role.id">
+                        <option :value="0" disabled class="dark:bg-stone-800 dark:text-stone-400">
+                          {{ t('staff.form.selectRole') }}
+                        </option>
+                        <option
+                          v-for="role in roles"
+                          :key="role.id"
+                          :value="role.id"
+                          class="dark:bg-stone-800 dark:text-stone-100"
+                        >
                           {{ role.name }}
                         </option>
                       </select>
                       <ChevronDown
-                        class="absolute right-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] pointer-events-none"
+                        class="pointer-events-none absolute right-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] dark:text-stone-400"
                       />
                     </div>
-                    <p v-if="errors.roleId" class="text-[11px] font-bold text-rose-500 ml-1">
+                    <p
+                      v-if="errors.roleId"
+                      class="ml-1 text-[11px] font-bold text-rose-500 dark:text-rose-400"
+                    >
                       {{ errors.roleId }}
                     </p>
                   </div>
@@ -141,16 +158,18 @@ const handleImageChange = (file: File | null) => {
                   </div> -->
                   <div class="col-span-5 flex items-center justify-start gap-4 h-14 pb-1 ml-4">
                     <div
-                      class="relative h-6 w-11 rounded-full transition-all duration-300 cursor-pointer shadow-inner"
+                      class="relative h-6 w-11 cursor-pointer rounded-full shadow-inner transition-all duration-300"
                       :class="form.isActive ? 'bg-[#974400]' : 'bg-[#E2DFDE]'"
                       @click="emit('update:field', { field: 'isActive', value: !form.isActive })"
                     >
                       <div
-                        class="absolute top-1 size-4 rounded-full bg-white transition-transform duration-300 shadow-md"
+                        class="absolute top-1 size-4 rounded-full bg-white shadow-md transition-transform duration-300"
                         :class="form.isActive ? 'translate-x-6' : 'translate-x-1'"
                       ></div>
                     </div>
-                    <span class="text-[11px] font-black text-[#564338] uppercase tracking-widest">
+                    <span
+                      class="text-[11px] font-black uppercase tracking-widest text-[#564338] dark:text-stone-300"
+                    >
                       {{ t('staff.form.active') }}
                     </span>
                   </div>
@@ -161,17 +180,17 @@ const handleImageChange = (file: File | null) => {
                   <div class="space-y-2.5">
                     <Label
                       for="staff-email"
-                      class="text-[11px] font-black text-[#564338] uppercase tracking-widest ml-0.5"
+                      class="ml-0.5 text-[11px] font-black uppercase tracking-widest text-[#564338] dark:text-stone-300"
                     >
                       {{ t('staff.form.email') }}
                     </Label>
-                    <div class="relative group">
+                    <div class="group relative">
                       <Mail
-                        class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3]"
+                        class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3] dark:text-stone-400 dark:group-focus-within:text-stone-300"
                       />
                       <AppInput
                         id="staff-email"
-                        class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] transition-all shadow-sm disabled:bg-slate-50 disabled:opacity-50"
+                        class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] shadow-sm transition-all placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] disabled:bg-slate-50 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500 dark:focus-visible:ring-stone-600 dark:disabled:bg-stone-900/50"
                         :placeholder="t('staff.form.emailPlaceholder')"
                         :disabled="!!editingId"
                         :model-value="form.email"
@@ -180,10 +199,16 @@ const handleImageChange = (file: File | null) => {
                         "
                       />
                     </div>
-                    <p v-if="!editingId" class="text-[11px] font-bold text-[#737373] ml-1 mt-1">
+                    <p
+                      v-if="!editingId"
+                      class="ml-1 mt-1 text-[11px] font-bold text-[#737373] dark:text-stone-400"
+                    >
                       {{ t('staff.form.emailNotice') }}
                     </p>
-                    <p v-if="errors.email" class="text-[11px] font-bold text-rose-500 ml-1">
+                    <p
+                      v-if="errors.email"
+                      class="ml-1 text-[11px] font-bold text-rose-500 dark:text-rose-400"
+                    >
                       {{ errors.email }}
                     </p>
                   </div>
@@ -191,17 +216,17 @@ const handleImageChange = (file: File | null) => {
                   <div class="space-y-2.5">
                     <Label
                       for="staff-phone"
-                      class="text-[11px] font-black text-[#564338] uppercase tracking-widest ml-0.5"
+                      class="ml-0.5 text-[11px] font-black uppercase tracking-widest text-[#564338] dark:text-stone-300"
                     >
                       {{ t('staff.form.phoneOptional') }}
                     </Label>
-                    <div class="relative group">
+                    <div class="group relative">
                       <Phone
-                        class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3]"
+                        class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3] dark:text-stone-400 dark:group-focus-within:text-stone-300"
                       />
                       <AppInput
                         id="staff-phone"
-                        class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] transition-all shadow-sm"
+                        class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] shadow-sm transition-all placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500 dark:focus-visible:ring-stone-600"
                         :placeholder="t('staff.form.phonePlaceholder')"
                         :model-value="form.phone || ''"
                         @update:model-value="
@@ -216,17 +241,17 @@ const handleImageChange = (file: File | null) => {
                 <div class="space-y-2.5">
                   <Label
                     for="staff-address"
-                    class="text-[11px] font-black text-[#564338] uppercase tracking-widest ml-0.5"
+                    class="ml-0.5 text-[11px] font-black uppercase tracking-widest text-[#564338] dark:text-stone-300"
                   >
                     {{ t('staff.form.addressOptional') }}
                   </Label>
-                  <div class="relative group">
+                  <div class="group relative">
                     <Home
-                      class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3]"
+                      class="absolute left-6 top-1/2 size-5 -translate-y-1/2 text-[#A3A3A3] transition-colors group-focus-within:text-[#DDC1B3] dark:text-stone-400 dark:group-focus-within:text-stone-300"
                     />
                     <AppInput
                       id="staff-address"
-                      class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] transition-all shadow-sm"
+                      class="h-14 rounded-xl border-[#DDC1B3] bg-white pl-14 pr-6 text-sm font-semibold text-[#1A1C1C] shadow-sm transition-all placeholder:text-[#E2DFDE] focus-visible:ring-1 focus-visible:ring-[#DDC1B3] dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500 dark:focus-visible:ring-stone-600"
                       :placeholder="t('staff.form.addressPlaceholder')"
                       :model-value="form.address || ''"
                       @update:model-value="
@@ -239,7 +264,7 @@ const handleImageChange = (file: File | null) => {
                 <!-- Row 5: Profile Image -->
                 <div class="space-y-2.5 pb-2">
                   <Label
-                    class="text-[11px] font-black text-[#564338] uppercase tracking-widest ml-0.5"
+                    class="ml-0.5 text-[11px] font-black uppercase tracking-widest text-[#564338] dark:text-stone-300"
                   >
                     {{ t('staff.form.profileImageOptional') }}
                   </Label>
@@ -260,22 +285,22 @@ const handleImageChange = (file: File | null) => {
 
                 <!-- Footer Actions -->
                 <div
-                  class="mt-4 flex items-center justify-end gap-10 pt-10 border-t border-[#EEEEEE]"
+                  class="mt-4 flex items-center justify-end gap-3 border-t border-[#EEEEEE] pt-8 dark:border-stone-800"
                 >
                   <Button
-                    variant="link"
                     type="button"
-                    class="text-sm font-bold text-[#737373] hover:text-[#1A1C1C] transition-colors"
+                    variant="tertiary"
+                    class="h-14 w-44 rounded-xl bg-stone-100 font-bold text-stone-700 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-100"
                     @click="$emit('close')"
                   >
                     {{ t('staff.form.cancel') }}
                   </Button>
                   <Button
                     type="submit"
-                    class="h-14 rounded-xl bg-[#974400] px-14 font-bold text-white shadow-xl shadow-[#974400]/20 hover:bg-[#7a3400] hover:shadow-[#974400]/30 transition-all active:scale-[0.98] min-w-[200px]"
+                    class="h-14 w-44 gap-2 rounded-xl bg-[#974400] font-bold text-white shadow-xl shadow-[#974400]/20 transition-all hover:bg-[#7a3400] hover:shadow-[#974400]/30 active:scale-[0.98] dark:bg-[#974400] dark:hover:bg-[#7a3400]"
                     :disabled="isSubmitting"
                   >
-                    <LoaderCircle v-if="isSubmitting" class="mr-2 size-5 animate-spin" />
+                    <LoaderCircle v-if="isSubmitting" class="size-5 animate-spin" />
                     {{ editingId ? t('staff.updateProfile') : t('staff.form.submit') }}
                   </Button>
                 </div>
