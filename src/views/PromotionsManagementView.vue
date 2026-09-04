@@ -70,7 +70,11 @@ onMounted(async () => {
   // Secondary data used only by the Add/Edit item selector. A failure here must
   // not block the page or be reported as a promotions-load failure.
   try {
-    const [cats, prods] = await Promise.all([getCategories(), getProducts({}), loadClaims()])
+    const [cats, prods] = await Promise.all([
+      getCategories({ type: 'product' }),
+      getProducts({}),
+      loadClaims(),
+    ])
     categories.value = cats
     products.value = prods.products
   } catch {

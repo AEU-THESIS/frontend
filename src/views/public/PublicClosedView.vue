@@ -1,9 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePublicShopStore } from '@/store/usePublicShopStore'
 
 const { t } = useI18n()
 const shopStore = usePublicShopStore()
+
+// Owner-authored notice takes precedence; fall back to the default localized copy
+// when the owner left a field blank.
+const message = computed(
+  () => shopStore.shop?.closureMessage?.trim() || t('publicOrder.closed.message')
+)
+const note = computed(
+  () => shopStore.shop?.closureDescription?.trim() || t('publicOrder.closed.note')
+)
 </script>
 
 <template>
@@ -24,14 +34,16 @@ const shopStore = usePublicShopStore()
       {{ t('publicOrder.closed.title') }}
     </h1>
 
-    <!-- Message -->
-    <p class="text-base text-stone-500 dark:text-stone-400 leading-relaxed mb-2 max-w-sm">
-      {{ t('publicOrder.closed.message') }}
+    <!-- Message (owner-authored reason, or default) -->
+    <p
+      class="text-base text-stone-500 dark:text-stone-400 leading-relaxed mb-2 max-w-sm whitespace-pre-line"
+    >
+      {{ message }}
     </p>
 
-    <!-- Note / apology hint -->
-    <p class="text-sm text-stone-400 dark:text-stone-500 mb-8 max-w-xs">
-      {{ t('publicOrder.closed.note') }}
+    <!-- Note / apology hint (owner-authored, or default) -->
+    <p class="text-sm text-stone-400 dark:text-stone-500 mb-8 max-w-xs whitespace-pre-line">
+      {{ note }}
     </p>
 
     <!-- Shop name pill -->

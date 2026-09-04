@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
@@ -9,12 +9,20 @@ import Sidebar from '@/components/layout/Sidebar.vue'
 import TopNavbar from '@/components/layout/TopNavbar.vue'
 import { getShopSettings } from '@/api/shop'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import { useOrderStore } from '@/store/useOrderStore'
+import { useAuthStore } from '@/store/useAuthStore'
 
 const route = useRoute()
 const { t } = useI18n()
 const shopSettingsStore = useShopSettingsStore()
+const orderStore = useOrderStore()
+const authStore = useAuthStore()
 
 onMounted(async () => {
+  if (authStore.isAuthenticated()) {
+    orderStore.subscribeToOrderStream()
+  }
+
   try {
     const settings = await getShopSettings()
     shopSettingsStore.setShopSettings(settings)
@@ -24,6 +32,10 @@ onMounted(async () => {
     console.error('Failed to load shop settings:', error)
     toast.error(t('settings.messages.loadError'))
   }
+})
+
+onUnmounted(() => {
+  orderStore.unsubscribeFromOrderStream()
 })
 </script>
 

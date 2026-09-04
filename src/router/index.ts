@@ -57,6 +57,12 @@ const routes: RouteRecordRaw[] = [
         meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {
+        path: APP_ROUTES.INVENTORY_EXPENSE_REPORT.path,
+        name: APP_ROUTES.INVENTORY_EXPENSE_REPORT.name,
+        component: () => import('@/views/InventoryExpenseReportView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      },
+      {
         path: APP_ROUTES.CATEGORIES.path,
         name: APP_ROUTES.CATEGORIES.name,
         component: () => import('@/views/CategoryManagement.vue'),
@@ -66,6 +72,18 @@ const routes: RouteRecordRaw[] = [
         path: APP_ROUTES.SALE_REPORTS.path,
         name: APP_ROUTES.SALE_REPORTS.name,
         component: () => import('@/views/SaleReportSummaryView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      },
+      {
+        path: APP_ROUTES.SALES_REPORT.path,
+        name: APP_ROUTES.SALES_REPORT.name,
+        component: () => import('@/views/SalesReportView.vue'),
+        meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      },
+      {
+        path: APP_ROUTES.PRODUCT_PERFORMANCE.path,
+        name: APP_ROUTES.PRODUCT_PERFORMANCE.name,
+        component: () => import('@/views/ProductPerformanceView.vue'),
         meta: { roles: [ROLES.ADMIN, ROLES.MANAGER] },
       },
       {

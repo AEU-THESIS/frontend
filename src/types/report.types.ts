@@ -57,3 +57,40 @@ export interface InventoryInsights {
   outOfStock: OutOfStockItem[]
   lowStock: LowStockItem[]
 }
+
+/** Preset window shared by the overview / performance / CSV-export endpoints. */
+export type ReportPeriod = 'daily' | 'weekly' | 'monthly'
+
+/** Aggregate totals for a preset period, split by settlement currency. */
+export interface SalesOverview {
+  /** Every order converted to the USD base, matching KPI net sales. */
+  totalSales: number
+  totalOrders: number
+  averageOrderValue: number
+  /** Orders settled in USD. */
+  salesUSD: number
+  /** Orders settled in KHR, at each order's own rate snapshot. */
+  salesKHR: number
+  averageOrderValueUSD: number
+  averageOrderValueKHR: number
+}
+
+/** One product's contribution over the period. */
+export interface ProductPerformanceRow {
+  name: string
+  quantity: number
+  revenue: number
+}
+
+/** Top and bottom five products for the period. */
+export interface ItemPerformance {
+  topSellers: ProductPerformanceRow[]
+  bottomSellers: ProductPerformanceRow[]
+}
+
+/** One category's contribution over the period. */
+export interface CategoryPerformanceRow {
+  category: string
+  quantity: number
+  revenue: number
+}

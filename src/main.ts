@@ -6,6 +6,7 @@ import i18n from './i18n'
 import './assets/css/style.css'
 import 'vue-sonner/style.css'
 import { registerGlobalComponents } from './plugins/globalComponents'
+import { useAuthStore } from './store/useAuthStore'
 
 // Disable pinch-to-zoom on iOS Safari & Telegram Mini App (matching Telegram Wallet native feel)
 if (typeof window !== 'undefined') {
@@ -49,4 +50,18 @@ registerGlobalComponents(app)
 app.use(pinia)
 app.use(router)
 app.use(i18n)
-app.mount('#app')
+
+// Refresh the signed-in user's role/permissions from the server BEFORE mounting,
+// so the very first navigation guard evaluates the fresh role — a role change or
+// deactivation applied while they were away takes effect on this page load,
+// without a re-login (AT-74). Vue Router does not re-run a completed guard when
+// Pinia state changes later, so awaiting here (rather than fire-and-forget) is
+// what makes route access, not just the reactive menu, match the server on load.
+// refreshUser() handles its own errors and never rejects, so a failed/offline
+// refresh still mounts the app from the cached session.
+async function bootstrap() {
+  await useAuthStore().refreshUser()
+  app.mount('#app')
+}
+
+void bootstrap()

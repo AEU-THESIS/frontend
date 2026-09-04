@@ -1,7 +1,11 @@
 import { PRICE_MODE, TYPE, OPTIONS_SET_TYPE } from '@/constants/product'
+
+export type CategoryType = 'product' | 'inventory'
+
 export interface Category {
   id: number
   name: string
+  type: CategoryType
   sortOrder?: number
   isActive: boolean
   imageUrl?: string | null

@@ -10,6 +10,7 @@ import type {
   CartItemOption,
   OrderType,
   PaymentCurrency,
+  PaymentMethod,
   CreateOrderPayload,
 } from '@/types/order.types'
 
@@ -23,6 +24,7 @@ export const useCartStore = defineStore('cart', () => {
   const exchangeRate = ref(4100) // Snapshot exchange rate (defaults to 4100)
   const isSubmitting = ref(false)
   const isCashModalOpen = ref(false)
+  const isKhqrModalOpen = ref(false)
   const activePromotions = ref<Promotion[]>([])
   // Snapshot of the complimentary lines from the last completed checkout, so the
   // success receipt can list them after the cart has been cleared.
@@ -217,12 +219,19 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  const checkout = async (paymentCurrency: PaymentCurrency, receivedAmount: number) => {
+  const checkout = async (
+    paymentCurrency: PaymentCurrency,
+    receivedAmount: number,
+    paymentMethod: PaymentMethod = 'cash',
+    bankName?: string
+  ) => {
     isSubmitting.value = true
     try {
       const payload: CreateOrderPayload = {
         orderType: orderType.value,
-        paymentMethod: 'cash',
+        paymentMethod,
+        // Only a KHQR payment carries a bank; cash never does.
+        ...(paymentMethod === 'khqr' && bankName ? { bankName } : {}),
         paymentCurrency,
         receivedAmount,
         // The server owns the total and the exchange rate — they are recomputed
@@ -256,6 +265,7 @@ export const useCartStore = defineStore('cart', () => {
     exchangeRate,
     isSubmitting,
     isCashModalOpen,
+    isKhqrModalOpen,
     activePromotions,
     lastCompItems,
     cartTotal,

@@ -1,10 +1,17 @@
 import http from './api'
 import type { LoginInput } from '@/validations/authValidation'
 import type { ForgotPasswordInput, ResetPasswordInput } from '@/validations/resetPasswordValidation'
-import type { AuthResponse } from '@/types/auth.types'
+import type { AuthResponse, User } from '@/types/auth.types'
 
 export const login = async (payload: LoginInput): Promise<AuthResponse> => {
   const res = await http.post<AuthResponse>('/api/auth/sessions', payload)
+  return res.data
+}
+
+// Live user record for the signed-in caller — used to refresh a changed role or
+// deactivation without re-login (AT-74).
+export const getMe = async (): Promise<User> => {
+  const res = await http.get<User>('/api/auth/me')
   return res.data
 }
 

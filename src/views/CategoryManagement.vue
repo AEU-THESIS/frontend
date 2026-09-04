@@ -34,12 +34,18 @@ import {
 } from 'reka-ui'
 import { useProductStore } from '@/store/useProductStore'
 import { toast } from 'vue-sonner'
-import type { Category } from '@/types/product.types'
 import { getErrorMessage } from '@/utils/error'
+import type { Category, CategoryType } from '@/types/product.types'
 
 const PAGE_SIZE = 10
 const productStore = useProductStore()
 const { t } = useI18n()
+
+const activeType = ref<CategoryType>('product')
+const categoryTabs: { value: CategoryType; label: string }[] = [
+  { value: 'product', label: 'category.tabs.product' },
+  { value: 'inventory', label: 'category.tabs.inventory' },
+]
 
 const currentPage = ref(1)
 const filters = reactive({
@@ -88,14 +94,23 @@ watch(filteredCategories, items => {
   }
 })
 
-// On Mounted
-onMounted(async () => {
+const loadCategories = async () => {
   try {
-    await productStore.fetchCategories()
+    await productStore.fetchCategories(activeType.value)
   } catch {
     console.error('Failed to fetch categories or products')
   }
-})
+}
+
+const selectType = (type: CategoryType) => {
+  if (activeType.value === type) return
+  activeType.value = type
+  currentPage.value = 1
+  loadCategories()
+}
+
+// On Mounted
+onMounted(loadCategories)
 
 const openEditDialog = (category: Category) => {
   selectedCategory.value = category
@@ -137,6 +152,7 @@ const handleDialogClose = () => {
 const handleSuccess = () => {
   isAddDialogOpen.value = false
   selectedCategory.value = null
+  loadCategories()
 }
 
 const openAddDialog = () => {
@@ -148,11 +164,24 @@ const openAddDialog = () => {
 <template>
   <!-- Main Content (Canvas) -->
   <main class="p-8 mb-10 overflow-y-auto">
-    <div class="mb-8">
-      <h1 class="font-headline-lg text-[24px] font-bold text-on-background mb-[4px]">
-        {{ $t('category.categoryManagement') }}
-      </h1>
-      <p class="text-[14px]">{{ $t('category.categorySubtitle') }}</p>
+    <!-- Type Tabs -->
+    <div
+      class="mb-4 flex w-fit items-center gap-1 rounded-xl border border-stone-100 bg-white p-1 dark:border-stone-800 dark:bg-stone-900/50"
+    >
+      <button
+        v-for="tab in categoryTabs"
+        :key="tab.value"
+        type="button"
+        class="rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all"
+        :class="
+          activeType === tab.value
+            ? 'bg-[#D2691E] text-white shadow-sm'
+            : 'text-stone-500 hover:bg-stone-50 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+        "
+        @click="selectType(tab.value)"
+      >
+        {{ $t(tab.label) }}
+      </button>
     </div>
 
     <!-- Table  -->
@@ -407,6 +436,7 @@ const openAddDialog = () => {
   >
     <add-category-form
       :category="selectedCategory ?? undefined"
+      :default-type="activeType"
       @success="handleSuccess"
       @close="handleDialogClose"
     />

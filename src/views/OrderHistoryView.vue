@@ -8,6 +8,7 @@ import { toast } from 'vue-sonner'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
 import { roundRielUp } from '@/utils/money'
 import { formatDateTime } from '@/utils/datetime'
+import { shopDateString } from '@/utils/shopDate'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import FilterPanel from '@/components/common/FilterPanel.vue'
 import { AppInput } from '@/components/ui/input'
@@ -15,6 +16,7 @@ import CancelActionDialog from '@/components/order/CancelActionDialog.vue'
 import BlockCustomerDialog from '@/components/order/BlockCustomerDialog.vue'
 import { useAuthStore } from '@/store/useAuthStore'
 import { ROLES } from '@/constants/roles'
+import { cashierName } from '@/utils/cashier'
 
 const { t } = useI18n()
 const orderStore = useOrderStore()
@@ -32,6 +34,13 @@ const formatOrderTotal = (order: OrderDetail) => {
     return `${riel.toLocaleString()}៛`
   }
   return `$${Number(order.totalAmount).toFixed(2)}`
+}
+
+// Marks the signed-in user's own rows so a cashier can spot their sales at a glance
+// in a list that mixes every cashier's orders.
+const isOwnOrder = (order: OrderDetail) => {
+  const currentUserId = authStore.user?.user_id ?? authStore.user?.id
+  return currentUserId != null && order.user?.id === currentUserId
 }
 
 // ── Void / cancel-item action state ───────────────────────────────
@@ -122,38 +131,29 @@ const hasActiveFilters = computed(
     customEndDate.value !== ''
 )
 
-// ── 2. Preset Date calculations helper (Timezone-proof Local Calendar Formatting) ──
+// ── 2. Preset Date calculations helper ──
+// Presets are expressed in the SHOP's local calendar day (the server evaluates
+// them the same way), so a device set to another timezone still filters by the
+// same day — and the summary cards tie to the rows below them.
 const dateFilters = computed(() => {
-  const today = new Date()
-  const formatDate = (d: Date) => {
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
   switch (datePreset.value) {
     case 'today':
       return {
-        startDate: formatDate(today),
-        endDate: formatDate(today),
+        startDate: shopDateString(0),
+        endDate: shopDateString(0),
       }
-    case 'yesterday': {
-      const yesterday = new Date()
-      yesterday.setDate(today.getDate() - 1)
+    case 'yesterday':
       return {
-        startDate: formatDate(yesterday),
-        endDate: formatDate(yesterday),
+        startDate: shopDateString(-1),
+        endDate: shopDateString(-1),
       }
-    }
-    case 'last7Days': {
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(today.getDate() - 7)
+    case 'last7Days':
+      // Inclusive 7-day window (today + the six days before it), matching the
+      // backend's "last 7 days" instead of the old 8-day span.
       return {
-        startDate: formatDate(sevenDaysAgo),
-        endDate: formatDate(today),
+        startDate: shopDateString(-6),
+        endDate: shopDateString(0),
       }
-    }
     case 'customRange':
       return {
         startDate: customStartDate.value || undefined,
@@ -466,6 +466,7 @@ const confirmRejectPreOrder = async () => {
               <th class="py-4 px-6">{{ t('orderHistory.table.dateTime') }}</th>
               <th class="py-4 px-6">{{ t('orderHistory.table.orderId') }}</th>
               <th class="py-4 px-6">{{ t('orderHistory.table.customer') }}</th>
+              <th class="py-4 px-6">{{ t('orderHistory.table.cashier') }}</th>
               <th class="py-4 px-6 text-center">{{ t('orderHistory.table.payment') }}</th>
               <th class="py-4 px-6 text-center">{{ t('orderHistory.table.fulfillment') }}</th>
               <th class="py-4 px-6 text-right">{{ t('orderHistory.table.total') }}</th>
@@ -496,6 +497,19 @@ const confirmRejectPreOrder = async () => {
               </td>
               <td class="py-3.5 px-6 capitalize">
                 {{ order.customerName || t(`cart.${order.orderType}`) }}
+              </td>
+
+              <!-- Cashier who took the order ("System" when none was recorded) -->
+              <td class="py-3.5 px-6 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1.5">
+                  {{ cashierName(order.user, t('common.systemCashier')) }}
+                  <span
+                    v-if="isOwnOrder(order)"
+                    class="rounded-full bg-[#fcf3eb] px-1.5 py-px text-[9px] font-extrabold uppercase tracking-wide text-[#b05a18] dark:bg-amber-950/20 dark:text-amber-500"
+                  >
+                    {{ t('orderHistory.table.you') }}
+                  </span>
+                </span>
               </td>
 
               <!-- Payment Status Badge -->
@@ -555,7 +569,7 @@ const confirmRejectPreOrder = async () => {
 
             <!-- Table empty state -->
             <tr v-if="historyOrders.length === 0 && !loading">
-              <td colspan="6" class="py-24">
+              <td colspan="7" class="py-24">
                 <div
                   class="flex flex-col items-center justify-center text-center text-stone-400 font-semibold gap-3"
                 >
@@ -679,10 +693,29 @@ const confirmRejectPreOrder = async () => {
               class="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800/40 print:p-0 print:border-0 print:bg-transparent"
             >
               <p class="text-[10px] font-bold text-stone-400 uppercase tracking-wide">
-                {{ t('orderDashboard.stationLabel') }}
+                {{ t('orderHistory.cashier') }}
               </p>
-              <p class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1 uppercase">
-                {{ t('sidebar.station') }}
+              <p
+                class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1 truncate"
+                :title="cashierName(selectedOrder.user, t('common.systemCashier'))"
+              >
+                {{ cashierName(selectedOrder.user, t('common.systemCashier')) }}
+              </p>
+            </div>
+
+            <div
+              class="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800/40 print:p-0 print:border-0 print:bg-transparent"
+            >
+              <p class="text-[10px] font-bold text-stone-400 uppercase tracking-wide">
+                {{ t('orderHistory.paymentMethod') }}
+              </p>
+              <p
+                class="font-extrabold text-sm text-stone-700 dark:text-stone-300 mt-1 uppercase truncate"
+              >
+                {{ selectedOrder.paymentMethod
+                }}<template v-if="selectedOrder.paymentMethod === 'khqr' && selectedOrder.bankName">
+                  — {{ selectedOrder.bankName }}</template
+                >
               </p>
             </div>
 

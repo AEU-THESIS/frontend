@@ -4,13 +4,15 @@ import { useI18n } from 'vue-i18n'
 import { useProductStore } from '@/store/useProductStore'
 import { useCartStore } from '@/store/useCartStore'
 import { useShopSettingsStore } from '@/store/useShopSettingsStore'
+import { useAuthStore } from '@/store/useAuthStore'
 import type { Product } from '@/types/product.types'
-import type { OrderResult, CheckoutSuccessData } from '@/types/order.types'
+import type { OrderResult, CheckoutSuccessData, PaymentMethod } from '@/types/order.types'
 import { PRICE_MODE } from '@/constants/product'
 import { round2, roundRielDown } from '@/utils/money'
 import ProductCard from '@/components/pos/ProductCard.vue'
 import ProductModifierModal from '@/components/pos/ProductModifierModal.vue'
 import CashPaymentModal from '@/components/pos/CashPaymentModal.vue'
+import KhqrPaymentModal from '@/components/pos/KhqrPaymentModal.vue'
 import CheckoutSuccessModal from '@/components/pos/CheckoutSuccessModal.vue'
 import { AppInput } from '@/components/ui/input'
 import { toast } from 'vue-sonner'
@@ -19,6 +21,7 @@ const { t } = useI18n()
 const productStore = useProductStore()
 const cartStore = useCartStore()
 const shopSettingsStore = useShopSettingsStore()
+const authStore = useAuthStore()
 
 const searchInput = ref('')
 const selectedProductForOptions = ref<Product | null>(null)
@@ -92,7 +95,9 @@ const handleProductSelect = (product: Product) => {
 }
 
 const handlePaymentSuccess = (result: OrderResult) => {
+  // Either payment modal may have raised this — close both.
   cartStore.isCashModalOpen = false
+  cartStore.isKhqrModalOpen = false
 
   // Derive both currency views of the change from the SERVER's figures, so the
   // receipt shows exactly what was charged/returned (not the browser's math).
@@ -111,8 +116,15 @@ const handlePaymentSuccess = (result: OrderResult) => {
     exchangeRateSnapshot: rate,
     changeUSD,
     changeKHR,
+    // How the sale was paid, echoed by the server, so the receipt can show
+    // "Paid via KHQR — ABA".
+    paymentMethod: (result.paymentMethod as PaymentMethod) ?? 'cash',
+    bankName: result.bankName ?? null,
     // Free (loyalty-stamp) lines captured at checkout, for the receipt's free-items note.
     freeItems: cartStore.lastCompItems,
+    // The signed-in cashier is the one the server recorded on the order, so the
+    // receipt can print "Served by" without another round trip.
+    servedBy: authStore.user?.name ?? null,
   }
   isSuccessModalOpen.value = true
 }
@@ -243,6 +255,13 @@ const handleSuccessModalClose = () => {
     <CashPaymentModal
       :is-open="cartStore.isCashModalOpen"
       @close="cartStore.isCashModalOpen = false"
+      @success="handlePaymentSuccess"
+    />
+
+    <!-- Manual KHQR Payment Dialog (currency + bank selector, no numpad) -->
+    <KhqrPaymentModal
+      :is-open="cartStore.isKhqrModalOpen"
+      @close="cartStore.isKhqrModalOpen = false"
       @success="handlePaymentSuccess"
     />
 
