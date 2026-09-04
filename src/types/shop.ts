@@ -15,6 +15,10 @@ export interface ShopSettings {
   receiptFooter: string | null
   isOrderManagementEnabled?: boolean
   isShopClosed?: boolean
+  // Owner-authored closure notice shown to customers when the shop is closed.
+  // Free text in any language; null/blank falls back to the default localized notice.
+  closureMessage?: string | null
+  closureDescription?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -33,4 +37,6 @@ export interface UpdateShopSettingsPayload {
   receipt_footer: string | null
   is_order_management_enabled?: boolean
   is_shop_closed?: boolean
+  closure_message?: string | null
+  closure_description?: string | null
 }

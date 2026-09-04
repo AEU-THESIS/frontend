@@ -9,6 +9,9 @@ export interface PublicShop {
   slug: string
   currencySymbol: string
   isShopClosed?: boolean
+  // Owner-authored closure notice (any language); null/blank → default localized notice.
+  closureMessage?: string | null
+  closureDescription?: string | null
 }
 
 export interface PublicMenu {
@@ -63,9 +66,27 @@ export interface PaginatedPreOrders {
   hasMore: boolean
 }
 
+/** The verified guest's remembered profile, used to pre-fill checkout. */
+export interface CustomerProfile {
+  name: string | null
+  phone: string | null
+  language: 'en' | 'kh'
+}
+
 export const getPublicMenu = async (slug: string): Promise<PublicMenu> => {
   const res = await publicHttp.get<PublicMenu>(`/api/public/shops/${slug}/menu`)
   return res.data
+}
+
+/** Fetches the guest's remembered name/phone/language (shop-agnostic). */
+export const getMyProfile = async (): Promise<CustomerProfile> => {
+  const res = await publicHttp.get<CustomerProfile>(`/api/public/me/profile`)
+  return res.data
+}
+
+/** Persists the guest's language choice so the bot messages match the Mini App. */
+export const setMyLanguage = async (language: 'en' | 'kh'): Promise<void> => {
+  await publicHttp.patch(`/api/public/me/language`, { language })
 }
 
 export const createPreOrder = async (

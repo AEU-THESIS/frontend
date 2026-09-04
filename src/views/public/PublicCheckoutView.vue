@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { usePublicShopStore } from '@/store/usePublicShopStore'
 import { usePublicCartStore, type PublicCartItem } from '@/store/usePublicCartStore'
-import { createPreOrder } from '@/api/publicOrder'
+import { createPreOrder, getMyProfile } from '@/api/publicOrder'
 import { APP_ROUTES } from '@/constants/appRoutes'
 import { useTelegram } from '@/composables/useTelegram'
 import { getImageUrl } from '@/utils/image'
@@ -25,6 +25,31 @@ const lat = ref<number | null>(null)
 const lng = ref<number | null>(null)
 const locating = ref(false)
 const submitting = ref(false)
+
+// Remember the guest's contact details so repeat orders are faster. localStorage
+// gives an instant fill on the same device; the server profile (keyed by Telegram
+// id) also covers a fresh device.
+const NAME_KEY = 'public-customer-name'
+const PHONE_KEY = 'public-customer-phone'
+
+onMounted(async () => {
+  // 1. Instant fill from this device's last order.
+  try {
+    name.value = localStorage.getItem(NAME_KEY) || ''
+    phone.value = localStorage.getItem(PHONE_KEY) || ''
+  } catch {
+    // localStorage may be unavailable (private mode) — ignore.
+  }
+  // 2. Server-remembered profile — only fill fields the guest hasn't already typed,
+  // so we never clobber in-progress input.
+  try {
+    const profile = await getMyProfile()
+    if (!name.value && profile.name) name.value = profile.name
+    if (!phone.value && profile.phone) phone.value = profile.phone
+  } catch {
+    // Best-effort; checkout still works without a remembered profile.
+  }
+})
 
 const currency = computed(() => shopStore.shop?.currencySymbol ?? '$')
 const phoneValid = computed(() => /^[+]?[0-9][0-9\s-]{5,19}$/.test(phone.value.trim()))
@@ -86,6 +111,13 @@ const submit = async () => {
       deliveryLng: lng.value ?? undefined,
       items: cart.toPayloadItems(),
     })
+    // Remember contact details on this device for the next order.
+    try {
+      localStorage.setItem(NAME_KEY, name.value.trim())
+      localStorage.setItem(PHONE_KEY, phone.value.trim())
+    } catch {
+      // localStorage unavailable — the server still remembers the profile.
+    }
     cart.clear()
     tg.notify('success')
     router.push({
