@@ -323,7 +323,12 @@
     },
     "shopClosure": {
       "title": "Close Shop (Holiday / Temporary Closure)",
-      "description": "When enabled, online pre-orders are closed and customers will see the shop closed notice."
+      "description": "When enabled, online pre-orders are closed and customers will see the shop closed notice.",
+      "noticeHint": "Tell customers why you're closed. You can write in Khmer or English. Leave blank to use the default message.",
+      "messageLabel": "Closure Message",
+      "messagePlaceholder": "e.g. Closed for Pchum Ben holiday. We reopen on Sept 10.",
+      "descriptionLabel": "Additional Note",
+      "descriptionPlaceholder": "e.g. Thank you for your understanding. See you soon!"
     },
     "financials": {
       "title": "Financials & Payments",

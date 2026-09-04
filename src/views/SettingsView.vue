@@ -36,6 +36,9 @@ const form = reactive({
   receiptFooter: '',
   isOrderManagementEnabled: false,
   isShopClosed: false,
+  // Owner-authored closure notice shown to customers when the shop is closed (any language).
+  closureMessage: '',
+  closureDescription: '',
   // Banks offered in the POS KHQR bank selector (AT-112).
   paymentBanks: [] as string[],
 })
@@ -123,6 +126,8 @@ const fillForm = (settings: ShopSettings) => {
   form.receiptFooter = settings.receiptFooter || ''
   form.isOrderManagementEnabled = settings.isOrderManagementEnabled === true
   form.isShopClosed = settings.isShopClosed === true
+  form.closureMessage = settings.closureMessage || ''
+  form.closureDescription = settings.closureDescription || ''
 }
 
 const loadSettings = async () => {
@@ -153,6 +158,8 @@ const saveSettings = async () => {
       receipt_footer: form.receiptFooter.trim() || null,
       is_order_management_enabled: form.isOrderManagementEnabled,
       is_shop_closed: form.isShopClosed,
+      closure_message: form.closureMessage.trim() || null,
+      closure_description: form.closureDescription.trim() || null,
       payment_banks: form.paymentBanks,
     })
 
@@ -323,6 +330,41 @@ onMounted(loadSettings)
                   class="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer dark:bg-stone-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-stone-600 peer-checked:bg-amber-700"
                 ></div>
               </label>
+            </div>
+
+            <!-- Custom closure notice (shown to customers in the Mini App while closed) -->
+            <div v-if="form.isShopClosed" class="md:col-span-2 flex flex-col gap-4">
+              <p class="text-xs font-medium text-stone-500 dark:text-stone-400">
+                {{ t('settings.shopClosure.noticeHint') }}
+              </p>
+              <Label class="flex flex-col gap-2">
+                <span
+                  class="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400"
+                >
+                  {{ t('settings.shopClosure.messageLabel') }}
+                </span>
+                <Textarea
+                  v-model="form.closureMessage"
+                  :maxlength="500"
+                  :rows="2"
+                  :placeholder="t('settings.shopClosure.messagePlaceholder')"
+                  class="rounded-lg border-stone-200 bg-stone-100 text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
+                />
+              </Label>
+              <Label class="flex flex-col gap-2">
+                <span
+                  class="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400"
+                >
+                  {{ t('settings.shopClosure.descriptionLabel') }}
+                </span>
+                <Textarea
+                  v-model="form.closureDescription"
+                  :maxlength="500"
+                  :rows="2"
+                  :placeholder="t('settings.shopClosure.descriptionPlaceholder')"
+                  class="rounded-lg border-stone-200 bg-stone-100 text-stone-900 placeholder:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-50"
+                />
+              </Label>
             </div>
           </div>
         </Card>
