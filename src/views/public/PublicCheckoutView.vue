@@ -32,6 +32,12 @@ const submitting = ref(false)
 const NAME_KEY = 'public-customer-name'
 const PHONE_KEY = 'public-customer-phone'
 
+// Whether the guest has edited a field. The server profile can resolve after the
+// guest has already typed (or typed then cleared) a field; in that case we must not
+// overwrite their input, so async prefill only touches still-untouched fields.
+const nameTouched = ref(false)
+const phoneTouched = ref(false)
+
 onMounted(async () => {
   // 1. Instant fill from this device's last order.
   try {
@@ -40,12 +46,12 @@ onMounted(async () => {
   } catch {
     // localStorage may be unavailable (private mode) — ignore.
   }
-  // 2. Server-remembered profile — only fill fields the guest hasn't already typed,
-  // so we never clobber in-progress input.
+  // 2. Server-remembered profile — only fill a field the guest hasn't touched and
+  // that isn't already filled (localStorage takes precedence as the newer value).
   try {
     const profile = await getMyProfile()
-    if (!name.value && profile.name) name.value = profile.name
-    if (!phone.value && profile.phone) phone.value = profile.phone
+    if (!nameTouched.value && !name.value && profile.name) name.value = profile.name
+    if (!phoneTouched.value && !phone.value && profile.phone) phone.value = profile.phone
   } catch {
     // Best-effort; checkout still works without a remembered profile.
   }
@@ -296,6 +302,7 @@ const submit = async () => {
           type="text"
           :placeholder="t('publicOrder.namePlaceholder')"
           class="w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-primary dark:border-stone-700 dark:bg-stone-800"
+          @input="nameTouched = true"
         />
 
         <div>
@@ -308,6 +315,7 @@ const submit = async () => {
             :class="
               phone && !phoneValid ? 'border-red-400' : 'border-stone-200 dark:border-stone-700'
             "
+            @input="phoneTouched = true"
           />
           <p v-if="phone && !phoneValid" class="mt-1 text-xs text-red-500">
             {{ t('publicOrder.invalidPhone') }}

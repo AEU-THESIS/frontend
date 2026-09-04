@@ -20,11 +20,24 @@ const LANGS = [
 const current = computed(() => LANGS.find(l => l.code === locale.value) ?? LANGS[0])
 const other = computed(() => (current.value.code === 'en' ? LANGS[1] : LANGS[0]))
 
+// Debounce the server sync so rapid toggles collapse into a single request that
+// carries the final choice — this also prevents out-of-order writes from leaving a
+// stale language on the server.
+let syncTimer: ReturnType<typeof setTimeout> | undefined
+
 const toggle = () => {
   const next = other.value.code
   locale.value = next
-  localStorage.setItem('app-locale', next)
-  setMyLanguage(next).catch(() => {})
+  try {
+    localStorage.setItem('app-locale', next)
+  } catch {
+    // Storage can be unavailable (private mode / blocked cookies); the in-memory
+    // locale still switches, so this is non-fatal.
+  }
+  if (syncTimer) clearTimeout(syncTimer)
+  syncTimer = setTimeout(() => {
+    setMyLanguage(next).catch(() => {})
+  }, 400)
 }
 </script>
 
